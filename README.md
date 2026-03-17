@@ -1,10 +1,26 @@
 # ✦ OptiScaler Manager
 
-[![GitHub Release](https://img.shields.io/github/v/release/Agustinm28/Optiscaler-Switcher?style=flat-square&color=8A2BE2)](https://github.com/Agustinm28/Optiscaler-Switcher/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/Agustinm28/Optiscaler-Manager?style=flat-square&color=8A2BE2)](https://github.com/Agustinm28/Optiscaler-Manager/releases/tag/OptiscalerManager-1.0.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square&logo=windows)](https://www.microsoft.com/windows)
 
 **OptiScaler Manager** is a modern, high-performance desktop utility designed to simplify the installation, management, and update of the **OptiScaler** mod across your entire game library. Built with **C#** and **WPF**.
+
+---
+
+## Screenshots
+
+* Main window
+
+<img width="1266" height="713" alt="opti_1" src="https://github.com/user-attachments/assets/de1b06b8-402d-459e-be99-8ca5699bdc8b" />
+
+* Game management
+
+<img width="1266" height="715" alt="opti_2" src="https://github.com/user-attachments/assets/9f92a629-21c7-4f9e-a470-9c4214a912aa" />
+
+* Main window after installation
+
+<img width="1266" height="713" alt="opti_3" src="https://github.com/user-attachments/assets/c72bb06e-f34b-4a9b-81d1-73b6791b1aea" />
 
 ---
 
@@ -32,7 +48,7 @@ Follow these simple steps to enhance your games:
 
 ## 🛠️ Installation & Requirements
 
-1.  Download the latest version from the [Releases](https://github.com/Agustinm28/Optiscaler-Switcher/releases) page.
+1.  Download the latest version from the [Releases](https://github.com/Agustinm28/Optiscaler-Manager/releases) page.
 2.  Run `OptiscalerManager.exe`.
 3.  **Requirements**: Windows 10/11 is required. The app is self-contained, so no external .NET runtime installation is needed.
 
