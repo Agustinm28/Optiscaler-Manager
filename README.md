@@ -30,7 +30,7 @@
 *   **✦ One-Click Install**: Automatically downloads and configures the latest OptiScaler versions for specific titles.
 *   **🛠️ Component Control**: Manage additional tools like **Fakenvapi** (for AMD/Intel GPUs) and **Nukem's DLSSG-to-FSR3** mod.
 *   **📦 Cache Management**: Keep your storage clean by managing different downloaded mod versions.
-*   **🌐 Localization**: Full support for Multiple languages (English & Spanish).
+*   **🌐 Localization**: Full support for Multiple languages (English, Spanish & Brazilian Portuguese).
 *   **⚡ Native Performance**: Fully self-contained, single-file executable for a zero-footprint installation.
 
 ---

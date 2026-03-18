@@ -94,11 +94,12 @@
                     
                     <ComboBox x:Name="CmbLanguage"
                               Grid.Column="1"
-                              Width="120"
+                              Width="160"
                               VerticalAlignment="Center"
                               SelectionChanged="CmbLanguage_SelectionChanged">
                         <ComboBoxItem Tag="en" Content="English"/>
                         <ComboBoxItem Tag="es" Content="Español"/>
+                        <ComboBoxItem Tag="pt-BR" Content="Português (Brasil)"/>
                     </ComboBox>
                 </Grid>
             </Border>
