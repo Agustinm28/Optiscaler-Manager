@@ -247,14 +247,68 @@ namespace OptiscalerManager.Views
             TxtFakeVersion.Text = string.IsNullOrWhiteSpace(_componentService.FakenvapiVersion)
                 ? "Not installed"
                 : _componentService.FakenvapiVersion;
-            BdFakeUpdate.Visibility = _componentService.IsFakenvapiUpdateAvailable
-                ? Visibility.Visible : Visibility.Collapsed;
 
-            TxtNukemVersion.Text = string.IsNullOrWhiteSpace(_componentService.NukemFGVersion)
-                ? "Not installed"
-                : _componentService.NukemFGVersion;
-            BdNukemUpdate.Visibility = _componentService.IsNukemFGUpdateAvailable
-                ? Visibility.Visible : Visibility.Collapsed;
+            if (_componentService.IsNukemFGInstalled)
+            {
+                var ver = _componentService.NukemFGVersion;
+                TxtNukemVersion.Text = (string.IsNullOrWhiteSpace(ver) || ver == "manual") ? "Available" : ver;
+                BtnUpdateNukemFG.Content = "Update";
+            }
+            else
+            {
+                TxtNukemVersion.Text = "Not installed";
+                BtnUpdateNukemFG.Content = "Install";
+            }
+        }
+
+        private async void BtnUpdateFakenvapi_Click(object sender, RoutedEventArgs e)
+        {
+            BtnUpdateFakenvapi.IsEnabled = false;
+            var originalContent = BtnUpdateFakenvapi.Content;
+            BtnUpdateFakenvapi.Content = "Checking...";
+            try
+            {
+                await _componentService.CheckForUpdatesAsync();
+                
+                if (_componentService.IsFakenvapiUpdateAvailable || string.IsNullOrEmpty(_componentService.FakenvapiVersion))
+                {
+                    BtnUpdateFakenvapi.Content = "Downloading...";
+                    await _componentService.DownloadAndExtractFakenvapiAsync();
+                    new ConfirmDialog("Success", "Fakenvapi downloaded successfully.", true) { Owner = this }.ShowDialog();
+                    PopulateHelpContent();
+                }
+                else
+                {
+                    new ConfirmDialog("Up to date", "You already have the latest version of Fakenvapi.", true) { Owner = this }.ShowDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                new ConfirmDialog("Error", $"Error updating Fakenvapi: {ex.Message}", true) { Owner = this }.ShowDialog();
+            }
+            finally
+            {
+                BtnUpdateFakenvapi.Content = originalContent;
+                BtnUpdateFakenvapi.IsEnabled = true;
+            }
+        }
+
+        private void BtnUpdateNukemFG_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                bool isUpdate = _componentService.IsNukemFGInstalled;
+                bool success = _componentService.ProvideNukemFGManually(isUpdate);
+                if (success)
+                {
+                    PopulateHelpContent();
+                    new ConfirmDialog("Success", "NukemFG installed successfully.", true) { Owner = this }.ShowDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                new ConfirmDialog("Error", $"Error installing NukemFG: {ex.Message}", true) { Owner = this }.ShowDialog();
+            }
         }
 
         private async void BtnCheckUpdates_Click(object sender, RoutedEventArgs e)
@@ -276,12 +330,12 @@ namespace OptiscalerManager.Views
                 }
                 else
                 {
-                    MessageBox.Show("No new updates found for the application.", "Updates", MessageBoxButton.OK, MessageBoxImage.Information);
+                    new ConfirmDialog("Updates", "No new updates found for the application.", true) { Owner = this }.ShowDialog();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error checking for updates: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                new ConfirmDialog("Error", $"Error checking for updates: {ex.Message}", true) { Owner = this }.ShowDialog();
             }
             finally
             {
@@ -305,7 +359,7 @@ namespace OptiscalerManager.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Could not open browser: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                new ConfirmDialog("Error", $"Could not open browser: {ex.Message}", true) { Owner = this }.ShowDialog();
             }
         }
 
@@ -408,7 +462,7 @@ namespace OptiscalerManager.Views
             {
                 var errorFormat = FindResource("TxtErrorFormat") as string ?? "Error: {0}";
                 TxtStatus.Text = string.Format(errorFormat, ex.Message);
-                MessageBox.Show(ex.ToString());
+                new ConfirmDialog("Error", ex.Message, true) { Owner = this }.ShowDialog();
             }
             finally
             {
@@ -436,7 +490,7 @@ namespace OptiscalerManager.Views
                 {
                     var msg = FindResource("TxtGameDuplicate") as string ?? "This game is already in the list.";
                     var title = FindResource("TxtDuplicateTitle") as string ?? "Duplicate Game";
-                    MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
+                    new ConfirmDialog(title, msg, true) { Owner = this }.ShowDialog();
                     return;
                 }
 

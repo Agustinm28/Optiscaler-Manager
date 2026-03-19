@@ -107,7 +107,7 @@ namespace OptiscalerManager.Views
 
                     if (string.IsNullOrEmpty(dirToOpen))
                     {
-                        MessageBox.Show("The installation directory could not be found or no longer exists.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        new ConfirmDialog("Error", "The installation directory could not be found or no longer exists.", true) { Owner = this }.ShowDialog();
                         return;
                     }
 
@@ -120,7 +120,7 @@ namespace OptiscalerManager.Views
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Could not open folder:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    new ConfirmDialog("Error", $"Could not open folder:\n{ex.Message}", true) { Owner = this }.ShowDialog();
                 }
             };
 
@@ -151,7 +151,7 @@ namespace OptiscalerManager.Views
 
                 if (string.IsNullOrEmpty(optiscalerVersion))
                 {
-                    MessageBox.Show("No OptiScaler version selected.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    new ConfirmDialog("Error", "No OptiScaler version selected.", true) { Owner = this }.ShowDialog();
                     return;
                 }
 
@@ -184,7 +184,7 @@ namespace OptiscalerManager.Views
                 {
                     var msgFormat = FindResource("TxtDownloadErrorPrefix") as string ?? "Failed to download OptiScaler: {0}";
                     var title = FindResource("TxtError") as string ?? "Error";
-                    MessageBox.Show(string.Format(msgFormat, ex.Message), title, MessageBoxButton.OK, MessageBoxImage.Error);
+                    new ConfirmDialog(title, string.Format(msgFormat, ex.Message), true) { Owner = this }.ShowDialog();
                     return;
                 }
                 finally
@@ -208,11 +208,44 @@ namespace OptiscalerManager.Views
                 bool installFakenvapi = ChkInstallFakenvapi.IsChecked == true;
                 bool installNukemFG = ChkInstallNukemFG.IsChecked == true;
 
-                // Validate Fakenvapi cache if selected
+                // Validate and download Fakenvapi if selected
                 if (installFakenvapi && (!Directory.Exists(fakeCacheDir) || Directory.GetFiles(fakeCacheDir).Length == 0))
                 {
-                    MessageBox.Show("Fakenvapi not downloaded. Please update from the main window first.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
+                    try
+                    {
+                        // Ensure we have the latest version tags loaded before downloading
+                        await componentService.CheckForUpdatesAsync();
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            BtnInstall.IsEnabled = false;
+                            BtnInstallManual.IsEnabled = false;
+                            BtnUninstall.IsEnabled = false;
+                            CmbOptiVersion.IsEnabled = false;
+                            BdProgress.Visibility = Visibility.Visible;
+                            TxtProgressState.Text = "Downloading Fakenvapi...";
+                            PrgDownload.IsIndeterminate = true;
+                        });
+
+                        await componentService.DownloadAndExtractFakenvapiAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        new ConfirmDialog("Error", $"Failed to download Fakenvapi: {ex.Message}", true) { Owner = this }.ShowDialog();
+                        return;
+                    }
+                    finally
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            PrgDownload.IsIndeterminate = false;
+                            BdProgress.Visibility = Visibility.Collapsed;
+                            BtnInstall.IsEnabled = true;
+                            BtnInstallManual.IsEnabled = true;
+                            BtnUninstall.IsEnabled = true;
+                            CmbOptiVersion.IsEnabled = true;
+                        });
+                    }
                 }
 
                 // Validate NukemFG cache if selected
@@ -244,7 +277,7 @@ namespace OptiscalerManager.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Installation failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                new ConfirmDialog("Error", $"Installation failed: {ex.Message}", true) { Owner = this }.ShowDialog();
             }
         }
 
@@ -287,7 +320,7 @@ namespace OptiscalerManager.Views
             {
                 var failFormat = FindResource("TxtOptiUninstallFail") as string ?? "Uninstall failed: {0}";
                 var titleMsg = FindResource("TxtError") as string ?? "Error";
-                MessageBox.Show(string.Format(failFormat, ex.Message), titleMsg, MessageBoxButton.OK, MessageBoxImage.Error);
+                new ConfirmDialog(titleMsg, string.Format(failFormat, ex.Message), true) { Owner = this }.ShowDialog();
             }
         }
 

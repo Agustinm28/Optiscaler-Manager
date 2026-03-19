@@ -565,10 +565,8 @@
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="Fakenvapi" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource BrTextPrimary}" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border x:Name="BdFakeUpdate" Background="#2A1F4A" BorderBrush="{StaticResource BrAccent}" BorderThickness="1" CornerRadius="6" Padding="8,4" Margin="0,0,12,0" VerticalAlignment="Center" Visibility="Collapsed">
-                                            <TextBlock Text="{DynamicResource TxtUpdateAvail}" FontSize="11" Foreground="{StaticResource BrAccent}"/>
-                                        </Border>
-                                        <TextBlock x:Name="TxtFakeVersion" FontWeight="Bold" Foreground="{StaticResource BrAccent}" VerticalAlignment="Center"/>
+                                        <Button x:Name="BtnUpdateFakenvapi" Content="Check Updates" Style="{StaticResource BtnBase}" Padding="10,4" Margin="0,0,12,0" VerticalAlignment="Center" Click="BtnUpdateFakenvapi_Click"/>
+                                        <TextBlock x:Name="TxtFakeVersion" FontWeight="Bold" Foreground="{StaticResource BrAccent}" VerticalAlignment="Center" MinWidth="80" TextAlignment="Right"/>
                                     </StackPanel>
                                  </Grid>
                                  
@@ -577,10 +575,8 @@
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="NukemFG" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource BrTextPrimary}" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border x:Name="BdNukemUpdate" Background="#3D2410" BorderBrush="{StaticResource BrAccentWarm}" BorderThickness="1" CornerRadius="6" Padding="8,4" Margin="0,0,12,0" VerticalAlignment="Center" Visibility="Collapsed">
-                                            <TextBlock Text="{DynamicResource TxtUpdateAvail}" FontSize="11" Foreground="{StaticResource BrAccentWarm}"/>
-                                        </Border>
-                                        <TextBlock x:Name="TxtNukemVersion" FontWeight="Bold" Foreground="{StaticResource BrAccentWarm}" VerticalAlignment="Center"/>
+                                        <Button x:Name="BtnUpdateNukemFG" Content="Update" Style="{StaticResource BtnBase}" Padding="10,4" Margin="0,0,12,0" VerticalAlignment="Center" Click="BtnUpdateNukemFG_Click"/>
+                                        <TextBlock x:Name="TxtNukemVersion" FontWeight="Bold" Foreground="{StaticResource BrAccent}" VerticalAlignment="Center" MinWidth="80" TextAlignment="Right"/>
                                     </StackPanel>
                                  </Grid>
                                  
