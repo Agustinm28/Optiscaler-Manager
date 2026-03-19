@@ -1,6 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace OptiscalerManager.Models
+namespace OptiscalerClient.Models
 {
     /// <summary>
     /// Configuration for GitHub repositories

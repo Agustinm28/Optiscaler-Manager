@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json;
-using OptiscalerManager.Models;
+using OptiscalerClient.Models;
 
-namespace OptiscalerManager.Services
+namespace OptiscalerClient.Services
 {
     public class GameInstallationService
     {

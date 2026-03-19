@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Windows;
 
-namespace OptiscalerManager.Views;
+namespace OptiscalerClient.Views;
 
 public partial class AppUpdateWindow : Window
 {
@@ -43,7 +43,7 @@ public partial class AppUpdateWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Update failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            new ConfirmDialog("Error", $"Update failed: {ex.Message}", true) { Owner = this }.ShowDialog();
             PanelInfo.Visibility = Visibility.Visible;
             PanelDownloading.Visibility = Visibility.Collapsed;
             BtnSkip.IsEnabled = true;

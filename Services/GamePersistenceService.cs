@@ -1,8 +1,8 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
-using OptiscalerManager.Models;
+using OptiscalerClient.Models;
 
-namespace OptiscalerManager.Services;
+namespace OptiscalerClient.Services;
 
 public class GamePersistenceService
 {
@@ -12,7 +12,7 @@ public class GamePersistenceService
     {
         // Guardamos en AppData para ser correctos con los permisos de usuario
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var folder = Path.Combine(appData, "OptiscalerManager");
+        var folder = Path.Combine(appData, "OptiscalerClient");
         
         if (!Directory.Exists(folder))
         {

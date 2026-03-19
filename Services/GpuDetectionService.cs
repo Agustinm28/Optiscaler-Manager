@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Management;
 
-namespace OptiscalerManager.Services
+namespace OptiscalerClient.Services
 {
     /// <summary>
     /// GPU vendor types

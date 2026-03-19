@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     
@@ -16,7 +16,7 @@
     <sys:String x:Key="TxtAppRepoDesc">Target GitHub repository for updates and feedback (Owner/RepoName).</sys:String>
     <!-- Guide Window -->
     <sys:String x:Key="TxtGuideTitle">Guide</sys:String>
-    <sys:String x:Key="TxtGuideHeader">How to use Optiscaler Manager</sys:String>
+    <sys:String x:Key="TxtGuideHeader">How to use Optiscaler Client</sys:String>
     <sys:String x:Key="TxtGuideHeaderDesc">Simple steps to enhance your games</sys:String>
     <sys:String x:Key="TxtGuideStep1Title">1. Find your games</sys:String>
     <sys:String x:Key="TxtGuideStep1Desc">Click the 'Scan Games' button to let the app automatically find installed games from Steam, Epic, GOG, or Xbox. Check the 'Add Manually' button if you have a standalone game.</sys:String>
@@ -28,7 +28,7 @@
     <sys:String x:Key="TxtGuideStep4Desc">Once installed, start your game normally. Inside the game, bring up the OptiScaler menu using the 'Insert' key to tweak your settings!</sys:String>
 
     <!-- MainWindow -->
-    <sys:String x:Key="TxtAppTitle">Optiscaler Manager</sys:String>
+    <sys:String x:Key="TxtAppTitle">Optiscaler Client</sys:String>
     <sys:String x:Key="TxtBtnScan">⟳  Scan Games</sys:String>
     <sys:String x:Key="TxtBtnAddManual">＋  Add Manually</sys:String>
     <sys:String x:Key="TxtTipSettings">Settings</sys:String>
@@ -85,6 +85,8 @@
     <sys:String x:Key="TxtUpdateOptiManual">↑ Manual Update / Reinstall</sys:String>
     <sys:String x:Key="TxtFakenvapiTip">Required for AMD/Intel GPUs to enable DLSS FG with Nukem mod</sys:String>
     <sys:String x:Key="TxtNukemTip">Nukem's DLSSG-to-FSR3 mod for Frame Generation</sys:String>
+    <sys:String x:Key="TxtFakenvapiHelpTip">Tricks the game into detecting an NVIDIA graphics card, allowing you to bypass hardware restrictions and enable DLSS technologies on AMD or Intel GPUs.</sys:String>
+    <sys:String x:Key="TxtNukemHelpTip">A mod by Nukem that replaces native DLSS Frame Generation with AMD FSR 3 Frame Generation, enabling frame generation on any compatible GPU.</sys:String>
 
     <sys:String x:Key="TxtOptiInstalled">OptiScaler Installed</sys:String>
     <sys:String x:Key="TxtOptiNotInstalled">Not Installed</sys:String>

@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace OptiscalerManager
+namespace OptiscalerClient
 {
     /// <summary>
     /// Interaction logic for App.xaml

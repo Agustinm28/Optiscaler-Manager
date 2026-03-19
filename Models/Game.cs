@@ -1,4 +1,4 @@
-namespace OptiscalerManager.Models;
+﻿namespace OptiscalerClient.Models;
 
 public enum GamePlatform
 {

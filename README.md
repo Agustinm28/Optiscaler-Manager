@@ -1,10 +1,10 @@
-# ✦ OptiScaler Manager
+﻿# ✦ OptiScaler Client
 
-[![GitHub Release](https://img.shields.io/github/v/release/Agustinm28/Optiscaler-Manager?style=flat-square&color=8A2BE2)](https://github.com/Agustinm28/Optiscaler-Manager/releases/tag/OptiscalerManager-1.0.0)
+[![GitHub Release](https://img.shields.io/github/v/release/Agustinm28/Optiscaler-Client?style=flat-square&color=8A2BE2)](https://github.com/Agustinm28/Optiscaler-Client/releases/tag/OptiscalerClient-1.0.1)
 [![License: GPL](https://img.shields.io/badge/License-GPL-yellow.svg?style=flat-square)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square&logo=windows)](https://www.microsoft.com/windows)
 
-**OptiScaler Manager** is a modern, high-performance desktop utility designed to simplify the installation, management, and update of the **OptiScaler** mod across your entire game library. Built with **C#** and **WPF**.
+**OptiScaler Client** is a modern, high-performance desktop utility designed to simplify the installation, management, and update of the **OptiScaler** mod across your entire game library. Built with **C#** and **WPF**.
 
 ---
 
@@ -30,7 +30,7 @@
 *   **✦ One-Click Install**: Automatically downloads and configures the latest OptiScaler versions for specific titles.
 *   **🛠️ Component Control**: Manage additional tools like **Fakenvapi** (for AMD/Intel GPUs) and **Nukem's DLSSG-to-FSR3** mod.
 *   **📦 Cache Management**: Keep your storage clean by managing different downloaded mod versions.
-*   **🌐 Localization**: Full support for Multiple languages (English & Spanish).
+*   **🌐 Localization**: Full support for Multiple languages (English, Spanish & Brazilian Portuguese).
 *   **⚡ Native Performance**: Fully self-contained, single-file executable for a zero-footprint installation.
 
 ---
@@ -48,15 +48,15 @@ Follow these simple steps to enhance your games:
 
 ## 🛠️ Installation & Requirements
 
-1.  Download the latest version from the [Releases](https://github.com/Agustinm28/Optiscaler-Manager/releases/tag/OptiscalerManager-1.0.0) page.
-2.  Run `OptiscalerManager.exe`.
+1.  Download the latest version from the [Releases](https://github.com/Agustinm28/Optiscaler-Client/releases) page.
+2.  Run `OptiscalerClient.exe`.
 3.  **Requirements**: Windows 10/11 is required. The app is self-contained, so no external .NET runtime installation is needed.
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! If you'd like to improve OptiScaler Manager:
+We welcome contributions! If you'd like to improve OptiScaler Client:
 
 1.  **Fork** the project.
 2.  Create your **Feature Branch** (`git checkout -b feature/AmazingFeature`).
@@ -68,7 +68,7 @@ We welcome contributions! If you'd like to improve OptiScaler Manager:
 
 ## 📄 License & Acknowledgments
 
-*   Distributed under the **MIT License**. See `LICENSE` for more information.
+*   Distributed under the **GPL-3.0 License**. See `LICENSE` for more information.
 *   **[OptiScaler](https://github.com/optiscaler/OptiScaler)**: The core upscaling technology.
 *   **[fakenvapi](https://github.com/optiscaler/fakenvapi)**: Essential compatibility layer.
 *   **[NukemFG](https://github.com/Nukem9/dlssg-to-fsr3)**: Frame Generation bridge.

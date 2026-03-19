@@ -1,9 +1,9 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using OptiscalerManager.Services;
+using OptiscalerClient.Services;
 using System;
 
-namespace OptiscalerManager.Views
+namespace OptiscalerClient.Views
 {
     public partial class ManageCacheWindow : Window
     {

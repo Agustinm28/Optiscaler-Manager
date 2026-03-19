@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -7,9 +7,9 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using OptiscalerManager.Models;
+using OptiscalerClient.Models;
 
-namespace OptiscalerManager.Services
+namespace OptiscalerClient.Services
 {
     public class AppUpdateService
     {
@@ -24,7 +24,7 @@ namespace OptiscalerManager.Services
         {
             _componentService = componentService;
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "OptiscalerManagerUpdater");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "OptiscalerClientUpdater");
         }
 
         public async Task<bool> CheckForAppUpdateAsync()
@@ -62,8 +62,15 @@ namespace OptiscalerManager.Services
                                 var assetUrl = downloadProp.GetString();
                                 if (assetUrl != null && assetUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    DownloadUrl = assetUrl;
-                                    break;
+                                    if (assetUrl.Contains("OptiscalerClient_Portable.zip", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        DownloadUrl = assetUrl;
+                                        break;
+                                    }
+                                    else if (DownloadUrl == null)
+                                    {
+                                        DownloadUrl = assetUrl; // Fallback just in case
+                                    }
                                 }
                             }
                         }
@@ -94,7 +101,7 @@ namespace OptiscalerManager.Services
             if (string.IsNullOrEmpty(DownloadUrl))
                 throw new Exception("No valid download URL found for the update.");
 
-            var tempZip = Path.Combine(Path.GetTempPath(), $"OptiscalerManagerUpdate_{Guid.NewGuid()}.zip");
+            var tempZip = Path.Combine(Path.GetTempPath(), $"OptiscalerClientUpdate_{Guid.NewGuid()}.zip");
             var updateFolder = Path.Combine(AppContext.BaseDirectory, "update_temp");
 
             try
@@ -150,13 +157,15 @@ namespace OptiscalerManager.Services
                 }
 
                 // Create the batch script
-                var batPath = Path.Combine(AppContext.BaseDirectory, "update.bat");
+                var basePath = AppContext.BaseDirectory.TrimEnd('\\');
+                var batPath = Path.Combine(basePath, "update.bat");
                 var batContent = $@"@echo off
-echo Updating Optiscaler Manager...
+echo Updating Optiscaler Client...
 timeout /t 2 /nobreak > nul
+cd /d ""{basePath}""
 xcopy /Y /S ""{updateFolder}\*"" "".\""
 rmdir /s /q ""{updateFolder}""
-start """" ""OptiscalerManager.exe""
+start """" ""OptiscalerClient.exe""
 del ""%~f0""
 ";
                 File.WriteAllText(batPath, batContent);

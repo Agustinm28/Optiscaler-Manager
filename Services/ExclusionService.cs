@@ -1,8 +1,8 @@
-using OptiscalerManager.Models;
+﻿using OptiscalerClient.Models;
 using System.IO;
 using System.Text.Json;
 
-namespace OptiscalerManager.Services;
+namespace OptiscalerClient.Services;
 
 /// <summary>
 /// Loads the scan exclusion list from config.json and exposes

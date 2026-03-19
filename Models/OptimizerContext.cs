@@ -1,7 +1,7 @@
-using System.Text.Json.Serialization;
-using OptiscalerManager.Models;
+﻿using System.Text.Json.Serialization;
+using OptiscalerClient.Models;
 
-namespace OptiscalerManager.Models
+namespace OptiscalerClient.Models
 {
     /// <summary>
     /// Source generator for JSON serialization to support high-performance trimming.

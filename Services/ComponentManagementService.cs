@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using System.Linq;
 using SharpCompress.Archives;
 using SharpCompress.Common;
-using OptiscalerManager.Models;
-using OptiscalerManager.Views;
+using OptiscalerClient.Models;
+using OptiscalerClient.Views;
 
-namespace OptiscalerManager.Services
+namespace OptiscalerClient.Services
 {
     /// <summary>
     /// Manages OptiScaler, Fakenvapi, and NukemFG components
@@ -54,7 +54,7 @@ namespace OptiscalerManager.Services
         public ComponentManagementService()
         {
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            _baseDir = Path.Combine(appData, "OptiscalerManager");
+            _baseDir = Path.Combine(appData, "OptiscalerClient");
             _cacheDir = Path.Combine(_baseDir, "Cache");
             _versionFile = Path.Combine(_baseDir, "versions.json");
             _configFile = Path.Combine(_baseDir, "config.json");
@@ -62,7 +62,7 @@ namespace OptiscalerManager.Services
             Directory.CreateDirectory(_cacheDir);
 
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "OptiscalerManager");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "OptiscalerClient");
 
             LoadConfiguration();
             LoadLocalVersions();

@@ -1,7 +1,7 @@
-using OptiscalerManager.Models;
+﻿using OptiscalerClient.Models;
 using System.IO;
 
-namespace OptiscalerManager.Services;
+namespace OptiscalerClient.Services;
 
 public class GameScannerService
 {

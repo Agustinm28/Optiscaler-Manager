@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Windows.Navigation;
 using SharpCompress.Common;
 using SharpCompress.Archives;
 
-namespace OptiscalerManager.Views
+namespace OptiscalerClient.Views
 {
     /// <summary>
     /// Dialog that asks the user to manually locate the NukemFG DLL.

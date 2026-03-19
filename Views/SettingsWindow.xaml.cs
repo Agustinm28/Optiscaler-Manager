@@ -1,8 +1,8 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Linq;
 
-namespace OptiscalerManager.Views
+namespace OptiscalerClient.Views
 {
     public partial class SettingsWindow : Window
     {

@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     
@@ -16,7 +16,7 @@
     <sys:String x:Key="TxtAppRepoDesc">Repositorio de GitHub para buscar actualizaciones y enviar comentarios (Dueño/NombreRepo).</sys:String>
     <!-- Guide Window -->
     <sys:String x:Key="TxtGuideTitle">Guía</sys:String>
-    <sys:String x:Key="TxtGuideHeader">Cómo usar Optiscaler Manager</sys:String>
+    <sys:String x:Key="TxtGuideHeader">Cómo usar Optiscaler Client</sys:String>
     <sys:String x:Key="TxtGuideHeaderDesc">Pasos sencillos para mejorar tus juegos</sys:String>
     <sys:String x:Key="TxtGuideStep1Title">1. Encuentra tus juegos</sys:String>
     <sys:String x:Key="TxtGuideStep1Desc">Haz clic en el botón 'Escanear juegos' para que la aplicación busque automáticamente los juegos instalados. También puedes hacer clic en 'Añadir manualmente' si tienes algún juego independiente.</sys:String>
@@ -28,7 +28,7 @@
     <sys:String x:Key="TxtGuideStep4Desc">Una vez instalado, inicia el juego normalmente. Dentro del juego, abre el menú de OptiScaler usando la tecla 'Insert' para ajustar la configuración.</sys:String>
 
     <!-- MainWindow -->
-    <sys:String x:Key="TxtAppTitle">Optiscaler Manager</sys:String>
+    <sys:String x:Key="TxtAppTitle">Optiscaler Client</sys:String>
     <sys:String x:Key="TxtBtnScan">⟳ Escanear Juegos</sys:String>
     <sys:String x:Key="TxtBtnAddManual">＋ Añadir Manualmente</sys:String>
     <sys:String x:Key="TxtTipSettings">Ajustes</sys:String>
@@ -85,6 +85,8 @@
     <sys:String x:Key="TxtUpdateOptiManual">↑ Manual: Actualizar / Reinstalar</sys:String>
     <sys:String x:Key="TxtFakenvapiTip">Requerido en GPUs AMD/Intel para habilitar DLSS FG con Nukem mod</sys:String>
     <sys:String x:Key="TxtNukemTip">Mod DLSSG-a-FSR3 de Nukem para Generación de Fotogramas</sys:String>
+    <sys:String x:Key="TxtFakenvapiHelpTip">Engaña al juego haciéndole creer que posees una tarjeta gráfica NVIDIA. Esto permite eludir restricciones de hardware y habilitar tecnologías DLSS en tarjetas AMD o Intel.</sys:String>
+    <sys:String x:Key="TxtNukemHelpTip">Modificación que reemplaza la generación de fotogramas nativa de DLSS por FSR 3 de AMD, permitiendo habilitar Frame Generation en cualquier GPU compatible.</sys:String>
 
     <sys:String x:Key="TxtOptiInstalled">OptiScaler Instalado</sys:String>
     <sys:String x:Key="TxtOptiNotInstalled">No instalado</sys:String>

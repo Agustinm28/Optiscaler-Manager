@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -10,7 +10,7 @@ using System.Linq;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 
-namespace OptiscalerManager.Services;
+namespace OptiscalerClient.Services;
 
 public class OptiscalerManagementService
 {
@@ -30,7 +30,7 @@ public class OptiscalerManagementService
     public OptiscalerManagementService()
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var baseDir = Path.Combine(appData, "OptiscalerManager");
+        var baseDir = Path.Combine(appData, "OptiscalerClient");
         _cacheDir = Path.Combine(baseDir, "Cache");
         _versionFile = Path.Combine(baseDir, "version.json");
         _configFile = Path.Combine(baseDir, "config.json");
@@ -38,7 +38,7 @@ public class OptiscalerManagementService
         Directory.CreateDirectory(_cacheDir);
 
         _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "OptiscalerManager");
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", "OptiscalerClient");
 
         LoadConfiguration();
         LoadLocalVersion();

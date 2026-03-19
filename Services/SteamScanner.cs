@@ -1,9 +1,9 @@
-using Microsoft.Win32;
-using OptiscalerManager.Models;
+﻿using Microsoft.Win32;
+using OptiscalerClient.Models;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace OptiscalerManager.Services;
+namespace OptiscalerClient.Services;
 
 public class SteamScanner
 {
