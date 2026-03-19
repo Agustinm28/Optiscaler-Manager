@@ -2,30 +2,30 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     
-    <sys:String x:Key="TxtSettingsTitle">Configuracoes</sys:String>
-    <sys:String x:Key="TxtSettingsDesc">Gerencie as preferencias do aplicativo</sys:String>
-    <sys:String x:Key="TxtAppPrefs">Preferencias do aplicativo</sys:String>
+    <sys:String x:Key="TxtSettingsTitle">Configurações</sys:String>
+    <sys:String x:Key="TxtSettingsDesc">Gerencie as preferências do aplicativo</sys:String>
+    <sys:String x:Key="TxtAppPrefs">Preferências do aplicativo</sys:String>
     <sys:String x:Key="TxtCacheMgmt">Gerenciamento de cache local</sys:String>
-    <sys:String x:Key="TxtCacheDesc">Veja e exclua versoes baixadas do OptiScaler do armazenamento local para liberar espaco.</sys:String>
+    <sys:String x:Key="TxtCacheDesc">Veja e exclua versões baixadas do OptiScaler do armazenamento local para liberar espaço.</sys:String>
     <sys:String x:Key="TxtManage">📁  Gerenciar</sys:String>
     <sys:String x:Key="TxtLanguage">Idioma do aplicativo</sys:String>
     <sys:String x:Key="TxtLanguageDesc">Altere o idioma da interface.</sys:String>
     <sys:String x:Key="TxtClose">Fechar</sys:String>
     <sys:String x:Key="TxtGotIt">Entendi</sys:String>
-    <sys:String x:Key="TxtAppRepoTitle">Repositorio do aplicativo</sys:String>
-    <sys:String x:Key="TxtAppRepoDesc">Repositorio alvo no GitHub para atualizacoes e feedback (Dono/NomeRepo).</sys:String>
+    <sys:String x:Key="TxtAppRepoTitle">Repositório do aplicativo</sys:String>
+    <sys:String x:Key="TxtAppRepoDesc">Repositório alvo no GitHub para atualizações e feedback (Dono/NomeRepo).</sys:String>
     <!-- Guide Window -->
     <sys:String x:Key="TxtGuideTitle">Guia</sys:String>
     <sys:String x:Key="TxtGuideHeader">Como usar o Optiscaler Manager</sys:String>
     <sys:String x:Key="TxtGuideHeaderDesc">Passos simples para melhorar seus jogos</sys:String>
     <sys:String x:Key="TxtGuideStep1Title">1. Encontre seus jogos</sys:String>
-    <sys:String x:Key="TxtGuideStep1Desc">Clique no botao 'Escanear jogos' para o aplicativo localizar automaticamente os jogos instalados no Steam, Epic, GOG ou Xbox. Use 'Adicionar manualmente' se voce tiver um jogo independente.</sys:String>
+    <sys:String x:Key="TxtGuideStep1Desc">Clique no botão 'Escanear jogos' para o aplicativo localizar automaticamente os jogos instalados no Steam, Epic, GOG ou Xbox. Use 'Adicionar manualmente' se você tiver um jogo independente.</sys:String>
     <sys:String x:Key="TxtGuideStep2Title">2. Gerencie um jogo</sys:String>
-    <sys:String x:Key="TxtGuideStep2Desc">Ao lado do jogo na lista, clique em 'Gerenciar'. Uma janela sera aberta para permitir a instalacao ou atualizacao do mod OptiScaler para esse jogo especifico.</sys:String>
+    <sys:String x:Key="TxtGuideStep2Desc">Ao lado do jogo na lista, clique em 'Gerenciar'. Uma janela será aberta para permitir a instalação ou atualização do mod OptiScaler para esse jogo específico.</sys:String>
     <sys:String x:Key="TxtGuideStep3Title">3. Instale o OptiScaler</sys:String>
-    <sys:String x:Key="TxtGuideStep3Desc">Na janela de gerenciamento, escolha a versao do OptiScaler e as opcoes desejadas. Use 'Instalacao automatica' para uma configuracao rapida. Se ela falhar ou nao localizar o executavel (.exe) correto, use 'Instalacao manual' para selecionar o executavel do jogo.</sys:String>
+    <sys:String x:Key="TxtGuideStep3Desc">Na janela de gerenciamento, escolha a versão do OptiScaler e as opções desejadas. Use 'Instalação automática' para uma configuração rápida. Se ela falhar ou não localizar o executável (.exe) correto, use 'Instalação manual' para selecionar o executável do jogo.</sys:String>
     <sys:String x:Key="TxtGuideStep4Title">4. Jogue</sys:String>
-    <sys:String x:Key="TxtGuideStep4Desc">Depois de instalar, inicie o jogo normalmente. Dentro do jogo, abra o menu do OptiScaler com a tecla 'Insert' para ajustar as configuracoes.</sys:String>
+    <sys:String x:Key="TxtGuideStep4Desc">Depois de instalar, inicie o jogo normalmente. Dentro do jogo, abra o menu do OptiScaler com a tecla 'Insert' para ajustar as configurações.</sys:String>
 
     <!-- MainWindow -->
     <sys:String x:Key="TxtAppTitle">Optiscaler Manager</sys:String>
