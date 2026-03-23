@@ -8,7 +8,7 @@ namespace OptiscalerClient.Services;
 
 [SupportedOSPlatform("windows")]
 
-public class UbisoftScanner
+public class UbisoftScanner : IGameScanner
 {
     private const string UNINSTALL_PATH = @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
 

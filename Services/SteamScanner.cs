@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 namespace OptiscalerClient.Services;
 
 [SupportedOSPlatform("windows")]
-public class SteamScanner
+public class SteamScanner : IGameScanner
 {
     private const string REGISTRY_PATH = @"SOFTWARE\Valve\Steam";
 

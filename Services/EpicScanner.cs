@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace OptiscalerClient.Services;
 
-public class EpicScanner
+public class EpicScanner : IGameScanner
 {
     private const string MANIFESTS_REL_PATH = @"Epic\EpicGamesLauncher\Data\Manifests";
 

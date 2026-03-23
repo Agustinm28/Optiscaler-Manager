@@ -8,7 +8,7 @@ namespace OptiscalerClient.Services;
 
 [SupportedOSPlatform("windows")]
 
-public class GogScanner
+public class GogScanner : IGameScanner
 {
     private const string REGISTRY_PATH = @"SOFTWARE\WOW6432Node\GOG.com\Games";
 

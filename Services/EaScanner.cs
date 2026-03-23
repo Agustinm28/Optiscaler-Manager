@@ -7,7 +7,7 @@ using System.Runtime.Versioning;
 namespace OptiscalerClient.Services;
 
 [SupportedOSPlatform("windows")]
-public class EaScanner
+public class EaScanner : IGameScanner
 {
     private readonly string[] REGISTRY_PATHS = new[]
     {

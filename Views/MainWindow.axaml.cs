@@ -33,6 +33,17 @@ namespace OptiscalerClient.Views
         private DispatcherTimer? _scanDotTimer;
         private double _scanDotPhase = 0;
 
+        private readonly GameAnalyzerService _analyzerService = new();
+        private readonly GameMetadataService _metadataService = new();
+
+        private ListBox? _lstGames;
+        private TextBlock? _txtStatus;
+        private Button? _btnScan;
+        private Grid? _overlayScanning;
+        private TextBox? _txtSearch;
+        private TextBlock? _txtSearchPlaceholder;
+        private TextBlock? _txtGpuInfo;
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
@@ -70,13 +81,6 @@ namespace OptiscalerClient.Views
                 DebugWindow.Log("Application Started in DEBUG mode.");
             }
             
-            // In Avalonia we bind items via Name in AXAML. Here we set ItemsSource.
-            var lstGames = this.FindControl<ListBox>("LstGames");
-            if (lstGames != null)
-            {
-                lstGames.ItemsSource = _games;
-            }
-
             _componentService.OnStatusChanged += ComponentStatusChanged;
             this.Loaded += MainWindow_Loaded;
         }
@@ -88,6 +92,15 @@ namespace OptiscalerClient.Views
         private void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
             _gameListScrollViewer = this.FindControl<ScrollViewer>("GameListScrollViewer");
+            _lstGames = this.FindControl<ListBox>("LstGames");
+            _txtStatus = this.FindControl<TextBlock>("TxtStatus");
+            _btnScan = this.FindControl<Button>("BtnScan");
+            _overlayScanning = this.FindControl<Grid>("OverlayScanning");
+            _txtSearch = this.FindControl<TextBox>("TxtSearch");
+            _txtSearchPlaceholder = this.FindControl<TextBlock>("TxtSearchPlaceholder");
+            _txtGpuInfo = this.FindControl<TextBlock>("TxtGpuInfo");
+
+            if (_lstGames != null) _lstGames.ItemsSource = _games;
 
             bool hadSavedGames = LoadSavedGames();
             _ = LoadGpuInfoAsync();
@@ -103,18 +116,15 @@ namespace OptiscalerClient.Views
 
         private void UpdateSearchPlaceholderVisibility()
         {
-            var txtSearch = this.FindControl<TextBox>("TxtSearch");
-            var txtSearchPlaceholder = this.FindControl<TextBlock>("TxtSearchPlaceholder");
-            
-            if (txtSearchPlaceholder == null || txtSearch == null) return;
+            if (_txtSearchPlaceholder == null || _txtSearch == null) return;
 
-            if (txtSearch.IsFocused)
+            if (_txtSearch.IsFocused)
             {
-                txtSearchPlaceholder.IsVisible = false;
+                _txtSearchPlaceholder.IsVisible = false;
             }
             else
             {
-                txtSearchPlaceholder.IsVisible = string.IsNullOrEmpty(txtSearch.Text);
+                _txtSearchPlaceholder.IsVisible = string.IsNullOrEmpty(_txtSearch.Text);
             }
         }
 
@@ -300,17 +310,16 @@ namespace OptiscalerClient.Views
 
         private async Task CheckUpdatesOnStartupAsync()
         {
-            var txtStatus = this.FindControl<TextBlock>("TxtStatus");
             try
             {
-                if (txtStatus != null) txtStatus.Text = GetResourceString("TxtCheckingUpdates", "Checking for updates...");
+                if (_txtStatus != null) _txtStatus.Text = GetResourceString("TxtCheckingUpdates", "Checking for updates...");
                 await _componentService.CheckForUpdatesAsync();
             }
             catch { }
             finally
             {
                 ComponentStatusChanged();
-                if (txtStatus != null) txtStatus.Text = GetResourceString("TxtReady", "Ready");
+                if (_txtStatus != null) _txtStatus.Text = GetResourceString("TxtReady", "Ready");
             }
         }
 
@@ -519,41 +528,35 @@ namespace OptiscalerClient.Views
             var savedGames = _persistenceService.LoadGames();
             _allGames = savedGames;
             
-            var txtSearch = this.FindControl<TextBox>("TxtSearch");
-            ApplyFilter(txtSearch?.Text);
-            
-            var txtStatus = this.FindControl<TextBlock>("TxtStatus");
+            ApplyFilter(_txtSearch?.Text);
+
             var loadedFormat = GetResourceString("TxtLoadedGamesFormat", "Loaded {0} games.");
-            if (txtStatus != null) txtStatus.Text = string.Format(loadedFormat, savedGames.Count);
+            if (_txtStatus != null) _txtStatus.Text = string.Format(loadedFormat, savedGames.Count);
 
             if (savedGames.Count > 0)
             {
                 _ = Task.Run(async () =>
                 {
-                    var analyzer = new GameAnalyzerService();
-                    var metadata = new GameMetadataService();
-
                     foreach (var game in savedGames)
                     {
-                        try { analyzer.AnalyzeGame(game); }
+                        try { _analyzerService.AnalyzeGame(game); }
                         catch { }
 
                         if (string.IsNullOrEmpty(game.CoverImageUrl) || game.CoverImageUrl.StartsWith("http"))
                         {
-                            var appIdKey = !string.IsNullOrEmpty(game.AppId) ? game.AppId : 
+                            var appIdKey = !string.IsNullOrEmpty(game.AppId) ? game.AppId :
                                          !string.IsNullOrEmpty(game.Name) ? game.Name : Guid.NewGuid().ToString();
-                                         
-                            game.CoverImageUrl = await metadata.FetchAndCacheCoverImageAsync(game.Name, appIdKey);
+
+                            game.CoverImageUrl = await _metadataService.FetchAndCacheCoverImageAsync(game.Name, appIdKey);
                         }
                     }
 
                     Dispatcher.UIThread.Post(() =>
                     {
-                        var lstGames = this.FindControl<ListBox>("LstGames");
-                        if (lstGames != null)
+                        if (_lstGames != null)
                         {
-                            lstGames.ItemsSource = null;
-                            lstGames.ItemsSource = _games;
+                            _lstGames.ItemsSource = null;
+                            _lstGames.ItemsSource = _games;
                         }
                         _persistenceService.SaveGames(_games);
                     });
@@ -565,13 +568,9 @@ namespace OptiscalerClient.Views
 
         private async void BtnScan_Click(object sender, RoutedEventArgs e)
         {
-            var btnScan = this.FindControl<Button>("BtnScan");
-            var txtStatus = this.FindControl<TextBlock>("TxtStatus");
-            var overlayScanning = this.FindControl<Grid>("OverlayScanning");
-            
-            if (btnScan != null) btnScan.IsEnabled = false;
-            if (txtStatus != null) txtStatus.Text = GetResourceString("TxtScanningShort", "Scanning for games...");
-            if (overlayScanning != null) overlayScanning.IsVisible = true;
+            if (_btnScan != null) _btnScan.IsEnabled = false;
+            if (_txtStatus != null) _txtStatus.Text = GetResourceString("TxtScanningShort", "Scanning for games...");
+            if (_overlayScanning != null) _overlayScanning.IsVisible = true;
             StartScanDotAnimation();
 
             try
@@ -589,14 +588,12 @@ namespace OptiscalerClient.Views
 
                 _games.Clear();
 
-                var analyzer = new GameAnalyzerService();
                 foreach (var manualGame in manualGames)
                 {
-                    analyzer.AnalyzeGame(manualGame);
+                    _analyzerService.AnalyzeGame(manualGame);
                     _games.Add(manualGame);
                 }
 
-                var metadataService = new GameMetadataService();
                 foreach (var scannedGame in scanResults)
                 {
                     if (!_games.Any(g => g.InstallPath.Equals(scannedGame.InstallPath, StringComparison.OrdinalIgnoreCase)))
@@ -604,7 +601,7 @@ namespace OptiscalerClient.Views
                         if (string.IsNullOrEmpty(scannedGame.CoverImageUrl))
                         {
                             var appIdKey = !string.IsNullOrEmpty(scannedGame.AppId) ? scannedGame.AppId : scannedGame.Name;
-                            scannedGame.CoverImageUrl = await metadataService.FetchAndCacheCoverImageAsync(scannedGame.Name, appIdKey);
+                            scannedGame.CoverImageUrl = await _metadataService.FetchAndCacheCoverImageAsync(scannedGame.Name, appIdKey);
                         }
                         _games.Add(scannedGame);
                     }
@@ -613,26 +610,25 @@ namespace OptiscalerClient.Views
                 _allGames = _games.ToList();
                 _persistenceService.SaveGames(_games);
 
-                var txtSearch = this.FindControl<TextBox>("TxtSearch");
-                if (txtSearch != null && !string.IsNullOrEmpty(txtSearch.Text))
+                if (_txtSearch != null && !string.IsNullOrEmpty(_txtSearch.Text))
                 {
-                    ApplyFilter(txtSearch.Text);
+                    ApplyFilter(_txtSearch.Text);
                 }
 
                 var scanCompleteFormat = GetResourceString("TxtScanCompleteFormat", "Scan complete. Total games: {0}");
-                if (txtStatus != null) txtStatus.Text = string.Format(scanCompleteFormat, _games.Count);
+                if (_txtStatus != null) _txtStatus.Text = string.Format(scanCompleteFormat, _games.Count);
             }
             catch (Exception ex)
             {
                 var errorFormat = GetResourceString("TxtErrorFormat", "Error: {0}");
-                if (txtStatus != null) txtStatus.Text = string.Format(errorFormat, ex.Message);
+                if (_txtStatus != null) _txtStatus.Text = string.Format(errorFormat, ex.Message);
                 await new ConfirmDialog(this, "Error", ex.Message).ShowDialog<object>(this);
             }
             finally
             {
                 StopScanDotAnimation();
-                if (btnScan != null) btnScan.IsEnabled = true;
-                if (overlayScanning != null) overlayScanning.IsVisible = false;
+                if (_btnScan != null) _btnScan.IsEnabled = true;
+                if (_overlayScanning != null) _overlayScanning.IsVisible = false;
             }
         }
 
@@ -668,25 +664,20 @@ namespace OptiscalerClient.Views
                         AppId = "Manual_" + Guid.NewGuid().ToString().Substring(0, 8)
                     };
 
-                    var analyzer = new GameAnalyzerService();
-                    analyzer.AnalyzeGame(newGame);
-
-                    var metadata = new GameMetadataService();
-                    newGame.CoverImageUrl = await metadata.FetchAndCacheCoverImageAsync(newGame.Name, newGame.AppId);
+                    _analyzerService.AnalyzeGame(newGame);
+                    newGame.CoverImageUrl = await _metadataService.FetchAndCacheCoverImageAsync(newGame.Name, newGame.AppId);
 
                     _games.Insert(0, newGame);
                     _allGames = _games.ToList();
                     _persistenceService.SaveGames(_games);
 
-                    var lstGames = this.FindControl<ListBox>("LstGames");
-                    if (lstGames != null)
+                    if (_lstGames != null)
                     {
-                        lstGames.ItemsSource = null;
-                        lstGames.ItemsSource = _games;
+                        _lstGames.ItemsSource = null;
+                        _lstGames.ItemsSource = _games;
                     }
 
-                    var txtStatus = this.FindControl<TextBlock>("TxtStatus");
-                    if (txtStatus != null) txtStatus.Text = string.Format(GetResourceString("TxtAddedRefFormat", "Added {0} manually."), newGame.Name);
+                    if (_txtStatus != null) _txtStatus.Text = string.Format(GetResourceString("TxtAddedRefFormat", "Added {0} manually."), newGame.Name);
                 }
                 catch (Exception ex)
                 {
@@ -709,11 +700,10 @@ namespace OptiscalerClient.Views
                     _persistenceService.SaveGames(_games);
                 }
 
-                var lstGames = this.FindControl<ListBox>("LstGames");
-                if (lstGames != null)
+                if (_lstGames != null)
                 {
-                    lstGames.ItemsSource = null;
-                    lstGames.ItemsSource = _games;
+                    _lstGames.ItemsSource = null;
+                    _lstGames.ItemsSource = _games;
                 }
             }
         }
@@ -741,8 +731,7 @@ namespace OptiscalerClient.Views
         {
             try
             {
-                var txtGpuInfo = this.FindControl<TextBlock>("TxtGpuInfo");
-                if (txtGpuInfo == null) return;
+                if (_txtGpuInfo == null) return;
                 
                 GpuInfo? gpu;
                 if (_lastDetectedGpu != null)
@@ -751,7 +740,7 @@ namespace OptiscalerClient.Views
                 }
                 else
                 {
-                    txtGpuInfo.Text = GetResourceString("TxtDefaultGpu", "Detecting GPU...");
+                    _txtGpuInfo!.Text = GetResourceString("TxtDefaultGpu", "Detecting GPU...");
                     gpu = await Task.Run(() =>
                     {
                         if (OperatingSystem.IsWindows() && _gpuService != null)
@@ -784,15 +773,15 @@ namespace OptiscalerClient.Views
                                 icon = "🔵"; color = new SolidColorBrush(Color.FromRgb(0, 113, 197)); break;
                         }
 
-                        txtGpuInfo.Text = $"{icon} {gpu.Name}";
-                        txtGpuInfo.Foreground = color;
-                        ToolTip.SetTip(txtGpuInfo, $"{gpu.Name}\nVendor: {gpu.Vendor}\nVRAM: {gpu.VideoMemoryGB}\nDriver: {gpu.DriverVersion}");
+                        _txtGpuInfo!.Text = $"{icon} {gpu.Name}";
+                        _txtGpuInfo.Foreground = color;
+                        ToolTip.SetTip(_txtGpuInfo, $"{gpu.Name}\nVendor: {gpu.Vendor}\nVRAM: {gpu.VideoMemoryGB}\nDriver: {gpu.DriverVersion}");
                     }
                     else
                     {
-                        txtGpuInfo.Text = GetResourceString("TxtNoGpu", "⚠️ No GPU detected");
-                        txtGpuInfo.Foreground = Brushes.Orange;
-                        ToolTip.SetTip(txtGpuInfo, GetResourceString("TxtNoGpuTip", "No GPU was detected on this system"));
+                        _txtGpuInfo!.Text = GetResourceString("TxtNoGpu", "⚠️ No GPU detected");
+                        _txtGpuInfo.Foreground = Brushes.Orange;
+                        ToolTip.SetTip(_txtGpuInfo, GetResourceString("TxtNoGpuTip", "No GPU was detected on this system"));
                     }
                 });
             }
@@ -800,13 +789,12 @@ namespace OptiscalerClient.Views
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    var txtGpuInfo = this.FindControl<TextBlock>("TxtGpuInfo");
-                    if (txtGpuInfo != null)
+                    if (_txtGpuInfo != null)
                     {
-                        txtGpuInfo.Text = GetResourceString("TxtGpuFail", "⚠️ GPU detection failed");
-                        txtGpuInfo.Foreground = Brushes.Gray;
+                        _txtGpuInfo.Text = GetResourceString("TxtGpuFail", "⚠️ GPU detection failed");
+                        _txtGpuInfo.Foreground = Brushes.Gray;
                         var format = GetResourceString("TxtGpuFailTipFormat", "Error detecting GPU: {0}");
-                        ToolTip.SetTip(txtGpuInfo, string.Format(format, ex.Message));
+                        ToolTip.SetTip(_txtGpuInfo, string.Format(format, ex.Message));
                     }
                 });
             }
@@ -827,11 +815,11 @@ namespace OptiscalerClient.Views
             dot3.RenderTransform = t3;
 
             const double amplitude = 10;
-            const double step = 0.12;
+            const double step = 0.25;
             const double phaseOffset = Math.PI * 2 / 3;
 
             _scanDotPhase = 0;
-            _scanDotTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+            _scanDotTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(33) };
             _scanDotTimer.Tick += (s, e) =>
             {
                 _scanDotPhase += step;

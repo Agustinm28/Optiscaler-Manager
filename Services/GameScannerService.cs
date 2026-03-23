@@ -8,13 +8,13 @@ namespace OptiscalerClient.Services;
 [SupportedOSPlatform("windows")]
 public class GameScannerService
 {
-    private readonly SteamScanner _steamScanner;
-    private readonly EpicScanner _epicScanner;
-    private readonly GogScanner _gogScanner;
-    private readonly XboxScanner _xboxScanner;
-    private readonly EaScanner _eaScanner;
-    private readonly BattleNetScanner _battleNetScanner;
-    private readonly UbisoftScanner _ubisoftScanner;
+    private readonly IGameScanner _steamScanner;
+    private readonly IGameScanner _epicScanner;
+    private readonly IGameScanner _gogScanner;
+    private readonly IGameScanner _xboxScanner;
+    private readonly IGameScanner _eaScanner;
+    private readonly IGameScanner _battleNetScanner;
+    private readonly IGameScanner _ubisoftScanner;
     private readonly ExclusionService _exclusions;
 
     public GameScannerService()

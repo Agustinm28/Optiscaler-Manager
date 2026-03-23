@@ -6,7 +6,7 @@ using System.Runtime.Versioning;
 namespace OptiscalerClient.Services;
 
 [SupportedOSPlatform("windows")]
-public class BattleNetScanner
+public class BattleNetScanner : IGameScanner
 {
     private readonly string[] UNINSTALL_PATHS = new[]
     {

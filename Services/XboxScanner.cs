@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OptiscalerClient.Services;
 
-public class XboxScanner
+public class XboxScanner : IGameScanner
 {
     public List<Game> Scan()
     {
