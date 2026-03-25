@@ -12,7 +12,6 @@ using OptiscalerClient.Models;
 using System.Collections.ObjectModel;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
-using Avalonia.Layout;
 using OptiscalerClient.Services;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
@@ -140,18 +139,11 @@ namespace OptiscalerClient.Views
                 var latestBeta = componentService.LatestBetaVersion;
                 var showBetaVersions = componentService.Config.ShowBetaVersions;
 
-                var allVersions = componentService.OptiScalerAvailableVersions;
-                var betaVersions = componentService.BetaVersions;
-                var latestBeta = componentService.LatestBetaVersion;
-                var showBetaVersions = componentService.Config.ShowBetaVersions;
-
                 var cmbOptiVersion = this.FindControl<ComboBox>("CmbOptiVersion");
                 if (cmbOptiVersion == null) return;
 
-
                 cmbOptiVersion.Items.Clear();
 
-                if (allVersions.Count == 0)
                 if (allVersions.Count == 0)
                 {
                     cmbOptiVersion.Items.Add(GetResourceString("TxtNoOptiDetected", "No version detected"));
@@ -160,12 +152,6 @@ namespace OptiscalerClient.Views
                     return;
                 }
 
-                _betaVersions = betaVersions;
-
-                var stableVersions = allVersions.Where(v => !betaVersions.Contains(v)).ToList();
-                var otherBetas = allVersions.Where(v => betaVersions.Contains(v) && v != latestBeta).ToList();
-
-                int selectedIndex = 0;
                 _betaVersions = betaVersions;
 
                 var stableVersions = allVersions.Where(v => !betaVersions.Contains(v)).ToList();
