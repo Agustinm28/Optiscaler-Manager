@@ -38,6 +38,8 @@
     <x:String x:Key="TxtTipUpdateNukem">New NukemFG version available. Click to provide the updated DLL.</x:String>
     <x:String x:Key="TxtDefaultGpu">Detecting GPU…</x:String>
     <x:String x:Key="TxtManageGame">Manage</x:String>
+    <x:String x:Key="TxtQuickInstall">✦ Quick Install</x:String>
+    <x:String x:Key="TxtQuickUninstall">🗑️ Quick Uninstall</x:String>
     <x:String x:Key="TxtStatusReady">Ready</x:String>
     <x:String x:Key="TxtScanningTitle">Scanning games...</x:String>
     <x:String x:Key="TxtScanningDesc">Looking for games across all platforms...</x:String>
@@ -219,6 +221,10 @@ This version is unavailable for download. Check your internet connection and try
 
     <x:String x:Key="TxtSteamGridGuideStep1Prefix">Go to </x:String>
     <x:String x:Key="TxtSteamGridGuideStep1Suffix"> and sign in.</x:String>
+
+    <x:String x:Key="TxtViewGrid">Grid view</x:String>
+    <x:String x:Key="TxtViewList">List view</x:String>
 </ResourceDictionary>
+
 
 

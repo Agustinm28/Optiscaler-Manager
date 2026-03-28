@@ -58,8 +58,9 @@ namespace OptiscalerClient.Models
         public bool AutoScan { get; set; } = true;
         public bool AnimationsEnabled { get; set; } = true;
         public bool ShowBetaVersions { get; set; } = true;
+        public bool PreferGridView { get; set; } = false;
         public string? DefaultGpuId { get; set; } = null;
-        
+
         // Window state persistence
         public double WindowWidth { get; set; } = 1200;
         public double WindowHeight { get; set; } = 720;

@@ -37,6 +37,8 @@
     <x:String x:Key="TxtTipUpdateNukem">Nieuwe NukemFG versie beschikbaar. Klik om de bijgewerkte DLL te leveren.</x:String>
     <x:String x:Key="TxtDefaultGpu">GPU detecteren…</x:String>
     <x:String x:Key="TxtManageGame">Beheer</x:String>
+    <x:String x:Key="TxtQuickInstall">✦ Snelle installatie</x:String>
+    <x:String x:Key="TxtQuickUninstall">🗑️ Snelle verwijdering</x:String>
     <x:String x:Key="TxtStatusReady">Klaar</x:String>
     <x:String x:Key="TxtScanningTitle">Games scannen...</x:String>
     <x:String x:Key="TxtScanningDesc">Zoeken naar games op alle platforms...</x:String>
@@ -217,6 +219,10 @@
 
     <x:String x:Key="TxtSteamGridGuideStep1Prefix">Go to </x:String>
     <x:String x:Key="TxtSteamGridGuideStep1Suffix"> and sign in.</x:String>
+
+    <x:String x:Key="TxtViewGrid">Grid view</x:String>
+    <x:String x:Key="TxtViewList">List view</x:String>
 </ResourceDictionary>
+
 
 

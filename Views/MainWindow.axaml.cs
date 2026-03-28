@@ -32,6 +32,7 @@ using Avalonia.Platform.Storage;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading;
+using Avalonia.VisualTree;
 using OptiscalerClient.Helpers;
 
 namespace OptiscalerClient.Views
@@ -47,7 +48,9 @@ namespace OptiscalerClient.Views
 
         private GpuInfo? _lastDetectedGpu;
         private ScrollViewer? _gameListScrollViewer;
+        private ScrollViewer? _gameGridScrollViewer;
         private bool _isInitializingLanguage = true;
+        private bool _isGridView = false;
         private DispatcherTimer? _scanDotTimer;
         private double _scanDotPhase = 0;
         private readonly Dictionary<Button, DispatcherTimer> _quickInstallDotTimers = new();
@@ -59,8 +62,11 @@ namespace OptiscalerClient.Views
         private GameMetadataService _metadataService = null!;
 
         private ListBox? _lstGames;
+        private ListBox? _lstGamesGrid;
         private TextBlock? _txtStatus;
         private Button? _btnScan;
+        private Button? _btnViewList;
+        private Button? _btnViewGrid;
         private Grid? _overlayScanning;
         private TextBox? _txtSearch;
         private TextBlock? _txtSearchPlaceholder;
@@ -133,15 +139,23 @@ namespace OptiscalerClient.Views
         private void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
             _gameListScrollViewer = this.FindControl<ScrollViewer>("GameListScrollViewer");
+            _gameGridScrollViewer = this.FindControl<ScrollViewer>("GameGridScrollViewer");
             _lstGames = this.FindControl<ListBox>("LstGames");
+            _lstGamesGrid = this.FindControl<ListBox>("LstGamesGrid");
             _txtStatus = this.FindControl<TextBlock>("TxtStatus");
             _btnScan = this.FindControl<Button>("BtnScan");
+            _btnViewList = this.FindControl<Button>("BtnViewList");
+            _btnViewGrid = this.FindControl<Button>("BtnViewGrid");
             _overlayScanning = this.FindControl<Grid>("OverlayScanning");
             _txtSearch = this.FindControl<TextBox>("TxtSearch");
             _txtSearchPlaceholder = this.FindControl<TextBlock>("TxtSearchPlaceholder");
             _txtGpuInfo = this.FindControl<TextBlock>("TxtGpuInfo");
 
             if (_lstGames != null) _lstGames.ItemsSource = _games;
+            if (_lstGamesGrid != null) _lstGamesGrid.ItemsSource = _games;
+
+            _isGridView = _componentService.Config.PreferGridView;
+            ApplyGameViewMode();
 
             bool hadSavedGames = LoadSavedGames(_windowLifetimeCts.Token);
             _ = LoadGpuInfoAsync();
@@ -193,6 +207,21 @@ namespace OptiscalerClient.Views
             }
         }
 
+        private void RefreshGameLists()
+        {
+            if (_lstGames != null)
+            {
+                _lstGames.ItemsSource = null;
+                _lstGames.ItemsSource = _games;
+            }
+
+            if (_lstGamesGrid != null)
+            {
+                _lstGamesGrid.ItemsSource = null;
+                _lstGamesGrid.ItemsSource = _games;
+            }
+        }
+
         private void TxtSearch_GotFocus(object sender, GotFocusEventArgs e)
         {
             UpdateSearchPlaceholderVisibility();
@@ -205,13 +234,151 @@ namespace OptiscalerClient.Views
 
         private void GameListScrollViewer_PointerWheelChanged(object sender, PointerWheelEventArgs e)
         {
-            if (_gameListScrollViewer != null && e.Delta.Y != 0)
+            if (sender is ScrollViewer scrollViewer && e.Delta.Y != 0)
             {
                 e.Handled = true;
                 // Move manually with boost
-                var currentOffset = _gameListScrollViewer.Offset;
+                var currentOffset = scrollViewer.Offset;
                 var newY = currentOffset.Y - (e.Delta.Y * 120); // 120 for fast and fluid
-                _gameListScrollViewer.Offset = new Vector(currentOffset.X, Math.Max(0, newY));
+                scrollViewer.Offset = new Vector(currentOffset.X, Math.Max(0, newY));
+            }
+        }
+
+        private void GameGridCard_PointerEntered(object? sender, PointerEventArgs e)
+        {
+            if (sender is Border card)
+            {
+                ToggleGridCardHover(card, true);
+            }
+        }
+
+        private void GameGridCard_PointerExited(object? sender, PointerEventArgs e)
+        {
+            if (sender is Border card)
+            {
+                ToggleGridCardHover(card, false);
+            }
+        }
+
+        private void ToggleGridCardHover(Border card, bool isVisible)
+        {
+            var overlay = card.GetVisualDescendants()
+                .OfType<Border>()
+                .FirstOrDefault(x => x.Name == "GridCardHoverOverlay");
+
+            var actions = card.GetVisualDescendants()
+                .OfType<Panel>()
+                .FirstOrDefault(x => x.Name == "GridCardHoverActions");
+
+            if (overlay == null || actions == null) return;
+
+            bool animationsEnabled = _componentService.Config.AnimationsEnabled;
+
+            if (!animationsEnabled)
+            {
+                overlay.IsVisible = isVisible;
+                actions.IsVisible = isVisible;
+                overlay.Opacity = isVisible ? 1 : 0;
+                actions.Opacity = isVisible ? 1 : 0;
+                actions.IsHitTestVisible = isVisible;
+                return;
+            }
+
+            EnsureHoverOpacityTransition(overlay);
+            EnsureHoverOpacityTransition(actions);
+
+            overlay.IsVisible = true;
+            actions.IsVisible = true;
+            actions.IsHitTestVisible = isVisible;
+            overlay.Opacity = isVisible ? 1 : 0;
+            actions.Opacity = isVisible ? 1 : 0;
+
+            if (!isVisible)
+            {
+                _ = HideGridCardHoverAfterFadeAsync(overlay, actions);
+            }
+        }
+
+        private static void EnsureHoverOpacityTransition(Visual visual)
+        {
+            if (visual.Transitions == null)
+            {
+                visual.Transitions = new Avalonia.Animation.Transitions();
+            }
+
+            if (!visual.Transitions.OfType<Avalonia.Animation.DoubleTransition>()
+                .Any(t => t.Property == Visual.OpacityProperty))
+            {
+                visual.Transitions.Add(new Avalonia.Animation.DoubleTransition
+                {
+                    Property = Visual.OpacityProperty,
+                    Duration = TimeSpan.FromMilliseconds(150),
+                    Easing = new Avalonia.Animation.Easings.CubicEaseOut()
+                });
+            }
+        }
+
+        private static async Task HideGridCardHoverAfterFadeAsync(Border overlay, Panel actions)
+        {
+            await Task.Delay(170);
+
+            if (overlay.Opacity <= 0.01)
+            {
+                overlay.IsVisible = false;
+            }
+
+            if (actions.Opacity <= 0.01)
+            {
+                actions.IsVisible = false;
+                actions.IsHitTestVisible = false;
+            }
+        }
+
+        private void BtnViewList_Click(object sender, RoutedEventArgs e)
+        {
+            _isGridView = false;
+            _componentService.Config.PreferGridView = false;
+            _componentService.SaveConfiguration();
+            ApplyGameViewMode();
+        }
+
+        private void BtnViewGrid_Click(object sender, RoutedEventArgs e)
+        {
+            _isGridView = true;
+            _componentService.Config.PreferGridView = true;
+            _componentService.SaveConfiguration();
+            ApplyGameViewMode();
+        }
+
+        private void ApplyGameViewMode()
+        {
+            if (_gameListScrollViewer != null)
+            {
+                _gameListScrollViewer.IsVisible = !_isGridView;
+                _gameListScrollViewer.IsHitTestVisible = !_isGridView;
+            }
+
+            if (_gameGridScrollViewer != null)
+            {
+                _gameGridScrollViewer.IsVisible = _isGridView;
+                _gameGridScrollViewer.IsHitTestVisible = _isGridView;
+            }
+
+            var activeBg = this.FindResource("BrBgCard") as IBrush ?? Brushes.DimGray;
+            var inactiveBg = Brushes.Transparent;
+            var activeFg = this.FindResource("BrTextPrimary") as IBrush ?? Brushes.White;
+            var inactiveFg = this.FindResource("BrTextSecondary") as IBrush ?? Brushes.Gray;
+
+            if (_btnViewList != null)
+            {
+                _btnViewList.Background = _isGridView ? inactiveBg : activeBg;
+                _btnViewList.Foreground = _isGridView ? inactiveFg : activeFg;
+            }
+
+            if (_btnViewGrid != null)
+            {
+                _btnViewGrid.Background = _isGridView ? activeBg : inactiveBg;
+                _btnViewGrid.Foreground = _isGridView ? activeFg : inactiveFg;
             }
         }
 
@@ -450,6 +617,24 @@ namespace OptiscalerClient.Views
         {
             var guideWindow = new SteamGridApiGuideWindow(this);
             await guideWindow.ShowDialog(this);
+        }
+
+        private void SettingsBackground_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (e.Source is not Visual visual)
+                return;
+
+            if (visual.FindAncestorOfType<TextBox>() != null)
+                return;
+            if (visual.FindAncestorOfType<Button>() != null)
+                return;
+            if (visual.FindAncestorOfType<ComboBox>() != null)
+                return;
+            if (visual.FindAncestorOfType<ToggleSwitch>() != null)
+                return;
+
+            var focusManager = TopLevel.GetTopLevel(this)?.FocusManager;
+            focusManager?.ClearFocus();
         }
 
         private void UpdateAnimationsState(bool enabled)
@@ -777,11 +962,7 @@ namespace OptiscalerClient.Views
                     {
                         if (cancellationToken.IsCancellationRequested) return;
 
-                        if (_lstGames != null)
-                        {
-                            _lstGames.ItemsSource = null;
-                            _lstGames.ItemsSource = _games;
-                        }
+                        RefreshGameLists();
                         _persistenceService.SaveGames(savedGames);
                     });
                 }, cancellationToken);
@@ -895,11 +1076,7 @@ namespace OptiscalerClient.Views
                     _allGames = _games.ToList();
                     _persistenceService.SaveGames(_games);
 
-                    if (_lstGames != null)
-                    {
-                        _lstGames.ItemsSource = null;
-                        _lstGames.ItemsSource = _games;
-                    }
+                    RefreshGameLists();
 
                     if (_txtStatus != null) _txtStatus.Text = string.Format(GetResourceString("TxtAddedRefFormat", "Added {0} manually."), newGame.Name);
                 }
@@ -928,11 +1105,7 @@ namespace OptiscalerClient.Views
             await bulkWindow.ShowDialog<object>(this);
 
             // Refresh game list after bulk install
-            if (_lstGames != null)
-            {
-                _lstGames.ItemsSource = null;
-                _lstGames.ItemsSource = _games;
-            }
+            RefreshGameLists();
         }
 
         private async void BtnManage_Click(object sender, RoutedEventArgs e)
@@ -949,11 +1122,7 @@ namespace OptiscalerClient.Views
                     _persistenceService.SaveGames(_games);
                 }
 
-                if (_lstGames != null)
-                {
-                    _lstGames.ItemsSource = null;
-                    _lstGames.ItemsSource = _games;
-                }
+                RefreshGameLists();
             }
         }
 
@@ -969,25 +1138,27 @@ namespace OptiscalerClient.Views
         {
             if (game.IsOptiscalerInstalled)
             {
-                button.Content = "🗑️ Quick Uninstall";
+                button.Content = GetResourceString("TxtQuickUninstall", "🗑️ Quick Uninstall");
                 button.Foreground = this.FindResource("BrAccentWarm") as IBrush ?? Brushes.Orange;
             }
             else
             {
-                button.Content = "✦ Quick Install";
+                button.Content = GetResourceString("TxtQuickInstall", "✦ Quick Install");
                 button.Foreground = this.FindResource("BrAccent") as IBrush ?? Brushes.Purple;
             }
         }
 
         private void SetQuickInstallLoading(Button button)
         {
+            bool isGridButton = string.Equals(button.Name, "BtnFastInstallGrid", StringComparison.Ordinal);
+
             if (!_quickInstallOriginalMinWidths.ContainsKey(button))
             {
                 _quickInstallOriginalMinWidths[button] = button.MinWidth;
             }
 
             var minWidth = button.Bounds.Width;
-            if (minWidth <= 0) minWidth = 140;
+            if (minWidth <= 0) minWidth = isGridButton ? 128 : 140;
             button.MinWidth = Math.Max(button.MinWidth, minWidth);
 
             var spinner = new ProgressBar
@@ -1022,16 +1193,28 @@ namespace OptiscalerClient.Views
             var stack = new StackPanel
             {
                 Orientation = Avalonia.Layout.Orientation.Horizontal,
-                Spacing = 8,
+                Spacing = isGridButton ? 6 : 8,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
             };
 
-            stack.Children.Add(new TextBlock
+            if (isGridButton)
             {
-                Text = "✦",
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                Foreground = this.FindResource("BrAccent") as IBrush ?? Brushes.Purple
-            });
+                stack.Children.Add(new TextBlock
+                {
+                    Text = "✦",
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Foreground = this.FindResource("BrAccent") as IBrush ?? Brushes.Purple
+                });
+            }
+            else
+            {
+                stack.Children.Add(new TextBlock
+                {
+                    Text = "✦",
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Foreground = this.FindResource("BrAccent") as IBrush ?? Brushes.Purple
+                });
+            }
             stack.Children.Add(dots);
 
             button.Content = stack;
@@ -1085,6 +1268,10 @@ namespace OptiscalerClient.Views
             {
                 try
                 {
+                    // Always refresh install state from disk before deciding install/uninstall path.
+                    GameAnalyzerService.InvalidateCacheForPath(selectedGame.InstallPath);
+                    _analyzerService.AnalyzeGame(selectedGame, forceRefresh: true);
+
                     // Check if OptiScaler is already installed
                     if (selectedGame.IsOptiscalerInstalled)
                     {
@@ -1097,11 +1284,7 @@ namespace OptiscalerClient.Views
                         selectedGame.OptiscalerVersion = null;
                         
                         // Refresh UI
-                        if (_lstGames != null)
-                        {
-                            _lstGames.ItemsSource = null;
-                            _lstGames.ItemsSource = _games;
-                        }
+                        RefreshGameLists();
                         
                         _persistenceService.SaveGames(_games);
                     }
@@ -1207,11 +1390,7 @@ namespace OptiscalerClient.Views
                         selectedGame.OptiscalerVersion = versionToInstall;
                         
                         // Refresh UI
-                        if (_lstGames != null)
-                        {
-                            _lstGames.ItemsSource = null;
-                            _lstGames.ItemsSource = _games;
-                        }
+                        RefreshGameLists();
                         
                         _persistenceService.SaveGames(_games);
                         await HideToastAfterAsync(1200);
@@ -1491,3 +1670,4 @@ namespace OptiscalerClient.Views
         }
     }
 }
+

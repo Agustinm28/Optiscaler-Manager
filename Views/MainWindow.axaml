@@ -22,7 +22,7 @@
 
 
         </Window.Resources>
-    
+
     <Window.Styles>
         <Style Selector="RadioButton.NavBtnStyle">
             <Setter Property="Background" Value="Transparent"/>
@@ -69,7 +69,7 @@
                 <!-- Top actions: Logo + Games -->
                 <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center">
                     <Image Source="avares://OptiscalerClient/assets/icon.png" Width="32" Height="32" Margin="0,0,0,24" RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                    
+
                     <RadioButton Name="NavGames" GroupName="SidebarNav" Classes="NavBtnStyle" Content="&#xE7FC;" ToolTip.Tip="Games" IsChecked="True" Click="NavGames_Click"/>
                 </StackPanel>
 
@@ -83,7 +83,7 @@
 
         <!-- MAIN CONTENT AREA -->
         <Grid Grid.Column="1">
-             
+
              <!-- ════════════════════════════════════════════════════════
                   1. GAMES VIEW
                   ════════════════════════════════════════════════════════ -->
@@ -98,7 +98,7 @@
                      <RowDefinition Height="*"/>
                      <RowDefinition Height="Auto"/>
                  </Grid.RowDefinitions>
-                 
+
                  <!-- Header -->
                  <Border Grid.Row="0"
                          Background="{StaticResource BrBgDeep}"
@@ -111,7 +111,7 @@
                              <ColumnDefinition Width="*"/>
                              <ColumnDefinition Width="Auto"/>
                          </Grid.ColumnDefinitions>
-                         
+
                          <!-- Left: Title + action buttons -->
                          <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                              <!-- Action buttons -->
@@ -121,14 +121,14 @@
                                      Padding="14,7"
                                      Margin="0,0,10,0"
                                      Click="BtnScan_Click"/>
-         
+
                              <Button Name="BtnAddManual"
                                      Content="{DynamicResource TxtBtnAddManual}"
                                      Classes="BtnBase"
                                      Padding="14,7"
                                      Margin="0,0,10,0"
                                      Click="BtnAddManual_Click"/>
-         
+
                              <Button Name="BtnBulkInstall"
                                      Content="{DynamicResource TxtBtnBulkInstall}"
                                      Classes="BtnBase"
@@ -178,6 +178,49 @@
                                      BorderBrush="{StaticResource BrBorderSubtle}"
                                      BorderThickness="1"
                                      CornerRadius="{StaticResource RadiusMedium}"
+                                     Padding="4"
+                                     Margin="0,0,10,0">
+                                 <StackPanel Orientation="Horizontal" Spacing="4">
+                                     <Button Name="BtnViewList"
+                                             Width="32"
+                                             Height="28"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             Foreground="{StaticResource BrTextPrimary}"
+                                             ToolTip.Tip="{DynamicResource TxtViewList}"
+                                             Click="BtnViewList_Click">
+                                         <Grid Width="14" Height="12" RowDefinitions="Auto,Auto,Auto">
+                                             <Border Grid.Row="0" Height="2" CornerRadius="1" Background="{StaticResource BrTextPrimary}" Margin="0,0,0,3"/>
+                                             <Border Grid.Row="1" Height="2" CornerRadius="1" Background="{StaticResource BrTextPrimary}" Margin="0,0,0,3"/>
+                                             <Border Grid.Row="2" Height="2" CornerRadius="1" Background="{StaticResource BrTextPrimary}"/>
+                                         </Grid>
+                                     </Button>
+                                     <Button Name="BtnViewGrid"
+                                             Width="32"
+                                             Height="28"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             Foreground="{StaticResource BrTextPrimary}"
+                                             ToolTip.Tip="{DynamicResource TxtViewGrid}"
+                                             Click="BtnViewGrid_Click">
+                                         <Grid Width="14" Height="14"
+                                               ColumnDefinitions="Auto,Auto"
+                                               RowDefinitions="Auto,Auto"
+                                               ColumnSpacing="3"
+                                               RowSpacing="3">
+                                             <Border Grid.Row="0" Grid.Column="0" Width="5" Height="5" CornerRadius="1" Background="{StaticResource BrTextPrimary}"/>
+                                             <Border Grid.Row="0" Grid.Column="1" Width="5" Height="5" CornerRadius="1" Background="{StaticResource BrTextPrimary}"/>
+                                             <Border Grid.Row="1" Grid.Column="0" Width="5" Height="5" CornerRadius="1" Background="{StaticResource BrTextPrimary}"/>
+                                             <Border Grid.Row="1" Grid.Column="1" Width="5" Height="5" CornerRadius="1" Background="{StaticResource BrTextPrimary}"/>
+                                         </Grid>
+                                     </Button>
+                                 </StackPanel>
+                             </Border>
+
+                             <Border Background="{StaticResource BrBgSurface}"
+                                     BorderBrush="{StaticResource BrBorderSubtle}"
+                                     BorderThickness="1"
+                                     CornerRadius="{StaticResource RadiusMedium}"
                                      Padding="12,5" Margin="0,0,10,0">
                                  <TextBlock Name="TxtGpuInfo"
                                             FontSize="{StaticResource FontSizeCaption}"
@@ -212,8 +255,8 @@
                                   <Setter Property="Background" Value="Transparent"/>
                               </Style>
                           </ListBox.Styles>
-                         
-         
+
+
                          <ListBox.ItemTemplate>
                              <DataTemplate x:DataType="models:Game">
                                  <!-- Game Card -->
@@ -241,14 +284,14 @@
                                              </Setter>
                                          </Style>
                                      </Border.Styles>
-         
+
                                          <Grid>
                                              <Grid.ColumnDefinitions>
                                                  <ColumnDefinition Width="Auto"/> <!-- Cover Art -->
                                                  <ColumnDefinition Width="*"/>
                                                  <ColumnDefinition Width="Auto"/>
                                              </Grid.ColumnDefinitions>
-         
+
                                              <!-- Cover Art -->
                                              <Border Grid.Column="0" Width="80" Height="120" Margin="0,0,20,0"
                                                      CornerRadius="4" ClipToBounds="True"
@@ -260,21 +303,21 @@
                                                  -->
                                                  <Grid>
                                                      <!-- Fallback Icon -->
-                                                     <TextBlock Text="🎮" 
-                                                                FontSize="36" 
-                                                                HorizontalAlignment="Center" 
-                                                                VerticalAlignment="Center" 
+                                                     <TextBlock Text="🎮"
+                                                                FontSize="36"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
                                                                 Foreground="{StaticResource BrTextSecondary}"
                                                                 Opacity="0.5"/>
-                                                     
+
                                                      <!-- Image (overlays fallback if valid) -->
                                                      <Image Source="{Binding CoverImageUrl, Converter={StaticResource BitmapValueConverter}}" Stretch="UniformToFill" />
                                                  </Grid>
                                              </Border>
-         
+
                                              <!-- Game info -->
                                              <StackPanel Grid.Column="1" VerticalAlignment="Center">
-         
+
                                              <!-- Name and Platform -->
                                              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,3">
                                                  <!-- Platform Badge -->
@@ -289,7 +332,7 @@
                                                                 FontSize="10"
                                                                 FontWeight="SemiBold"/>
                                                  </Border>
-         
+
                                                  <!-- Name -->
                                                  <TextBlock Text="{Binding Name}"
                                                             FontSize="{StaticResource FontSizeSubtitle}"
@@ -297,10 +340,10 @@
                                                             Foreground="{StaticResource BrTextPrimary}"
                                                             VerticalAlignment="Center"/>
                                              </StackPanel>
-         
+
                                              <!-- Badges row -->
                                              <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-         
+
                                                  <!-- DLSS badge -->
                                                  <Border Background="#1A2E1A"
                                                          BorderBrush="#2D5A2D"
@@ -313,7 +356,7 @@
                                                                 FontSize="{StaticResource FontSizeCaption}"
                                                                 FontWeight="SemiBold"/>
                                                  </Border>
-         
+
                                                  <!-- FSR badge -->
                                                  <Border Background="#2E1A1A"
                                                          BorderBrush="#5A2D2D"
@@ -326,7 +369,7 @@
                                                                 FontSize="{StaticResource FontSizeCaption}"
                                                                 FontWeight="SemiBold"/>
                                                  </Border>
-         
+
                                                  <!-- XeSS badge -->
                                                  <Border Background="#1A1E2E"
                                                          BorderBrush="#2D3A5A"
@@ -339,7 +382,7 @@
                                                                 FontSize="{StaticResource FontSizeCaption}"
                                                                 FontWeight="SemiBold"/>
                                                  </Border>
-         
+
                                                  <!-- OptiScaler badge (violet) -->
                                                  <Border Background="#1E1530"
                                                          BorderBrush="{StaticResource BrAccent}"
@@ -359,10 +402,10 @@
                                                                     IsVisible="{Binding OptiscalerVersion, Converter={StaticResource NullToVisibilityConverter}}"/>
                                                      </StackPanel>
                                                  </Border>
-         
+
                                              </StackPanel>
                                          </StackPanel>
-         
+
                                          <!-- Actions -->
                                          <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                                              <Button Content="&#xE74D;"
@@ -389,15 +432,268 @@
                                                     Margin="0,0,8,0"
                                                     VerticalAlignment="Center"
                                                     Foreground="{StaticResource BrAccent}"
-                                                    Content="✦ Fast Install"
+                                                    Content="{DynamicResource TxtQuickInstall}"
                                                     Click="BtnFastInstall_Click"
                                                     Loaded="BtnFastInstall_Loaded"/>
-                                             <Button Content="{DynamicResource TxtManageGame}"
-                                                     Classes="BtnBase"
-                                                     Padding="20,8"
-                                                     VerticalAlignment="Center"
-                                                     Click="BtnManage_Click"/>
+                                            <Button Classes="BtnBase"
+                                                    Padding="20,8"
+                                                    VerticalAlignment="Center"
+                                                    Click="BtnManage_Click">
+                                                <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center" Margin="0,0,0,0">
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="&#xE713;"
+                                                               FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"
+                                                               FontSize="15"
+                                                               Foreground="{StaticResource BrTextPrimary}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,8,0"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{DynamicResource TxtManageGame}"
+                                                               Foreground="{StaticResource BrTextPrimary}"
+                                                               VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Button>
                                          </StackPanel>
+                                     </Grid>
+                                 </Border>
+                             </DataTemplate>
+                         </ListBox.ItemTemplate>
+                     </ListBox>
+                 </ScrollViewer>
+
+                 <!-- Game Grid -->
+                 <ScrollViewer Name="GameGridScrollViewer"
+                               Grid.Row="1"
+                               VerticalScrollBarVisibility="Auto"
+                               HorizontalScrollBarVisibility="Disabled"
+                               PointerWheelChanged="GameListScrollViewer_PointerWheelChanged"
+                               IsVisible="False">
+                     <ListBox Name="LstGamesGrid"
+                              Margin="12"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              HorizontalAlignment="Center"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                         <ListBox.ItemsPanel>
+                             <ItemsPanelTemplate>
+                                 <WrapPanel Orientation="Horizontal" ItemWidth="217" HorizontalAlignment="Center"/>
+                             </ItemsPanelTemplate>
+                         </ListBox.ItemsPanel>
+                         <ListBox.Styles>
+                             <Style Selector="ListBoxItem">
+                                 <Setter Property="Padding" Value="0,0,12,12"/>
+                                 <Setter Property="Background" Value="Transparent"/>
+                             </Style>
+                             <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                 <Setter Property="Background" Value="Transparent"/>
+                             </Style>
+                             <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+                                 <Setter Property="Background" Value="Transparent"/>
+                             </Style>
+                         </ListBox.Styles>
+
+                         <ListBox.ItemTemplate>
+                             <DataTemplate x:DataType="models:Game">
+                                 <Border Classes="GameGridCard"
+                                         Background="{StaticResource BrBgCard}"
+                                         BorderBrush="{StaticResource BrBorderSubtle}"
+                                         BorderThickness="1"
+                                         CornerRadius="{StaticResource RadiusLarge}"
+                                         Width="205"
+                                         Padding="0"
+                                         PointerEntered="GameGridCard_PointerEntered"
+                                         PointerExited="GameGridCard_PointerExited">
+                                     <Border.Styles>
+                                         <Style Selector="Border.GameGridCard:pointerover">
+                                             <Setter Property="BorderBrush" Value="{StaticResource BrBorderDefault}"/>
+                                             <Setter Property="Background" Value="{StaticResource BrBgElevated}"/>
+                                             <Setter Property="RenderTransform" Value="scale(1.015)"/>
+                                         </Style>
+                                         <Style Selector="Border.GameGridCard">
+                                             <Setter Property="RenderTransform" Value="scale(1)"/>
+                                             <Setter Property="Transitions">
+                                                 <Transitions>
+                                                     <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                                                     <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                                                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18"/>
+                                                 </Transitions>
+                                             </Setter>
+                                         </Style>
+                                     </Border.Styles>
+
+                                     <Grid Name="GridCardRoot">
+                                         <StackPanel Spacing="10" Margin="8">
+                                             <Border Height="280"
+                                                     CornerRadius="{StaticResource RadiusMedium}"
+                                                     ClipToBounds="True"
+                                                     Background="{StaticResource BrBgElevated}"
+                                                     BorderBrush="{StaticResource BrBorderSubtle}"
+                                                     BorderThickness="1">
+                                                 <Grid>
+                                                     <TextBlock Text="🎮"
+                                                                FontSize="40"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
+                                                                Foreground="{StaticResource BrTextSecondary}"
+                                                                Opacity="0.5"/>
+                                                     <Image Source="{Binding CoverImageUrl, Converter={StaticResource BitmapValueConverter}}"
+                                                            Stretch="UniformToFill"/>
+
+                                                     <Grid Margin="8,8,8,0" VerticalAlignment="Top">
+                                                         <Grid.ColumnDefinitions>
+                                                             <ColumnDefinition Width="*"/>
+                                                             <ColumnDefinition Width="Auto"/>
+                                                         </Grid.ColumnDefinitions>
+
+                                                         <Border Grid.Column="0"
+                                                                 Background="#BF10131A"
+                                                                 BorderBrush="{StaticResource BrBorderSubtle}"
+                                                                 BorderThickness="1"
+                                                                 CornerRadius="6"
+                                                                 Padding="8,3"
+                                                                 HorizontalAlignment="Left">
+                                                             <TextBlock Text="{Binding Platform}"
+                                                                        FontSize="10"
+                                                                        FontWeight="SemiBold"
+                                                                        Foreground="{StaticResource BrTextPrimary}"/>
+                                                         </Border>
+
+                                                         <Button Grid.Column="1"
+                                                                 Content="&#xE74D;"
+                                                                 FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"
+                                                                 Foreground="{StaticResource BrTextSecondary}"
+                                                                 Background="#BF10131A"
+                                                                 BorderBrush="{StaticResource BrBorderSubtle}"
+                                                                 BorderThickness="1"
+                                                                 FontSize="14"
+                                                                 Width="26"
+                                                                 Height="24"
+                                                                 Padding="0"
+                                                                 CornerRadius="6"
+                                                                 ToolTip.Tip="{DynamicResource TxtRemoveGameTip}"
+                                                                 IsVisible="{Binding IsManual, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                 Click="BtnRemoveGame_Click"/>
+                                                     </Grid>
+
+                                                     <Border Background="#E61E1530"
+                                                             BorderBrush="{StaticResource BrAccent}"
+                                                             BorderThickness="1"
+                                                             CornerRadius="6"
+                                                             Padding="8,3"
+                                                             Margin="8,0,8,8"
+                                                             HorizontalAlignment="Left"
+                                                             VerticalAlignment="Bottom"
+                                                             IsVisible="{Binding IsOptiscalerInstalled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                         <StackPanel Orientation="Horizontal">
+                                                             <TextBlock Text="✦ OptiScaler"
+                                                                        Foreground="{StaticResource BrAccent}"
+                                                                        FontSize="{StaticResource FontSizeCaption}"
+                                                                        FontWeight="Bold"/>
+                                                             <TextBlock Text="{Binding OptiscalerVersion, StringFormat=' {0}'}"
+                                                                        Foreground="{StaticResource BrAccent}"
+                                                                        FontSize="{StaticResource FontSizeCaption}"
+                                                                        FontWeight="SemiBold"
+                                                                        IsVisible="{Binding OptiscalerVersion, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                                         </StackPanel>
+                                                     </Border>
+                                                 </Grid>
+                                             </Border>
+
+                                             <TextBlock Text="{Binding Name}"
+                                                        MaxLines="2"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        FontSize="{StaticResource FontSizeBody}"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{StaticResource BrTextPrimary}"/>
+
+                                             <WrapPanel Orientation="Horizontal" ItemHeight="24" VerticalAlignment="Center">
+                                                 <Border Background="#1A2E1A"
+                                                         BorderBrush="#2D5A2D"
+                                                         BorderThickness="1"
+                                                         CornerRadius="6"
+                                                         Padding="8,3"
+                                                         Margin="0,0,6,0"
+                                                         IsVisible="{Binding DlssVersion, Converter={StaticResource NullToVisibilityConverter}}">
+                                                     <TextBlock Text="DLSS"
+                                                                Foreground="#7FD481"
+                                                                FontSize="{StaticResource FontSizeCaption}"
+                                                                FontWeight="SemiBold"/>
+                                                 </Border>
+                                                 <Border Background="#2E1A1A"
+                                                         BorderBrush="#5A2D2D"
+                                                         BorderThickness="1"
+                                                         CornerRadius="6"
+                                                         Padding="8,3"
+                                                         Margin="0,0,6,0"
+                                                         IsVisible="{Binding FsrVersion, Converter={StaticResource NullToVisibilityConverter}}">
+                                                     <TextBlock Text="FSR"
+                                                                Foreground="#E07070"
+                                                                FontSize="{StaticResource FontSizeCaption}"
+                                                                FontWeight="SemiBold"/>
+                                                 </Border>
+                                                 <Border Background="#1A1E2E"
+                                                         BorderBrush="#2D3A5A"
+                                                         BorderThickness="1"
+                                                         CornerRadius="6"
+                                                         Padding="8,3"
+                                                         Margin="0,0,6,0"
+                                                         IsVisible="{Binding XessVersion, Converter={StaticResource NullToVisibilityConverter}}">
+                                                     <TextBlock Text="XeSS"
+                                                                Foreground="#7080E0"
+                                                                FontSize="{StaticResource FontSizeCaption}"
+                                                                FontWeight="SemiBold"/>
+                                                 </Border>
+                                             </WrapPanel>
+
+                                         </StackPanel>
+
+                                         <Border Name="GridCardHoverOverlay"
+                                                 IsVisible="False"
+                                                 Opacity="0"
+                                                 IsHitTestVisible="False"
+                                                 Background="#800B0E16"
+                                                 CornerRadius="{StaticResource RadiusLarge}"/>
+
+                                        <StackPanel Name="GridCardHoverActions"
+                                                    IsVisible="False"
+                                                    Opacity="0"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Spacing="10">
+                                            <Button Name="BtnFastInstallGrid"
+                                                    Classes="BtnBase"
+                                                    MinWidth="128"
+                                                    Padding="10,6"
+                                                    HorizontalAlignment="Center"
+                                                    HorizontalContentAlignment="Center"
+                                                    Foreground="{StaticResource BrAccent}"
+                                                    Content="{DynamicResource TxtQuickInstall}"
+                                                    Click="BtnFastInstall_Click"
+                                                    Loaded="BtnFastInstall_Loaded"/>
+                                            <Button MinWidth="86"
+                                                    HorizontalAlignment="Center"
+                                                    HorizontalContentAlignment="Center"
+                                                    Classes="BtnBase"
+                                                    Padding="10,6"
+                                                    Click="BtnManage_Click">
+                                                <Button.Content>
+                                                    <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="&#xE713;"
+                                                                   FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"
+                                                                   FontSize="14"
+                                                                   Foreground="{StaticResource BrTextPrimary}"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="0,0,6,0"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{DynamicResource TxtManageGame}"
+                                                                   Foreground="{StaticResource BrTextPrimary}"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </Button.Content>
+                                            </Button>
+                                        </StackPanel>
                                      </Grid>
                                  </Border>
                              </DataTemplate>
@@ -431,22 +727,26 @@
                      <RowDefinition Height="Auto"/>
                      <RowDefinition Height="*"/>
                  </Grid.RowDefinitions>
-                 
+
                  <Border Grid.Row="0" Background="{StaticResource BrBgDeep}" BorderBrush="{StaticResource BrBorderSubtle}" BorderThickness="0,0,0,1" Padding="24,18">
                      <StackPanel>
                          <TextBlock Text="{DynamicResource TxtSettingsTitle}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource BrTextPrimary}"/>
                          <TextBlock Text="{DynamicResource TxtSettingsDesc}" FontSize="{StaticResource FontSizeCaption}" Foreground="{StaticResource BrTextSecondary}" Margin="0,3,0,0"/>
                      </StackPanel>
                  </Border>
-         
-                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0" >
+
+                 <ScrollViewer Grid.Row="1"
+                               VerticalScrollBarVisibility="Auto"
+                               Margin="0"
+                               Background="Transparent"
+                               PointerPressed="SettingsBackground_PointerPressed">
                      <StackPanel Margin="24">
-                     
+
                      <TextBlock Text="{DynamicResource TxtAppPrefs}"
                                 Foreground="{StaticResource BrTextSecondary}"
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,12"/>
-         
+
                      <!-- Language -->
                      <Border Background="{StaticResource BrBgCard}"
                              BorderBrush="{StaticResource BrBorderSubtle}"
@@ -458,7 +758,7 @@
                                  <ColumnDefinition Width="*"/>
                                  <ColumnDefinition Width="Auto"/>
                              </Grid.ColumnDefinitions>
-                             
+
                              <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                  <TextBlock Text="{DynamicResource TxtLanguage}"
                                             FontWeight="SemiBold"
@@ -469,7 +769,7 @@
                                             Margin="0,4,16,0"
                                             FontSize="{StaticResource FontSizeCaption}"/>
                              </StackPanel>
-                             
+
                              <ComboBox Name="CmbLanguage"
                                        Grid.Column="1"
                                        Width="160"
@@ -492,7 +792,7 @@
                              </ComboBox>
                          </Grid>
                      </Border>
-         
+
                      <!-- Cache Management -->
                      <Border Background="{StaticResource BrBgCard}"
                              BorderBrush="{StaticResource BrBorderSubtle}"
@@ -505,7 +805,7 @@
                                  <ColumnDefinition Width="*"/>
                                  <ColumnDefinition Width="Auto"/>
                              </Grid.ColumnDefinitions>
-                             
+
                              <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                  <TextBlock Text="{DynamicResource TxtCacheMgmt}"
                                             FontWeight="SemiBold"
@@ -516,7 +816,7 @@
                                             Margin="0,4,16,0"
                                             FontSize="{StaticResource FontSizeCaption}"/>
                              </StackPanel>
-                             
+
                              <Button Name="BtnManageCache"
                                      Grid.Column="1"
                                      Content="{DynamicResource TxtManage}"
@@ -526,7 +826,7 @@
                                      Click="BtnManageCache_Click"/>
                          </Grid>
                      </Border>
-         
+
                      <!-- Scan Sources -->
                      <Border Background="{StaticResource BrBgCard}"
                              BorderBrush="{StaticResource BrBorderSubtle}"
@@ -539,7 +839,7 @@
                                  <ColumnDefinition Width="*"/>
                                  <ColumnDefinition Width="Auto"/>
                              </Grid.ColumnDefinitions>
-                             
+
                              <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                  <TextBlock Text="{DynamicResource TxtScanSources}"
                                             FontWeight="SemiBold"
@@ -550,7 +850,7 @@
                                             Margin="0,4,16,0"
                                             FontSize="{StaticResource FontSizeCaption}"/>
                              </StackPanel>
-                             
+
                              <Button Name="BtnManageScanSources"
                                      Grid.Column="1"
                                      Content="{DynamicResource TxtManage}"
@@ -558,48 +858,6 @@
                                      Padding="16,8"
                                      VerticalAlignment="Center"
                                      Click="BtnManageScanSources_Click"/>
-                         </Grid>
-                     </Border>
-
-                     <!-- SteamGridDB API Key -->
-                     <Border Background="{StaticResource BrBgCard}"
-                             BorderBrush="{StaticResource BrBorderSubtle}"
-                             BorderThickness="1"
-                             CornerRadius="{StaticResource RadiusLarge}"
-                             Padding="20,16"
-                             Margin="0,16,0,0">
-                         <Grid RowDefinitions="Auto,Auto">
-                             <Grid Grid.Row="0">
-                                 <Grid.ColumnDefinitions>
-                                     <ColumnDefinition Width="*"/>
-                                     <ColumnDefinition Width="Auto"/>
-                                 </Grid.ColumnDefinitions>
-
-                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                     <TextBlock Text="{DynamicResource TxtSteamGridApiKey}"
-                                                FontWeight="SemiBold"
-                                                Foreground="{StaticResource BrTextPrimary}"/>
-                                     <TextBlock Text="{DynamicResource TxtSteamGridApiKeyDesc}"
-                                                Foreground="{StaticResource BrTextSecondary}"
-                                                TextWrapping="Wrap"
-                                                Margin="0,4,16,0"
-                                                FontSize="{StaticResource FontSizeCaption}"/>
-                                 </StackPanel>
-
-                                 <Button Name="BtnSteamGridApiGuide"
-                                         Grid.Column="1"
-                                         Content="{DynamicResource TxtSteamGridGetApiKey}"
-                                         Classes="BtnBase"
-                                         Padding="16,8"
-                                         VerticalAlignment="Center"
-                                         Click="BtnSteamGridApiGuide_Click"/>
-                             </Grid>
-
-                             <TextBox Name="TxtSteamGridApiKey"
-                                      Grid.Row="1"
-                                      Margin="0,12,0,0"
-                                      Watermark="{DynamicResource TxtSteamGridApiKeyPlaceholder}"
-                                      LostFocus="TxtSteamGridApiKey_LostFocus"/>
                          </Grid>
                      </Border>
 
@@ -675,7 +933,7 @@
                                  <ColumnDefinition Width="*"/>
                                  <ColumnDefinition Width="Auto"/>
                              </Grid.ColumnDefinitions>
-                             
+
                              <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                  <TextBlock Text="{DynamicResource TxtAutoScan}"
                                             FontWeight="SemiBold"
@@ -686,7 +944,7 @@
                                             Margin="0,4,16,0"
                                             FontSize="{StaticResource FontSizeCaption}"/>
                              </StackPanel>
-                             
+
                              <ToggleSwitch Name="TglAutoScan"
                                            Grid.Column="1"
                                            VerticalAlignment="Center"
@@ -695,7 +953,7 @@
                                            IsCheckedChanged="TglAutoScan_IsCheckedChanged"/>
                          </Grid>
                      </Border>
- 
+
                      <!-- Beta Versions -->
                      <Border Background="{StaticResource BrBgCard}"
                              BorderBrush="{StaticResource BrBorderSubtle}"
@@ -739,7 +997,7 @@
                                  <ColumnDefinition Width="*"/>
                                  <ColumnDefinition Width="Auto"/>
                              </Grid.ColumnDefinitions>
-                             
+
                              <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                  <TextBlock Text="{DynamicResource TxtAnimations}"
                                             FontWeight="SemiBold"
@@ -750,7 +1008,7 @@
                                             Margin="0,4,16,0"
                                             FontSize="{StaticResource FontSizeCaption}"/>
                              </StackPanel>
-                             
+
                              <ToggleSwitch Name="TglAnimations"
                                            Grid.Column="1"
                                            VerticalAlignment="Center"
@@ -759,7 +1017,49 @@
                                            IsCheckedChanged="TglAnimations_IsCheckedChanged"/>
                          </Grid>
                      </Border>
- 
+
+                     <!-- SteamGridDB API Key -->
+                     <Border Background="{StaticResource BrBgCard}"
+                             BorderBrush="{StaticResource BrBorderSubtle}"
+                             BorderThickness="1"
+                             CornerRadius="{StaticResource RadiusLarge}"
+                             Padding="20,16"
+                             Margin="0,16,0,0">
+                         <Grid RowDefinitions="Auto,Auto">
+                             <Grid Grid.Row="0">
+                                 <Grid.ColumnDefinitions>
+                                     <ColumnDefinition Width="*"/>
+                                     <ColumnDefinition Width="Auto"/>
+                                 </Grid.ColumnDefinitions>
+
+                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                     <TextBlock Text="{DynamicResource TxtSteamGridApiKey}"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource BrTextPrimary}"/>
+                                     <TextBlock Text="{DynamicResource TxtSteamGridApiKeyDesc}"
+                                                Foreground="{StaticResource BrTextSecondary}"
+                                                TextWrapping="Wrap"
+                                                Margin="0,4,16,0"
+                                                FontSize="{StaticResource FontSizeCaption}"/>
+                                 </StackPanel>
+
+                                 <Button Name="BtnSteamGridApiGuide"
+                                         Grid.Column="1"
+                                         Content="{DynamicResource TxtSteamGridGetApiKey}"
+                                         Classes="BtnBase"
+                                         Padding="16,8"
+                                         VerticalAlignment="Center"
+                                         Click="BtnSteamGridApiGuide_Click"/>
+                             </Grid>
+
+                             <TextBox Name="TxtSteamGridApiKey"
+                                      Grid.Row="1"
+                                      Margin="0,12,0,0"
+                                      Watermark="{DynamicResource TxtSteamGridApiKeyPlaceholder}"
+                                      LostFocus="TxtSteamGridApiKey_LostFocus"/>
+                         </Grid>
+                     </Border>
+
                      </StackPanel>
                  </ScrollViewer>
              </Grid>
@@ -777,7 +1077,7 @@
                      <RowDefinition Height="Auto"/>   <!-- header -->
                      <RowDefinition Height="*"/>      <!-- content -->
                  </Grid.RowDefinitions>
-         
+
                  <!-- Header -->
                 <Border Grid.Row="0" Background="{StaticResource BrBgDeep}" BorderBrush="{StaticResource BrBorderSubtle}" BorderThickness="0,0,0,1" Padding="24,18">
                     <Grid>
@@ -789,22 +1089,22 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-         
+
                  <!-- Component rows -->
                  <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                      <StackPanel Margin="24,20" MaxWidth="600" HorizontalAlignment="Left" Width="600">
-             
+
                          <!-- GUIDE SECTION -->
                          <TextBlock Text="{DynamicResource TxtGuideTitle}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource BrTextPrimary}" Margin="0,0,0,12"/>
-                         <Button Content="{DynamicResource TxtBtnGuide}" 
-                                 Name="BtnGuide2" 
-                                 Click="BtnGuide_Click2" 
-                                 Classes="BtnBase" 
-                                 Padding="16,12" 
-                                 HorizontalAlignment="Left" 
-                                 Width="150" 
+                         <Button Content="{DynamicResource TxtBtnGuide}"
+                                 Name="BtnGuide2"
+                                 Click="BtnGuide_Click2"
+                                 Classes="BtnBase"
+                                 Padding="16,12"
+                                 HorizontalAlignment="Left"
+                                 Width="150"
                                  Margin="0,0,0,32"/>
-             
+
                          <!-- ABOUT SECTION -->
                          <TextBlock Text="{DynamicResource TxtAboutTitle}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource BrTextPrimary}" Margin="0,0,0,12"/>
                          <Border Background="{StaticResource BrBgSurface}" BorderBrush="{StaticResource BrBorderSubtle}" BorderThickness="1" CornerRadius="{StaticResource RadiusMedium}" Padding="16,12">
@@ -815,7 +1115,7 @@
                                      <TextBlock Grid.Column="0" Text="Optiscaler Client" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource BrTextPrimary}" VerticalAlignment="Center"/>
                                      <TextBlock Grid.Column="1" Name="TxtAppVersion" Text="" FontWeight="Bold" Foreground="{StaticResource BrAccent}" VerticalAlignment="Center"/>
                                  </Grid>
-                                 
+
                                  <!-- OptiScaler -->
                                  <Grid Margin="0,0,0,12">
                                      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
@@ -827,7 +1127,7 @@
                                          <TextBlock Name="TxtOptiVersion" FontWeight="Bold" Foreground="{StaticResource BrAccent}" VerticalAlignment="Center"/>
                                      </StackPanel>
                                  </Grid>
-                                 
+
                                  <!-- Fakenvapi -->
                                  <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
@@ -837,7 +1137,7 @@
                                         <TextBlock Name="TxtFakeVersion" FontWeight="Bold" Foreground="{StaticResource BrAccent}" VerticalAlignment="Center" MinWidth="80" TextAlignment="Right"/>
                                     </StackPanel>
                                  </Grid>
-                                 
+
                                  <!-- NukemFG -->
                                  <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
@@ -847,7 +1147,7 @@
                                         <TextBlock Name="TxtNukemVersion" FontWeight="Bold" Foreground="{StaticResource BrAccent}" VerticalAlignment="Center" MinWidth="80" TextAlignment="Right"/>
                                     </StackPanel>
                                  </Grid>
-                                 
+
                                  <!-- Build Date -->
                                  <Grid Margin="0,0,0,16">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
@@ -887,28 +1187,28 @@
              
 
                                  <StackPanel Orientation="Horizontal">
-                                     <Button Content="{DynamicResource TxtCheckUpdatesBtn}" 
-                                             Name="BtnCheckUpdates" 
-                                             Click="BtnCheckUpdates_Click" 
-                                             Classes="BtnPrimary" 
-                                             Padding="16,8" 
+                                     <Button Content="{DynamicResource TxtCheckUpdatesBtn}"
+                                             Name="BtnCheckUpdates"
+                                             Click="BtnCheckUpdates_Click"
+                                             Classes="BtnPrimary"
+                                             Padding="16,8"
                                              Margin="0,0,12,0"/>
-                                     <Button Content="{DynamicResource TxtGithubBtn}" 
-                                             Name="BtnGithub" 
-                                             Click="BtnGithub_Click" 
-                                             Classes="BtnBase" 
+                                     <Button Content="{DynamicResource TxtGithubBtn}"
+                                             Name="BtnGithub"
+                                             Click="BtnGithub_Click"
+                                             Classes="BtnBase"
                                              Padding="16,8"/>
                                  </StackPanel>
-             
+
                              </StackPanel>
                          </Border>
-             
+
                          <!-- FEEDBACK SECTION -->
                          <TextBlock Text="{DynamicResource TxtFeedbackTitle}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource BrTextPrimary}" Margin="0,32,0,12"/>
                          <Border Background="{StaticResource BrBgCard}" BorderBrush="{StaticResource BrBorderSubtle}" BorderThickness="1" CornerRadius="{StaticResource RadiusMedium}" Padding="16,12" Margin="0,0,0,40">
                              <TextBlock Text="{DynamicResource TxtFeedbackDesc}" TextWrapping="Wrap" Foreground="{StaticResource BrTextSecondary}" FontSize="{StaticResource FontSizeBody}"/>
                          </Border>
-             
+
                      </StackPanel>
                  </ScrollViewer>
              </Grid>

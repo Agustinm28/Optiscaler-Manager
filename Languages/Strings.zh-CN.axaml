@@ -37,6 +37,8 @@
     <x:String x:Key="TxtTipUpdateNukem">新的NukemFG版本可用。点击提供更新的DLL。</x:String>
     <x:String x:Key="TxtDefaultGpu">检测GPU中…</x:String>
     <x:String x:Key="TxtManageGame">管理</x:String>
+    <x:String x:Key="TxtQuickInstall">✦ 快速安装</x:String>
+    <x:String x:Key="TxtQuickUninstall">🗑️ 快速卸载</x:String>
     <x:String x:Key="TxtStatusReady">就绪</x:String>
     <x:String x:Key="TxtScanningTitle">扫描游戏中...</x:String>
     <x:String x:Key="TxtScanningDesc">在所有平台上查找游戏...</x:String>
@@ -216,6 +218,10 @@
 
     <x:String x:Key="TxtSteamGridGuideStep1Prefix">Go to </x:String>
     <x:String x:Key="TxtSteamGridGuideStep1Suffix"> and sign in.</x:String>
+
+    <x:String x:Key="TxtViewGrid">Grid view</x:String>
+    <x:String x:Key="TxtViewList">List view</x:String>
 </ResourceDictionary>
+
 
 

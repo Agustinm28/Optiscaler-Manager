@@ -37,6 +37,8 @@
     <x:String x:Key="TxtTipUpdateNukem">Yeni NukemFG sürümü mevcut. Güncellenmiş DLL'yi sağlamak için tıklayın.</x:String>
     <x:String x:Key="TxtDefaultGpu">GPU algılanıyor…</x:String>
     <x:String x:Key="TxtManageGame">Yönet</x:String>
+    <x:String x:Key="TxtQuickInstall">✦ Hızlı Kurulum</x:String>
+    <x:String x:Key="TxtQuickUninstall">🗑️ Hızlı Kaldırma</x:String>
     <x:String x:Key="TxtStatusReady">Hazır</x:String>
     <x:String x:Key="TxtScanningTitle">Oyunlar taranıyor...</x:String>
     <x:String x:Key="TxtScanningDesc">Tüm platformlarda oyunlar aranıyor...</x:String>
@@ -216,6 +218,10 @@
 
     <x:String x:Key="TxtSteamGridGuideStep1Prefix">Go to </x:String>
     <x:String x:Key="TxtSteamGridGuideStep1Suffix"> and sign in.</x:String>
+
+    <x:String x:Key="TxtViewGrid">Grid view</x:String>
+    <x:String x:Key="TxtViewList">List view</x:String>
 </ResourceDictionary>
+
 
 
