@@ -39,6 +39,15 @@
     <x:String x:Key="TxtManageGame">Beheer</x:String>
     <x:String x:Key="TxtQuickInstall">✦ Snelle installatie</x:String>
     <x:String x:Key="TxtQuickUninstall">🗑️ Snelle verwijdering</x:String>
+    <x:String x:Key="TxtInitialScanTitle">Eerste scan</x:String>
+    <x:String x:Key="TxtInitialScanDesc">Voordat we je schijven scannen op games, kies je welke stations en bronnen je wilt opnemen. Je kunt dit venster sluiten en later scannen.</x:String>
+    <x:String x:Key="TxtScanSetupTitle">Scaninstellingen</x:String>
+    <x:String x:Key="TxtScanSetupDesc">Kies welke stations en bronnen je wilt scannen. Je kunt dit venster sluiten en later scannen.</x:String>
+    <x:String x:Key="TxtInitialScanDrives">Stations om te scannen</x:String>
+    <x:String x:Key="TxtInitialScanSources">Bronnen om te scannen</x:String>
+    <x:String x:Key="TxtInitialScanStart">Scan starten</x:String>
+    <x:String x:Key="TxtInitialScanClose">Sluiten</x:String>
+    <x:String x:Key="TxtInitialScanNoDrives">Geen stations gevonden.</x:String>
     <x:String x:Key="TxtStatusReady">Klaar</x:String>
     <x:String x:Key="TxtScanningTitle">Games scannen...</x:String>
     <x:String x:Key="TxtScanningDesc">Zoeken naar games op alle platforms...</x:String>

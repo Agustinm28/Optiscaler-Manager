@@ -39,6 +39,15 @@
     <x:String x:Key="TxtManageGame">Gestisci</x:String>
     <x:String x:Key="TxtQuickInstall">✦ Installazione rapida</x:String>
     <x:String x:Key="TxtQuickUninstall">🗑️ Disinstallazione rapida</x:String>
+    <x:String x:Key="TxtInitialScanTitle">Scansione iniziale</x:String>
+    <x:String x:Key="TxtInitialScanDesc">Prima di scansionare i dischi per i giochi, scegli quali unità e fonti includere. Puoi chiudere questa finestra e scansionare più tardi.</x:String>
+    <x:String x:Key="TxtScanSetupTitle">Impostazioni di scansione</x:String>
+    <x:String x:Key="TxtScanSetupDesc">Scegli quali unità e fonti scansionare. Puoi chiudere questa finestra e scansionare più tardi.</x:String>
+    <x:String x:Key="TxtInitialScanDrives">Unità da scansionare</x:String>
+    <x:String x:Key="TxtInitialScanSources">Fonti da scansionare</x:String>
+    <x:String x:Key="TxtInitialScanStart">Avvia scansione</x:String>
+    <x:String x:Key="TxtInitialScanClose">Chiudi</x:String>
+    <x:String x:Key="TxtInitialScanNoDrives">Nessuna unità rilevata.</x:String>
     <x:String x:Key="TxtStatusReady">Pronto</x:String>
     <x:String x:Key="TxtScanningTitle">Scansionando giochi...</x:String>
     <x:String x:Key="TxtScanningDesc">Cercando giochi su tutte le piattaforme...</x:String>

@@ -40,6 +40,15 @@
     <x:String x:Key="TxtManageGame">Manage</x:String>
     <x:String x:Key="TxtQuickInstall">✦ Quick Install</x:String>
     <x:String x:Key="TxtQuickUninstall">🗑️ Quick Uninstall</x:String>
+    <x:String x:Key="TxtInitialScanTitle">First-Time Scan</x:String>
+    <x:String x:Key="TxtInitialScanDesc">Before scanning your disks for games, choose which drives and sources to include. You can close this window and scan later.</x:String>
+    <x:String x:Key="TxtScanSetupTitle">Scan Setup</x:String>
+    <x:String x:Key="TxtScanSetupDesc">Choose which drives and sources to scan. You can close this window and scan later.</x:String>
+    <x:String x:Key="TxtInitialScanDrives">Drives to Scan</x:String>
+    <x:String x:Key="TxtInitialScanSources">Sources to Scan</x:String>
+    <x:String x:Key="TxtInitialScanStart">Start Scan</x:String>
+    <x:String x:Key="TxtInitialScanClose">Close</x:String>
+    <x:String x:Key="TxtInitialScanNoDrives">No drives detected.</x:String>
     <x:String x:Key="TxtStatusReady">Ready</x:String>
     <x:String x:Key="TxtScanningTitle">Scanning games...</x:String>
     <x:String x:Key="TxtScanningDesc">Looking for games across all platforms...</x:String>

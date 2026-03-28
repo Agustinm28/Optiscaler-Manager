@@ -60,6 +60,9 @@ namespace OptiscalerClient.Models
         public bool ShowBetaVersions { get; set; } = true;
         public bool PreferGridView { get; set; } = false;
         public string? DefaultGpuId { get; set; } = null;
+        public bool HasShownInitialScanPrompt { get; set; } = false;
+        public bool HasCompletedInitialScan { get; set; } = false;
+        public List<string> ScanDriveRoots { get; set; } = new();
 
         // Window state persistence
         public double WindowWidth { get; set; } = 1200;

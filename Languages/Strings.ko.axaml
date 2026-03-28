@@ -39,6 +39,15 @@
     <x:String x:Key="TxtManageGame">관리</x:String>
     <x:String x:Key="TxtQuickInstall">✦ 빠른 설치</x:String>
     <x:String x:Key="TxtQuickUninstall">🗑️ 빠른 제거</x:String>
+    <x:String x:Key="TxtInitialScanTitle">초기 스캔</x:String>
+    <x:String x:Key="TxtInitialScanDesc">게임을 찾기 전에 스캔할 드라이브와 소스를 선택하세요. 이 창을 닫고 나중에 스캔할 수 있습니다.</x:String>
+    <x:String x:Key="TxtScanSetupTitle">스캔 설정</x:String>
+    <x:String x:Key="TxtScanSetupDesc">스캔할 드라이브와 소스를 선택하세요. 이 창을 닫고 나중에 스캔할 수 있습니다.</x:String>
+    <x:String x:Key="TxtInitialScanDrives">스캔할 드라이브</x:String>
+    <x:String x:Key="TxtInitialScanSources">스캔할 소스</x:String>
+    <x:String x:Key="TxtInitialScanStart">스캔 시작</x:String>
+    <x:String x:Key="TxtInitialScanClose">닫기</x:String>
+    <x:String x:Key="TxtInitialScanNoDrives">드라이브가 감지되지 않았습니다.</x:String>
     <x:String x:Key="TxtStatusReady">준비 완료</x:String>
     <x:String x:Key="TxtScanningTitle">게임 스캔 중...</x:String>
     <x:String x:Key="TxtScanningDesc">모든 플랫폼에서 게임 검색 중...</x:String>

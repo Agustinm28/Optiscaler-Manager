@@ -39,6 +39,15 @@
     <x:String x:Key="TxtManageGame">管理</x:String>
     <x:String x:Key="TxtQuickInstall">✦ 快速安装</x:String>
     <x:String x:Key="TxtQuickUninstall">🗑️ 快速卸载</x:String>
+    <x:String x:Key="TxtInitialScanTitle">首次扫描</x:String>
+    <x:String x:Key="TxtInitialScanDesc">在扫描磁盘寻找游戏之前，请选择要扫描的驱动器和来源。你可以关闭此窗口，稍后再扫描。</x:String>
+    <x:String x:Key="TxtScanSetupTitle">扫描设置</x:String>
+    <x:String x:Key="TxtScanSetupDesc">选择要扫描的驱动器和来源。你可以关闭此窗口，稍后再扫描。</x:String>
+    <x:String x:Key="TxtInitialScanDrives">要扫描的驱动器</x:String>
+    <x:String x:Key="TxtInitialScanSources">要扫描的来源</x:String>
+    <x:String x:Key="TxtInitialScanStart">开始扫描</x:String>
+    <x:String x:Key="TxtInitialScanClose">关闭</x:String>
+    <x:String x:Key="TxtInitialScanNoDrives">未检测到驱动器。</x:String>
     <x:String x:Key="TxtStatusReady">就绪</x:String>
     <x:String x:Key="TxtScanningTitle">扫描游戏中...</x:String>
     <x:String x:Key="TxtScanningDesc">在所有平台上查找游戏...</x:String>

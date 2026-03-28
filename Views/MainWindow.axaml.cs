@@ -136,7 +136,7 @@ namespace OptiscalerClient.Views
             _componentService.OnStatusChanged -= ComponentStatusChanged;
         }
 
-        private void MainWindow_Loaded(object? sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
             _gameListScrollViewer = this.FindControl<ScrollViewer>("GameListScrollViewer");
             _gameGridScrollViewer = this.FindControl<ScrollViewer>("GameGridScrollViewer");
@@ -163,10 +163,31 @@ namespace OptiscalerClient.Views
             
             UpdateAnimationsState(_componentService.Config.AnimationsEnabled);
 
-            if (!hadSavedGames && _componentService.Config.AutoScan)
+            if (!hadSavedGames)
             {
-                BtnScan_Click(null!, null!);
+                if (_componentService.Config.HasCompletedInitialScan)
+                {
+                    _componentService.Config.HasCompletedInitialScan = false;
+                    _componentService.SaveConfiguration();
+                }
+
+                var prompt = new InitialScanPromptWindow(this, _componentService, isFirstTime: true);
+                var options = await prompt.ShowDialog<InitialScanOptions?>(this);
+                if (options != null)
+                {
+                    _componentService.Config.ScanSources = options.ScanSources;
+                    _componentService.Config.ScanDriveRoots = options.DriveRoots;
+                    _componentService.Config.HasCompletedInitialScan = true;
+                    _componentService.SaveConfiguration();
+                    await RunScanAsync();
+                }
+
+                // Never auto-scan on startup when there are no cached games.
+                return;
             }
+
+            // If there are cached games, do not auto-scan on startup.
+            // Scans should only run when the user explicitly clicks Scan Games.
         }
 
         private void UpdateSearchPlaceholderVisibility()
@@ -973,6 +994,21 @@ namespace OptiscalerClient.Views
 
         private async void BtnScan_Click(object sender, RoutedEventArgs e)
         {
+            var prompt = new InitialScanPromptWindow(this, _componentService, isFirstTime: false);
+            var options = await prompt.ShowDialog<InitialScanOptions?>(this);
+            if (options == null)
+                return;
+
+            _componentService.Config.ScanSources = options.ScanSources;
+            _componentService.Config.ScanDriveRoots = options.DriveRoots;
+            _componentService.Config.HasCompletedInitialScan = true;
+            _componentService.SaveConfiguration();
+
+            await RunScanAsync();
+        }
+
+        private async Task RunScanAsync()
+        {
             if (_btnScan != null) _btnScan.IsEnabled = false;
             if (_txtStatus != null) _txtStatus.Text = GetResourceString("TxtScanningShort", "Scanning for games...");
             if (_overlayScanning != null) _overlayScanning.IsVisible = true;
@@ -983,7 +1019,10 @@ namespace OptiscalerClient.Views
                 List<Game> scanResults;
                 if (OperatingSystem.IsWindows() && _scannerService != null)
                 {
-                    scanResults = await _scannerService.ScanAllGamesAsync(_componentService.Config.ScanSources);
+                    var allowedDrives = _componentService.Config.ScanDriveRoots;
+                    scanResults = await _scannerService.ScanAllGamesAsync(
+                        _componentService.Config.ScanSources,
+                        (allowedDrives != null && allowedDrives.Count > 0) ? allowedDrives : null);
                 }
                 else
                 {

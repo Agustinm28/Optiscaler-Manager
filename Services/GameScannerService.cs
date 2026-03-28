@@ -48,7 +48,7 @@ public class GameScannerService
         _exclusions = new ExclusionService(configPath);
     }
 
-    public async Task<List<Game>> ScanAllGamesAsync(ScanSourcesConfig? scanConfig = null)
+    public async Task<List<Game>> ScanAllGamesAsync(ScanSourcesConfig? scanConfig = null, IReadOnlyCollection<string>? allowedDriveRoots = null)
     {
         return await Task.Run(() =>
         {
@@ -62,11 +62,31 @@ public class GameScannerService
                 scanConfig = new ScanSourcesConfig();
             }
 
+            bool IsDriveAllowed(Game game)
+            {
+                if (allowedDriveRoots == null || allowedDriveRoots.Count == 0)
+                    return true;
+
+                try
+                {
+                    var root = Path.GetPathRoot(game.InstallPath);
+                    if (string.IsNullOrEmpty(root))
+                        return false;
+
+                    return allowedDriveRoots.Contains(root, StringComparer.OrdinalIgnoreCase);
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
             void ProcessGames(IEnumerable<Game> scannedGames)
             {
                 foreach (var game in scannedGames)
                 {
                     if (_exclusions.IsExcluded(game)) continue;
+                    if (!IsDriveAllowed(game)) continue;
                     analyzer.AnalyzeGame(game);
                     games.Add(game);
                 }

@@ -39,6 +39,15 @@
     <x:String x:Key="TxtManageGame">管理</x:String>
     <x:String x:Key="TxtQuickInstall">✦ クイックインストール</x:String>
     <x:String x:Key="TxtQuickUninstall">🗑️ クイックアンインストール</x:String>
+    <x:String x:Key="TxtInitialScanTitle">初回スキャン</x:String>
+    <x:String x:Key="TxtInitialScanDesc">ゲームを探す前に、スキャンするドライブとソースを選択してください。後でスキャンするためにこのウィンドウを閉じることもできます。</x:String>
+    <x:String x:Key="TxtScanSetupTitle">スキャン設定</x:String>
+    <x:String x:Key="TxtScanSetupDesc">スキャンするドライブとソースを選択してください。後でスキャンするためにこのウィンドウを閉じることもできます。</x:String>
+    <x:String x:Key="TxtInitialScanDrives">スキャンするドライブ</x:String>
+    <x:String x:Key="TxtInitialScanSources">スキャンするソース</x:String>
+    <x:String x:Key="TxtInitialScanStart">スキャン開始</x:String>
+    <x:String x:Key="TxtInitialScanClose">閉じる</x:String>
+    <x:String x:Key="TxtInitialScanNoDrives">ドライブが検出されませんでした。</x:String>
     <x:String x:Key="TxtStatusReady">準備完了</x:String>
     <x:String x:Key="TxtScanningTitle">ゲームをスキャン中...</x:String>
     <x:String x:Key="TxtScanningDesc">すべてのプラットフォームでゲームを検索中...</x:String>

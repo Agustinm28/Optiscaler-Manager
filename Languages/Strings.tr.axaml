@@ -39,6 +39,15 @@
     <x:String x:Key="TxtManageGame">Yönet</x:String>
     <x:String x:Key="TxtQuickInstall">✦ Hızlı Kurulum</x:String>
     <x:String x:Key="TxtQuickUninstall">🗑️ Hızlı Kaldırma</x:String>
+    <x:String x:Key="TxtInitialScanTitle">İlk tarama</x:String>
+    <x:String x:Key="TxtInitialScanDesc">Oyunları taramadan önce taranacak sürücüleri ve kaynakları seçin. Bu pencereyi kapatıp daha sonra tarama yapabilirsiniz.</x:String>
+    <x:String x:Key="TxtScanSetupTitle">Tarama ayarları</x:String>
+    <x:String x:Key="TxtScanSetupDesc">Taranacak sürücüleri ve kaynakları seçin. Bu pencereyi kapatıp daha sonra tarama yapabilirsiniz.</x:String>
+    <x:String x:Key="TxtInitialScanDrives">Taranacak sürücüler</x:String>
+    <x:String x:Key="TxtInitialScanSources">Taranacak kaynaklar</x:String>
+    <x:String x:Key="TxtInitialScanStart">Taramayı başlat</x:String>
+    <x:String x:Key="TxtInitialScanClose">Kapat</x:String>
+    <x:String x:Key="TxtInitialScanNoDrives">Sürücü bulunamadı.</x:String>
     <x:String x:Key="TxtStatusReady">Hazır</x:String>
     <x:String x:Key="TxtScanningTitle">Oyunlar taranıyor...</x:String>
     <x:String x:Key="TxtScanningDesc">Tüm platformlarda oyunlar aranıyor...</x:String>

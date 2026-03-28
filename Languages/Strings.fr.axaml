@@ -39,6 +39,15 @@
     <x:String x:Key="TxtManageGame">Gérer</x:String>
     <x:String x:Key="TxtQuickInstall">✦ Installation rapide</x:String>
     <x:String x:Key="TxtQuickUninstall">🗑️ Désinstallation rapide</x:String>
+    <x:String x:Key="TxtInitialScanTitle">Analyse initiale</x:String>
+    <x:String x:Key="TxtInitialScanDesc">Avant d’analyser vos disques pour trouver des jeux, choisissez les lecteurs et les sources à inclure. Vous pouvez fermer cette fenêtre et analyser plus tard.</x:String>
+    <x:String x:Key="TxtScanSetupTitle">Configuration de l’analyse</x:String>
+    <x:String x:Key="TxtScanSetupDesc">Choisissez les lecteurs et sources à analyser. Vous pouvez fermer cette fenêtre et analyser plus tard.</x:String>
+    <x:String x:Key="TxtInitialScanDrives">Lecteurs à analyser</x:String>
+    <x:String x:Key="TxtInitialScanSources">Sources à analyser</x:String>
+    <x:String x:Key="TxtInitialScanStart">Démarrer l’analyse</x:String>
+    <x:String x:Key="TxtInitialScanClose">Fermer</x:String>
+    <x:String x:Key="TxtInitialScanNoDrives">Aucun lecteur détecté.</x:String>
     <x:String x:Key="TxtStatusReady">Prêt</x:String>
     <x:String x:Key="TxtScanningTitle">Scan des jeux en cours...</x:String>
     <x:String x:Key="TxtScanningDesc">Recherche de jeux sur toutes les plateformes...</x:String>
