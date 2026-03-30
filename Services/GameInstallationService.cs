@@ -126,7 +126,7 @@ namespace OptiscalerClient.Services
             }
 
             if (optiscalerMainDll == null)
-                throw new Exception("OptiScaler.dll or nvngx.dll not found in the downloaded package. Please re-download OptiScaler.");
+                throw new Exception("Installation failed because the downloaded package is corrupt or incomplete (missing OptiScaler.dll). Please go to Settings -> Manage Cache, delete this version, and try the installation again.");
 
             // Step 1: Install the main OptiScaler DLL with the selected injection method name
             var injectionDllPath = Path.Combine(gameDir, injectionDllName);
@@ -368,7 +368,7 @@ namespace OptiscalerClient.Services
                 var rollbackSummary = RollbackFailedInstall(gameDir, backupDir, manifest);
                 DebugWindow.Log($"[Install] Rollback completed. Restored={rollbackSummary.Restored}, Deleted={rollbackSummary.Deleted}");
 
-                throw new Exception($"Installation failed and was rolled back: {ex.Message}", ex);
+                throw new Exception($"{ex.Message}", ex);
             }
         }
 

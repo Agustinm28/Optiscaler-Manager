@@ -650,6 +650,39 @@ namespace OptiscalerClient.Views
                                                     optiscalerVersion: optiscalerVersion,
                                                     overrideGameDir: overrideGameDir);
                 });
+                }
+                catch (Exception instEx) when ((instEx.Message.Contains("corrupt or incomplete") || instEx.Message.Contains("not found in the downloaded package")) && !retryDone)
+                {
+                    retryDone = true;
+                    DebugWindow.Log($"[Install] Detected corrupt cache. Retrying download and install for {optiscalerVersion}...");
+
+                    if (Directory.Exists(optiCacheDir))
+                    {
+                        try { Directory.Delete(optiCacheDir, true); } catch { /* ignore */ }
+                    }
+
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (bdProgress != null) bdProgress.IsVisible = true;
+                        if (prgDownload != null) { prgDownload.IsIndeterminate = false; prgDownload.Value = 0; }
+                    });
+
+                    isDownloadingOpti = true;
+                    optiCacheDir = await componentService.DownloadOptiScalerAsync(optiscalerVersion, progress);
+                    isDownloadingOpti = false;
+
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (txtProgressState != null)
+                        {
+                            var extractFormat = GetResourceString("TxtExtractingFormat", "Extracting and installing v{0}...");
+                            txtProgressState.Text = string.Format(extractFormat, optiscalerVersion);
+                        }
+                        if (prgDownload != null) prgDownload.IsIndeterminate = true;
+                    });
+
+                    goto RetryInstall;
+                }
 
                 var installedComponents = "OptiScaler";
                 if (installFakenvapi) installedComponents += " + Fakenvapi";
