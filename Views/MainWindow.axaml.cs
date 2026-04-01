@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using OptiscalerClient.Models;
 using OptiscalerClient.Services;
@@ -16,8 +17,12 @@ using Avalonia.Platform.Storage;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading;
+using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using Avalonia.VisualTree;
 using OptiscalerClient.Helpers;
+using OptiscalerClient.Models.Help;
+using Avalonia.Styling;
 
 namespace OptiscalerClient.Views
 {
@@ -44,6 +49,9 @@ namespace OptiscalerClient.Views
 
         private readonly GameAnalyzerService _analyzerService = new();
         private GameMetadataService _metadataService = null!;
+        private readonly HelpPageService _helpPageService = new();
+        private string _currentHelpPageId = "about";
+        private double? _currentPageFontSize;
 
         private ListBox? _lstGames;
         private ListBox? _lstGamesGrid;
@@ -102,7 +110,9 @@ namespace OptiscalerClient.Views
             RestoreWindowState();
             
             // Handle window state changes
-            this.PropertyChanged += Window_PropertyChanged;
+            this.PropertyChanged += MainWindow_PropertyChanged;
+            this.PositionChanged += (s, e) => SaveWindowState();
+            this.SizeChanged += MainWindow_SizeChanged;
         }
 
         private void ComponentStatusChanged()
@@ -111,6 +121,9 @@ namespace OptiscalerClient.Views
 
         private void MainWindow_Closed(object? sender, EventArgs e)
         {
+            // Save final window state before closing
+            SaveWindowState();
+            
             if (!_windowLifetimeCts.IsCancellationRequested)
             {
                 _windowLifetimeCts.Cancel();
@@ -172,6 +185,96 @@ namespace OptiscalerClient.Views
 
             // If there are cached games, do not auto-scan on startup.
             // Scans should only run when the user explicitly clicks Scan Games.
+        }
+
+        private void MainWindow_SizeChanged(object? sender, SizeChangedEventArgs e)
+        {
+            UpdateSettingsLayout();
+        }
+
+        private void UpdateSettingsLayout()
+        {
+            var settingsGrid = this.FindControl<Grid>("SettingsGrid");
+            if (settingsGrid == null) return;
+
+            // Determine number of columns based on window width
+            int newColumns = this.Width < 1000 ? 1 : 2;
+            
+            // Update column definitions if needed
+            if (settingsGrid.ColumnDefinitions.Count != newColumns)
+            {
+                settingsGrid.ColumnDefinitions.Clear();
+                for (int i = 0; i < newColumns; i++)
+                {
+                    settingsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                }
+
+                // Re-arrange existing elements for new layout
+                RearrangeSettingsElements(settingsGrid, newColumns);
+            }
+        }
+
+        private void RearrangeSettingsElements(Grid settingsGrid, int columns)
+        {
+            var children = settingsGrid.Children.ToArray();
+            settingsGrid.Children.Clear();
+
+            // Get elements in their original order (by row, then column)
+            var orderedElements = children
+                .Where(child => Grid.GetRow(child) > 0) // Skip header
+                .OrderBy(child => Grid.GetRow(child))
+                .ThenBy(child => Grid.GetColumn(child))
+                .ToList();
+
+            // Add header first
+            var header = children.FirstOrDefault(child => Grid.GetRow(child) == 0);
+            if (header != null)
+            {
+                Grid.SetColumnSpan(header, columns);
+                settingsGrid.Children.Add(header);
+            }
+
+            // Reorganize elements for new layout
+            for (int i = 0; i < orderedElements.Count; i++)
+            {
+                var child = orderedElements[i];
+                int newRow = (i / columns) + 1; // +1 for header row
+                int newCol = i % columns;
+
+                // Update margins based on new layout
+                if (child is Border border)
+                {
+                    if (columns == 1)
+                    {
+                        // Single column - no horizontal margins
+                        border.Margin = new Thickness(0, 0, 0, 16);
+                    }
+                    else
+                    {
+                        // Two columns - add horizontal margins
+                        if (newCol == 0)
+                        {
+                            border.Margin = new Thickness(0, 0, 8, 16);
+                        }
+                        else
+                        {
+                            border.Margin = new Thickness(8, 0, 0, 16);
+                        }
+                    }
+                }
+
+                Grid.SetRow(child, newRow);
+                Grid.SetColumn(child, newCol);
+                settingsGrid.Children.Add(child);
+            }
+
+            // Update row definitions
+            settingsGrid.RowDefinitions.Clear();
+            int totalRows = ((orderedElements.Count + columns - 1) / columns) + 1; // +1 for header
+            for (int i = 0; i < totalRows; i++)
+            {
+                settingsGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            }
         }
 
         private void UpdateSearchPlaceholderVisibility()
@@ -387,7 +490,7 @@ namespace OptiscalerClient.Views
             }
         }
 
-        private async void BtnGuide_Click2(object sender, RoutedEventArgs e)
+        private async void BtnGuide_Click2(object? sender, RoutedEventArgs e)
         {
             var guide = new GuideWindow(this);
             await guide.ShowDialog(this);
@@ -508,6 +611,12 @@ namespace OptiscalerClient.Views
         {
             var cacheWindow = new CacheManagementWindow(this);
             await cacheWindow.ShowDialog<object>(this);
+        }
+
+        private async void BtnManageProfiles_Click(object sender, RoutedEventArgs e)
+        {
+            var profileWindow = new ProfileManagementWindow();
+            await profileWindow.ShowDialog(this);
         }
 
         private async void BtnManageScanSources_Click(object sender, RoutedEventArgs e)
@@ -703,50 +812,1069 @@ namespace OptiscalerClient.Views
 
         private void PopulateHelpContent()
         {
-            var txtAppVersion = this.FindControl<TextBlock>("TxtAppVersion");
-            var txtBuildDate = this.FindControl<TextBlock>("TxtBuildDate");
+            var sidebar = this.FindControl<StackPanel>("HelpPagesSidebar");
+            var contentArea = this.FindControl<StackPanel>("HelpContentArea");
             
-            if (txtAppVersion != null) txtAppVersion.Text = $"v{App.AppVersion}";
+            if (sidebar == null || contentArea == null) return;
+
+            var pages = _helpPageService.LoadHelpPages();
+            
+            sidebar.Children.Clear();
+            
+            // Process pages in order, grouping consecutive pages with same category
+            var i = 0;
+            while (i < pages.Count)
+            {
+                var currentPage = pages[i];
+                
+                if (string.IsNullOrEmpty(currentPage.Category))
+                {
+                    // Regular page without category
+                    var button = new Button
+                    {
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+                        HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+                        Padding = new Thickness(12, 10),
+                        Margin = new Thickness(0, 0, 0, 4),
+                        Background = Brushes.Transparent,
+                        BorderThickness = new Thickness(0),
+                        Tag = currentPage.Id
+                    };
+
+                    var stack = new StackPanel
+                    {
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        Spacing = 10
+                    };
+
+                    var icon = new TextBlock
+                    {
+                        Text = currentPage.Icon,
+                        FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"),
+                        FontSize = 16,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                    };
+
+                    var title = new TextBlock
+                    {
+                        Text = currentPage.Title,
+                        FontSize = 14,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                    };
+
+                    stack.Children.Add(icon);
+                    stack.Children.Add(title);
+                    button.Content = stack;
+                    button.Click += (s, e) => LoadHelpPage(currentPage.Id);
+                    
+                    sidebar.Children.Add(button);
+                    i++;
+                }
+                else
+                {
+                    // Start of a category group - collect all consecutive pages with same category
+                    var category = currentPage.Category;
+                    var categoryPages = new List<HelpPage>();
+                    
+                    while (i < pages.Count && pages[i].Category == category)
+                    {
+                        categoryPages.Add(pages[i]);
+                        i++;
+                    }
+                    
+                    // Create expandable category
+                    var categoryContainer = new StackPanel();
+                    
+                    // Category button (expandable)
+                    var categoryButton = new Button
+                    {
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+                        HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+                        Padding = new Thickness(12, 10),
+                        Margin = new Thickness(0, 0, 0, 4),
+                        Background = Brushes.Transparent,
+                        BorderThickness = new Thickness(0),
+                        Cursor = new Cursor(StandardCursorType.Hand)
+                    };
+                    
+                    // Remove hover/pressed effects
+                    categoryButton.Styles.Add(new Style(x => x.OfType<Button>().Class(":pointerover"))
+                    {
+                        Setters = { new Setter(Button.BackgroundProperty, Brushes.Transparent) }
+                    });
+                    categoryButton.Styles.Add(new Style(x => x.OfType<Button>().Class(":pressed"))
+                    {
+                        Setters = { new Setter(Button.BackgroundProperty, Brushes.Transparent) }
+                    });
+
+                    var categoryStack = new StackPanel
+                    {
+                        Orientation = Avalonia.Layout.Orientation.Horizontal,
+                        Spacing = 10
+                    };
+
+                    var expandIcon = new TextBlock
+                    {
+                        Text = "\uE70D", // ChevronUp
+                        FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"),
+                        FontSize = 12,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                        Foreground = this.FindResource("BrTextSecondary") as IBrush
+                    };
+
+                    var categoryIcon = new TextBlock
+                    {
+                        Text = "\uE8F1", // BookOpen icon for Guides
+                        FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"),
+                        FontSize = 16,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                        Foreground = this.FindResource("BrTextSecondary") as IBrush
+                    };
+
+                    var categoryTitle = new TextBlock
+                    {
+                        Text = category,
+                        FontSize = 14,
+                        FontWeight = FontWeight.SemiBold,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                        Foreground = this.FindResource("BrTextSecondary") as IBrush
+                    };
+
+                    categoryStack.Children.Add(expandIcon);
+                    categoryStack.Children.Add(categoryIcon);
+                    categoryStack.Children.Add(categoryTitle);
+                    categoryButton.Content = categoryStack;
+
+                    // Container for child pages
+                    var childrenContainer = new StackPanel
+                    {
+                        Margin = new Thickness(20, 0, 0, 0),
+                        IsVisible = true // Start expanded
+                    };
+
+                    // Add pages in this category
+                    foreach (var page in categoryPages)
+                    {
+                        var pageButton = new Button
+                        {
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+                            HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+                            Padding = new Thickness(12, 10),
+                            Margin = new Thickness(0, 0, 0, 4),
+                            Background = Brushes.Transparent,
+                            BorderThickness = new Thickness(0),
+                            Tag = page.Id
+                        };
+
+                        var pageStack = new StackPanel
+                        {
+                            Orientation = Avalonia.Layout.Orientation.Horizontal,
+                            Spacing = 10
+                        };
+
+                        var pageIcon = new TextBlock
+                        {
+                            Text = page.Icon,
+                            FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"),
+                            FontSize = 16,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                            Foreground = this.FindResource("BrTextSecondary") as IBrush
+                        };
+
+                        var pageTitle = new TextBlock
+                        {
+                            Text = page.Title,
+                            FontSize = 14,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                            Foreground = this.FindResource("BrTextSecondary") as IBrush
+                        };
+
+                        pageStack.Children.Add(pageIcon);
+                        pageStack.Children.Add(pageTitle);
+                        pageButton.Content = pageStack;
+                        pageButton.Click += (s, e) => LoadHelpPage(page.Id);
+                        
+                        childrenContainer.Children.Add(pageButton);
+                    }
+
+                    // Toggle expand/collapse on category button click
+                    categoryButton.Click += (s, e) =>
+                    {
+                        childrenContainer.IsVisible = !childrenContainer.IsVisible;
+                        expandIcon.Text = childrenContainer.IsVisible ? "\uE70D" : "\uE70E"; // ChevronUp : ChevronDown
+                    };
+
+                    categoryContainer.Children.Add(categoryButton);
+                    categoryContainer.Children.Add(childrenContainer);
+                    sidebar.Children.Add(categoryContainer);
+                }
+            }
+            
+            LoadHelpPage(_currentHelpPageId);
+        }
+
+        private void LoadHelpPage(string pageId)
+        {
+            _currentHelpPageId = pageId;
+            var contentArea = this.FindControl<StackPanel>("HelpContentArea");
+            var sidebar = this.FindControl<StackPanel>("HelpPagesSidebar");
+            
+            if (contentArea == null) return;
+
+            var pages = _helpPageService.LoadHelpPages();
+            var page = pages.Find(p => p.Id == pageId);
+            
+            if (page == null) return;
+
+            UpdateSidebarSelection(sidebar, pageId);
+            
+            contentArea.Children.Clear();
+            
+            // Store the current page font size for use in rendering
+            _currentPageFontSize = page.FontSize;
+            
+            foreach (var section in page.Sections)
+            {
+                RenderSection(contentArea, section);
+            }
+        }
+
+        private void UpdateSidebarSelection(StackPanel? sidebar, string selectedPageId)
+        {
+            if (sidebar == null) return;
+
+            var activeBg = this.FindResource("BrBgCard") as IBrush ?? Brushes.DimGray;
+            var inactiveBg = Brushes.Transparent;
+            var activeFg = this.FindResource("BrTextPrimary") as IBrush ?? Brushes.White;
+            var inactiveFg = this.FindResource("BrTextSecondary") as IBrush ?? Brushes.Gray;
+
+            foreach (var child in sidebar.Children)
+            {
+                if (child is Button btn)
+                {
+                    bool isActive = btn.Tag?.ToString() == selectedPageId;
+                    btn.Background = isActive ? activeBg : inactiveBg;
+                    
+                    if (btn.Content is StackPanel stack)
+                    {
+                        foreach (var item in stack.Children)
+                        {
+                            if (item is TextBlock tb)
+                            {
+                                tb.Foreground = isActive ? activeFg : inactiveFg;
+                            }
+                        }
+                    }
+                }
+                else if (child is StackPanel categoryContainer)
+                {
+                    // Check nested buttons inside category containers
+                    foreach (var categoryChild in categoryContainer.Children)
+                    {
+                        if (categoryChild is StackPanel nestedContainer)
+                        {
+                            // This is the children container with the actual page buttons
+                            foreach (var nestedChild in nestedContainer.Children)
+                            {
+                                if (nestedChild is Button nestedBtn)
+                                {
+                                    bool isActive = nestedBtn.Tag?.ToString() == selectedPageId;
+                                    nestedBtn.Background = isActive ? activeBg : inactiveBg;
+                                    
+                                    if (nestedBtn.Content is StackPanel nestedStack)
+                                    {
+                                        foreach (var item in nestedStack.Children)
+                                        {
+                                            if (item is TextBlock tb)
+                                            {
+                                                tb.Foreground = isActive ? activeFg : inactiveFg;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private double GetFontSize(double defaultSize, double? itemFontSize = null)
+        {
+            return itemFontSize ?? _currentPageFontSize ?? defaultSize;
+        }
+
+        private void RenderSection(StackPanel container, HelpSection section)
+        {
+            switch (section.Type)
+            {
+                case "guide-button":
+                    RenderGuideButton(container);
+                    break;
+                case "app-info":
+                    RenderAppInfo(container);
+                    break;
+                case "external-resources":
+                    RenderExternalResources(container);
+                    break;
+                case "system-info":
+                    RenderSystemInfo(container, section);
+                    break;
+                case "feedback":
+                    RenderFeedback(container);
+                    break;
+                case "text":
+                    RenderTextSection(container, section);
+                    break;
+                case "steps":
+                case "list":
+                case "faq":
+                    RenderListSection(container, section);
+                    break;
+            }
+        }
+
+        private void RenderGuideButton(StackPanel container)
+        {
+            var title = new TextBlock
+            {
+                Text = GetResourceString("TxtGuideTitle", "Guide"),
+                FontSize = 18,
+                FontWeight = FontWeight.SemiBold,
+                Margin = new Thickness(0, 0, 0, 12),
+                Foreground = this.FindResource("BrTextPrimary") as IBrush
+            };
+
+            var button = new Button
+            {
+                Content = GetResourceString("TxtBtnGuide", "Open Guide"),
+                Padding = new Thickness(16, 12),
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+                Margin = new Thickness(0, 0, 0, 32)
+            };
+            button.Classes.Add("BtnBase");
+            button.Click += BtnGuide_Click2;
+
+            container.Children.Add(title);
+            container.Children.Add(button);
+        }
+
+        private void RenderAppInfo(StackPanel container)
+        {
+            var title = new TextBlock
+            {
+                Text = GetResourceString("TxtAppInfoTitle", "Application Info"),
+                FontSize = 18,
+                FontWeight = FontWeight.SemiBold,
+                Margin = new Thickness(0, 0, 0, 12),
+                Foreground = this.FindResource("BrTextPrimary") as IBrush
+            };
+
+            var border = new Border
+            {
+                Padding = new Thickness(16, 12),
+                Margin = new Thickness(0, 0, 0, 16),
+                BorderThickness = new Thickness(1),
+                Background = this.FindResource("BrBgSurface") as IBrush,
+                BorderBrush = this.FindResource("BrBorderSubtle") as IBrush,
+                CornerRadius = (CornerRadius)(this.FindResource("RadiusMedium") ?? new CornerRadius(8))
+            };
+
+            var stack = new StackPanel();
+
+            var appGrid = new Grid { Margin = new Thickness(0, 0, 0, 12) };
+            appGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            appGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var appLabel = new TextBlock
+            {
+                Text = "Optiscaler Client",
+                FontWeight = FontWeight.SemiBold,
+                FontSize = 15,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Foreground = this.FindResource("BrTextPrimary") as IBrush
+            };
+
+            var appVersion = new TextBlock
+            {
+                Text = $"v{App.AppVersion}",
+                FontWeight = FontWeight.Bold,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Foreground = this.FindResource("BrAccent") as IBrush
+            };
+
+            Grid.SetColumn(appLabel, 0);
+            Grid.SetColumn(appVersion, 1);
+            appGrid.Children.Add(appLabel);
+            appGrid.Children.Add(appVersion);
+
+            var dateGrid = new Grid();
+            dateGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            dateGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var dateLabel = new TextBlock
+            {
+                Text = GetResourceString("TxtBuildDateLbl", "Build Date"),
+                FontWeight = FontWeight.SemiBold,
+                FontSize = 15,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Foreground = this.FindResource("BrTextPrimary") as IBrush
+            };
+
+            var dateValue = new TextBlock
+            {
+                FontWeight = FontWeight.Bold,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Foreground = this.FindResource("BrTextSecondary") as IBrush
+            };
 
             try
             {
                 var buildDate = System.IO.File.GetLastWriteTime(System.AppContext.BaseDirectory);
-                if (txtBuildDate != null) txtBuildDate.Text = buildDate.ToString("yyyy-MM-dd");
+                dateValue.Text = buildDate.ToString("yyyy-MM-dd");
             }
             catch
             {
-                if (txtBuildDate != null) txtBuildDate.Text = "Unknown";
+                dateValue.Text = "Unknown";
             }
 
-            var txtOptiVersion = this.FindControl<TextBlock>("TxtOptiVersion");
-            var bdOptiUpdate = this.FindControl<Border>("BdOptiUpdate");
-            
-            if (txtOptiVersion != null)
-                txtOptiVersion.Text = string.IsNullOrWhiteSpace(_componentService.OptiScalerVersion) ? "Not installed" : _componentService.OptiScalerVersion;
-            
-            if (bdOptiUpdate != null)
-                bdOptiUpdate.IsVisible = _componentService.IsOptiScalerUpdateAvailable;
+            Grid.SetColumn(dateLabel, 0);
+            Grid.SetColumn(dateValue, 1);
+            dateGrid.Children.Add(dateLabel);
+            dateGrid.Children.Add(dateValue);
 
-            var txtFakeVersion = this.FindControl<TextBlock>("TxtFakeVersion");
-            if (txtFakeVersion != null)
-                txtFakeVersion.Text = string.IsNullOrWhiteSpace(_componentService.FakenvapiVersion) ? "Not installed" : _componentService.FakenvapiVersion;
+            stack.Children.Add(appGrid);
+            stack.Children.Add(dateGrid);
+            border.Child = stack;
 
-            var txtNukemVersion = this.FindControl<TextBlock>("TxtNukemVersion");
-            var btnUpdateNukemFG = this.FindControl<Button>("BtnUpdateNukemFG");
-            if (_componentService.IsNukemFGInstalled)
+            container.Children.Add(title);
+            container.Children.Add(border);
+        }
+
+        private void RenderExternalResources(StackPanel container)
+        {
+            var title = new TextBlock
             {
-                var ver = _componentService.NukemFGVersion;
-                if (txtNukemVersion != null) txtNukemVersion.Text = (string.IsNullOrWhiteSpace(ver) || ver == "manual") ? "Available" : ver;
-                if (btnUpdateNukemFG != null) btnUpdateNukemFG.Content = "Update";
+                Text = GetResourceString("TxtExternalResourcesTitle", "External Resources"),
+                FontSize = 18,
+                FontWeight = FontWeight.SemiBold,
+                Margin = new Thickness(0, 0, 0, 12),
+                Foreground = this.FindResource("BrTextPrimary") as IBrush
+            };
+
+            var border = new Border
+            {
+                Padding = new Thickness(16, 12),
+                Margin = new Thickness(0, 0, 0, 16),
+                BorderThickness = new Thickness(1),
+                Background = this.FindResource("BrBgSurface") as IBrush,
+                BorderBrush = this.FindResource("BrBorderSubtle") as IBrush,
+                CornerRadius = (CornerRadius)(this.FindResource("RadiusMedium") ?? new CornerRadius(8))
+            };
+
+            var stack = new StackPanel();
+
+            var optiScalerRow = CreateResourceRow("Latest OptiScaler", 
+                string.IsNullOrWhiteSpace(_componentService.OptiScalerVersion) ? "Not installed" : _componentService.OptiScalerVersion,
+                _componentService.IsOptiScalerUpdateAvailable, false);
+            optiScalerRow.Margin = new Thickness(0, 0, 0, 16);
+            stack.Children.Add(optiScalerRow);
+            
+            stack.Children.Add(CreateResourceRow("Latest Fakenvapi", 
+                string.IsNullOrWhiteSpace(_componentService.FakenvapiVersion) ? "Not installed" : _componentService.FakenvapiVersion,
+                false, false, "BtnUpdateFakenvapi", BtnUpdateFakenvapi_Click));
+            
+            stack.Children.Add(CreateResourceRow("Latest NukemFG", 
+                _componentService.IsNukemFGInstalled 
+                    ? (string.IsNullOrWhiteSpace(_componentService.NukemFGVersion) || _componentService.NukemFGVersion == "manual" ? "Available" : _componentService.NukemFGVersion)
+                    : "Not installed",
+                false, false, "BtnUpdateNukemFG", BtnUpdateNukemFG_Click, 
+                _componentService.IsNukemFGInstalled ? GetResourceString("TxtBtnUpdate", "Update") : "Install"));
+
+            border.Child = stack;
+
+            var buttonStack = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Margin = new Thickness(0, 0, 0, 16)
+            };
+
+            var checkUpdatesBtn = new Button
+            {
+                Content = GetResourceString("TxtCheckUpdatesBtn", "Check for Updates"),
+                Padding = new Thickness(16, 8),
+                Margin = new Thickness(0, 0, 12, 0)
+            };
+            checkUpdatesBtn.Classes.Add("BtnPrimary");
+            checkUpdatesBtn.Click += BtnCheckUpdates_Click;
+
+            var githubBtn = new Button
+            {
+                Content = GetResourceString("TxtGithubBtn", "GitHub"),
+                Padding = new Thickness(16, 8)
+            };
+            githubBtn.Classes.Add("BtnBase");
+            githubBtn.Click += BtnGithub_Click;
+
+            buttonStack.Children.Add(checkUpdatesBtn);
+            buttonStack.Children.Add(githubBtn);
+
+            container.Children.Add(title);
+            container.Children.Add(border);
+            container.Children.Add(buttonStack);
+        }
+
+        private void RenderSystemInfo(StackPanel container, HelpSection section)
+        {
+            try
+            {
+                LogToFile("[RenderSystemInfo] Starting...");
+                
+                var title = new TextBlock
+                {
+                    Text = string.IsNullOrWhiteSpace(section.Title) ? "System" : section.Title,
+                    FontSize = 18,
+                    FontWeight = FontWeight.SemiBold,
+                    Margin = new Thickness(0, 0, 0, 12),
+                    Foreground = this.FindResource("BrTextPrimary") as IBrush
+                };
+                LogToFile("[RenderSystemInfo] Title created");
+
+                var border = new Border
+                {
+                    Padding = new Thickness(16, 12),
+                    Margin = new Thickness(0, 0, 0, 24),
+                    BorderThickness = new Thickness(1),
+                    Background = this.FindResource("BrBgSurface") as IBrush,
+                    BorderBrush = this.FindResource("BrBorderSubtle") as IBrush,
+                    CornerRadius = (CornerRadius)(this.FindResource("RadiusMedium") ?? new CornerRadius(8))
+                };
+                LogToFile("[RenderSystemInfo] Border created");
+
+                var stack = new StackPanel();
+                LogToFile("[RenderSystemInfo] StackPanel created");
+
+                LogToFile("[RenderSystemInfo] Getting OS name...");
+                var osName = GetFriendlyOperatingSystemName();
+                LogToFile($"[RenderSystemInfo] OS name: {osName}");
+                stack.Children.Add(CreateResourceRow("Operating System", osName, false, false));
+                
+                LogToFile("[RenderSystemInfo] Adding Architecture...");
+                stack.Children.Add(CreateResourceRow("Architecture", RuntimeInformation.OSArchitecture.ToString(), false, false));
+                
+                LogToFile("[RenderSystemInfo] Adding Machine name...");
+                stack.Children.Add(CreateResourceRow("Machine", Environment.MachineName, false, false));
+
+                LogToFile("[RenderSystemInfo] Getting GPU info...");
+                var gpuInfo = GetHelpGpuInfo();
+                LogToFile($"[RenderSystemInfo] GPU info: {gpuInfo.DisplayName}");
+                stack.Children.Add(CreateResourceRow("GPU", gpuInfo.DisplayName, false, true));
+
+                border.Child = stack;
+                container.Children.Add(title);
+                container.Children.Add(border);
+                LogToFile("[RenderSystemInfo] Completed successfully");
             }
-            else
+            catch (Exception ex)
             {
-                if (txtNukemVersion != null) txtNukemVersion.Text = "Not installed";
-                if (btnUpdateNukemFG != null) btnUpdateNukemFG.Content = "Install";
+                LogToFile($"[RenderSystemInfo] CRASH: {ex.GetType().Name}: {ex.Message}");
+                LogToFile($"[RenderSystemInfo] StackTrace: {ex.StackTrace}");
+                throw;
             }
         }
 
-        private async void BtnUpdateFakenvapi_Click(object sender, RoutedEventArgs e)
+        private (string DisplayName, bool IsLast) GetHelpGpuInfo()
+        {
+            try
+            {
+                LogToFile("[GetHelpGpuInfo] Starting...");
+                
+                if (!OperatingSystem.IsWindows())
+                {
+                    LogToFile("[GetHelpGpuInfo] Not Windows");
+                    return ("Not available", true);
+                }
+                
+                if (_gpuService == null)
+                {
+                    LogToFile("[GetHelpGpuInfo] _gpuService is null");
+                    return ("Not available", true);
+                }
+                
+                if (_componentService == null)
+                {
+                    LogToFile("[GetHelpGpuInfo] _componentService is null");
+                    return ("Not available", true);
+                }
+
+                GpuInfo? gpu = _lastDetectedGpu;
+                LogToFile($"[GetHelpGpuInfo] _lastDetectedGpu: {(gpu == null ? "null" : gpu.Name)}");
+
+                if (gpu == null)
+                {
+                    try
+                    {
+                        LogToFile("[GetHelpGpuInfo] Detecting GPUs...");
+                        var allGpus = _gpuService.DetectGPUs();
+                        LogToFile($"[GetHelpGpuInfo] Detected {(allGpus?.Length ?? 0)} GPUs");
+                        
+                        if (allGpus != null && allGpus.Length > 0)
+                        {
+                            var defaultGpuId = _componentService.Config?.DefaultGpuId;
+                            LogToFile($"[GetHelpGpuInfo] DefaultGpuId: {defaultGpuId ?? "null"}");
+                            
+
+                            gpu = GpuSelectionHelper.GetPreferredGpu(_gpuService, defaultGpuId)
+                                  ?? allGpus.FirstOrDefault();
+                            LogToFile($"[GetHelpGpuInfo] Selected GPU: {gpu?.Name ?? "null"}");
+                        }
+                    }
+                    catch (Exception innerEx)
+                    {
+                        LogToFile($"[GetHelpGpuInfo] GPU detection failed: {innerEx.Message}");
+                    }
+
+                    _lastDetectedGpu = gpu;
+                }
+
+                if (gpu == null)
+                {
+                    LogToFile("[GetHelpGpuInfo] Final GPU is null, returning Not detected");
+                    return ("Not detected", true);
+                }
+
+                var gpuName = string.IsNullOrWhiteSpace(gpu.Name) ? "Unknown GPU" : gpu.Name;
+                var vram = string.IsNullOrWhiteSpace(gpu.VideoMemoryGB) ? string.Empty : $" ({gpu.VideoMemoryGB} VRAM)";
+                var result = $"{gpuName}{vram}";
+                LogToFile($"[GetHelpGpuInfo] Returning: {result}");
+                return (result, true);
+            }
+            catch (Exception ex)
+            {
+                LogToFile($"[GetHelpGpuInfo] CRASH: {ex.GetType().Name}: {ex.Message}");
+                LogToFile($"[GetHelpGpuInfo] StackTrace: {ex.StackTrace}");
+                return ("Detection failed", true);
+            }
+        }
+
+        private string GetFriendlyOperatingSystemName()
+        {
+            try
+            {
+                LogToFile("[GetFriendlyOperatingSystemName] Starting...");
+                
+                if (!OperatingSystem.IsWindows())
+                {
+                    LogToFile("[GetFriendlyOperatingSystemName] Not Windows");
+                    return RuntimeInformation.OSDescription;
+                }
+
+                LogToFile("[GetFriendlyOperatingSystemName] Opening registry...");
+                using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+                if (key == null)
+                {
+                    LogToFile("[GetFriendlyOperatingSystemName] Registry key is null");
+                    return RuntimeInformation.OSDescription;
+                }
+
+                var productName = key.GetValue("ProductName")?.ToString();
+                var displayVersion = key.GetValue("DisplayVersion")?.ToString();
+                var releaseId = key.GetValue("ReleaseId")?.ToString();
+                var currentBuild = key.GetValue("CurrentBuild")?.ToString()
+                                  ?? key.GetValue("CurrentBuildNumber")?.ToString();
+                var ubrValue = key.GetValue("UBR")?.ToString();
+
+                LogToFile($"[GetFriendlyOperatingSystemName] ProductName: {productName}");
+                LogToFile($"[GetFriendlyOperatingSystemName] DisplayVersion: {displayVersion}");
+                LogToFile($"[GetFriendlyOperatingSystemName] CurrentBuild: {currentBuild}");
+
+                var versionPart = !string.IsNullOrWhiteSpace(displayVersion)
+                    ? displayVersion
+                    : releaseId;
+
+                var buildPart = string.Empty;
+                if (!string.IsNullOrWhiteSpace(currentBuild))
+                {
+                    buildPart = !string.IsNullOrWhiteSpace(ubrValue)
+                        ? $"Build {currentBuild}.{ubrValue}"
+                        : $"Build {currentBuild}";
+                }
+
+                var name = NormalizeWindowsProductName(productName, currentBuild);
+                LogToFile($"[GetFriendlyOperatingSystemName] Normalized name: {name}");
+
+                string result;
+                if (!string.IsNullOrWhiteSpace(versionPart) && !string.IsNullOrWhiteSpace(buildPart))
+                    result = $"{name} {versionPart} ({buildPart})";
+                else if (!string.IsNullOrWhiteSpace(versionPart))
+                    result = $"{name} {versionPart}";
+                else if (!string.IsNullOrWhiteSpace(buildPart))
+                    result = $"{name} ({buildPart})";
+                else
+                    result = name;
+
+                LogToFile($"[GetFriendlyOperatingSystemName] Returning: {result}");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogToFile($"[GetFriendlyOperatingSystemName] CRASH: {ex.GetType().Name}: {ex.Message}");
+                LogToFile($"[GetFriendlyOperatingSystemName] StackTrace: {ex.StackTrace}");
+                return RuntimeInformation.OSDescription;
+            }
+        }
+
+        private static string NormalizeWindowsProductName(string? productName, string? currentBuild)
+        {
+            var name = string.IsNullOrWhiteSpace(productName) ? "Windows" : productName;
+
+            if (!int.TryParse(currentBuild, out var buildNumber))
+                return name;
+
+            if (buildNumber >= 22000 && name.Contains("Windows 10", StringComparison.OrdinalIgnoreCase))
+            {
+                return name.Replace("Windows 10", "Windows 11", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return name;
+        }
+
+        private Grid CreateResourceRow(string label, string version, bool showUpdateBadge, bool isLast, 
+            string? buttonName = null, EventHandler<RoutedEventArgs>? buttonClick = null, string? buttonText = null)
+        {
+            var grid = new Grid { Margin = new Thickness(0, 0, 0, isLast ? 0 : 12) };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var labelBlock = new TextBlock
+            {
+                Text = label,
+                FontWeight = FontWeight.SemiBold,
+                FontSize = 15,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Foreground = this.FindResource("BrTextPrimary") as IBrush
+            };
+
+            var rightStack = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+
+            if (buttonClick != null)
+            {
+                var btn = new Button
+                {
+                    Content = buttonText ?? GetResourceString("TxtCheckUpdatesBtn", "Check Updates"),
+                    Padding = new Thickness(10, 4),
+                    Margin = new Thickness(0, 0, 12, 0),
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                };
+                if (!string.IsNullOrEmpty(buttonName)) btn.Name = buttonName;
+                btn.Classes.Add("BtnBase");
+                btn.Click += buttonClick;
+                rightStack.Children.Add(btn);
+            }
+
+            if (showUpdateBadge)
+            {
+                var badge = new Border
+                {
+                    Background = new SolidColorBrush(Color.Parse("#2A1F4A")),
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(6),
+                    Padding = new Thickness(8, 4),
+                    Margin = new Thickness(0, 0, 12, 0),
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    IsVisible = _componentService.IsOptiScalerUpdateAvailable
+                };
+                badge.BorderBrush = this.FindResource("BrAccent") as IBrush;
+
+                var badgeText = new TextBlock
+                {
+                    Text = GetResourceString("TxtUpdateAvail", "Update Available"),
+                    FontSize = 11,
+                    Foreground = this.FindResource("BrAccent") as IBrush
+                };
+                badge.Child = badgeText;
+                rightStack.Children.Add(badge);
+            }
+
+            var versionBlock = new TextBlock
+            {
+                Text = version,
+                FontWeight = FontWeight.Bold,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                MinWidth = buttonClick != null ? 80 : 0,
+                TextAlignment = buttonClick != null ? TextAlignment.Right : TextAlignment.Left,
+                Foreground = this.FindResource("BrAccent") as IBrush
+            };
+            rightStack.Children.Add(versionBlock);
+
+            Grid.SetColumn(labelBlock, 0);
+            Grid.SetColumn(rightStack, 1);
+            grid.Children.Add(labelBlock);
+            grid.Children.Add(rightStack);
+
+            return grid;
+        }
+
+        private void RenderFeedback(StackPanel container)
+        {
+            var title = new TextBlock
+            {
+                Text = GetResourceString("TxtFeedbackTitle", "Feedback"),
+                FontSize = 18,
+                FontWeight = FontWeight.SemiBold,
+                Margin = new Thickness(0, 0, 0, 12),
+                Foreground = this.FindResource("BrTextPrimary") as IBrush
+            };
+
+            var border = new Border
+            {
+                Padding = new Thickness(16, 12),
+                Margin = new Thickness(0, 0, 0, 40),
+                BorderThickness = new Thickness(1),
+                Background = this.FindResource("BrBgCard") as IBrush,
+                BorderBrush = this.FindResource("BrBorderSubtle") as IBrush,
+                CornerRadius = (CornerRadius)(this.FindResource("RadiusMedium") ?? new CornerRadius(8))
+            };
+
+            var stack = new StackPanel();
+
+            var feedbackItems = new[]
+            {
+                GetResourceString("TxtFeedbackDesc", "We'd love to hear from you!"),
+                GetResourceString("TxtFeedbackBugs", "• Report bugs and issues"),
+                GetResourceString("TxtFeedbackFeatures", "• Suggest new features"),
+                GetResourceString("TxtFeedbackImprovements", "• Share improvement ideas"),
+                GetResourceString("TxtFeedbackSystem", "• Help us improve the system")
+            };
+
+            for (int i = 0; i < feedbackItems.Length; i++)
+            {
+                var text = new TextBlock
+                {
+                    Text = feedbackItems[i],
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, 0, 0, i == feedbackItems.Length - 1 ? 0 : (i == 0 ? 12 : 8)),
+                    Foreground = this.FindResource("BrTextSecondary") as IBrush,
+                    FontSize = (double)(this.FindResource("FontSizeBody") ?? 14.0)
+                };
+                stack.Children.Add(text);
+            }
+
+            border.Child = stack;
+            container.Children.Add(title);
+            container.Children.Add(border);
+        }
+
+        private void RenderTextSection(StackPanel container, HelpSection section)
+        {
+            if (!string.IsNullOrEmpty(section.Title))
+            {
+                var title = new TextBlock
+                {
+                    Text = section.Title,
+                    FontSize = GetFontSize(18, section.FontSize),
+                    FontWeight = FontWeight.SemiBold,
+                    Margin = new Thickness(0, 0, 0, 12),
+                    Foreground = this.FindResource("BrTextPrimary") as IBrush
+                };
+                container.Children.Add(title);
+            }
+
+            if (!string.IsNullOrEmpty(section.Content))
+            {
+                var content = new TextBlock
+                {
+                    Text = section.Content,
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, 0, 0, 24),
+                    Foreground = this.FindResource("BrTextSecondary") as IBrush,
+                    FontSize = GetFontSize((double)(this.FindResource("FontSizeBody") ?? 14.0), section.FontSize)
+                };
+                container.Children.Add(content);
+            }
+        }
+
+        private void RenderListSection(StackPanel container, HelpSection section)
+        {
+            if (!string.IsNullOrEmpty(section.Title))
+            {
+                var title = new TextBlock
+                {
+                    Text = section.Title,
+                    FontSize = GetFontSize(16, section.FontSize),
+                    FontWeight = FontWeight.SemiBold,
+                    Margin = new Thickness(0, 0, 0, 12),
+                    Foreground = this.FindResource("BrTextPrimary") as IBrush
+                };
+                container.Children.Add(title);
+            }
+
+            if (section.Items != null)
+            {
+                foreach (var item in section.Items)
+                {
+                    // Check if it's a bullet point item (standalone, not inside a card)
+                    if (item.Type == "bullet-point")
+                    {
+                        var bulletGrid = new Grid { Margin = new Thickness(24, 2, 0, 8) };
+                        bulletGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                        bulletGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                        
+                        var bullet = new TextBlock
+                        {
+                            Text = "•",
+                            FontWeight = FontWeight.Bold,
+                            FontSize = GetFontSize(14, item.FontSize),
+                            Foreground = this.FindResource("BrAccent") as IBrush,
+                            Margin = new Thickness(0, 0, 8, 0),
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+                        };
+
+                        // Use SelectableTextBlock with Inlines for mixed formatting
+                        var bulletText = new SelectableTextBlock
+                        {
+                            TextWrapping = TextWrapping.Wrap,
+                            Foreground = this.FindResource("BrTextSecondary") as IBrush,
+                            FontSize = GetFontSize((double)(this.FindResource("FontSizeBody") ?? 14.0), item.FontSize),
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+                        };
+
+                        if (!string.IsNullOrEmpty(item.Title))
+                        {
+                            // Add bold title
+                            var titleRun = new Avalonia.Controls.Documents.Run($"{item.Title}: ")
+                            {
+                                FontWeight = FontWeight.Bold,
+                                Foreground = this.FindResource("BrTextPrimary") as IBrush
+                            };
+                            bulletText.Inlines.Add(titleRun);
+                            
+                            // Add regular text
+                            var textRun = new Avalonia.Controls.Documents.Run(item.Text);
+                            bulletText.Inlines.Add(textRun);
+                        }
+                        else
+                        {
+                            bulletText.Text = item.Text;
+                        }
+
+                        Grid.SetColumn(bullet, 0);
+                        Grid.SetColumn(bulletText, 1);
+                        bulletGrid.Children.Add(bullet);
+                        bulletGrid.Children.Add(bulletText);
+
+                        container.Children.Add(bulletGrid);
+                    }
+                    else
+                    {
+                        // Regular card item (can have sub-items)
+                        var itemBorder = new Border
+                        {
+                            Padding = new Thickness(16, 12),
+                            Margin = new Thickness(0, 0, 0, 12),
+                            BorderThickness = new Thickness(1),
+                            Background = this.FindResource("BrBgSurface") as IBrush,
+                            BorderBrush = this.FindResource("BrBorderSubtle") as IBrush,
+                            CornerRadius = (CornerRadius)(this.FindResource("RadiusMedium") ?? new CornerRadius(8))
+                        };
+
+                        var itemStack = new StackPanel();
+
+                        var label = new TextBlock
+                        {
+                            Text = item.Label,
+                            FontWeight = FontWeight.SemiBold,
+                            FontSize = GetFontSize(14, item.FontSize),
+                            Margin = new Thickness(0, 0, 0, 6),
+                            Foreground = this.FindResource("BrTextPrimary") as IBrush
+                        };
+
+                        var text = new TextBlock
+                        {
+                            Text = item.Text,
+                            TextWrapping = TextWrapping.Wrap,
+                            Foreground = this.FindResource("BrTextSecondary") as IBrush,
+                            FontSize = GetFontSize((double)(this.FindResource("FontSizeBody") ?? 14.0), item.FontSize)
+                        };
+
+                        itemStack.Children.Add(label);
+                        itemStack.Children.Add(text);
+
+                        // Add sub-items (bullet points) if they exist
+                        if (item.Items != null)
+                        {
+                            var bulletContainer = new StackPanel { Margin = new Thickness(0, 8, 0, 0) };
+                            
+                            foreach (var subItem in item.Items)
+                            {
+                                var bulletGrid = new Grid { Margin = new Thickness(0, 2, 0, 4) };
+                                bulletGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                                bulletGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                                
+                                var bullet = new TextBlock
+                                {
+                                    Text = "•",
+                                    FontWeight = FontWeight.Bold,
+                                    FontSize = GetFontSize(13, subItem.FontSize),
+                                    Foreground = this.FindResource("BrAccent") as IBrush,
+                                    Margin = new Thickness(0, 0, 8, 0),
+                                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+                                };
+
+                                // Use SelectableTextBlock with Inlines for mixed formatting
+                                var bulletText = new SelectableTextBlock
+                                {
+                                    TextWrapping = TextWrapping.Wrap,
+                                    Foreground = this.FindResource("BrTextSecondary") as IBrush,
+                                    FontSize = GetFontSize(12, subItem.FontSize),
+                                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+                                };
+
+                                if (!string.IsNullOrEmpty(subItem.Title))
+                                {
+                                    // Add bold title
+                                    var titleRun = new Avalonia.Controls.Documents.Run($"{subItem.Title}: ")
+                                    {
+                                        FontWeight = FontWeight.Bold,
+                                        Foreground = this.FindResource("BrTextPrimary") as IBrush
+                                    };
+                                    bulletText.Inlines.Add(titleRun);
+                                    
+                                    // Add regular text
+                                    var textRun = new Avalonia.Controls.Documents.Run(subItem.Text);
+                                    bulletText.Inlines.Add(textRun);
+                                }
+                                else
+                                {
+                                    bulletText.Text = subItem.Text;
+                                }
+
+                                Grid.SetColumn(bullet, 0);
+                                Grid.SetColumn(bulletText, 1);
+                                bulletGrid.Children.Add(bullet);
+                                bulletGrid.Children.Add(bulletText);
+
+                                bulletContainer.Children.Add(bulletGrid);
+                            }
+                            
+                            itemStack.Children.Add(bulletContainer);
+                        }
+
+                        itemBorder.Child = itemStack;
+                        container.Children.Add(itemBorder);
+                    }
+                }
+            }
+
+            var spacer = new Border { Height = 16 };
+            container.Children.Add(spacer);
+        }
+
+        private async void BtnUpdateFakenvapi_Click(object? sender, RoutedEventArgs e)
         {
             var btnUpdateFakenvapi = this.FindControl<Button>("BtnUpdateFakenvapi");
             if (btnUpdateFakenvapi == null) return;
@@ -781,7 +1909,7 @@ namespace OptiscalerClient.Views
             }
         }
 
-        private async void BtnUpdateNukemFG_Click(object sender, RoutedEventArgs e)
+        private async void BtnUpdateNukemFG_Click(object? sender, RoutedEventArgs e)
         {
             try
             {
@@ -807,7 +1935,7 @@ namespace OptiscalerClient.Views
             }
         }
 
-        private async void BtnCheckUpdates_Click(object sender, RoutedEventArgs e)
+        private async void BtnCheckUpdates_Click(object? sender, RoutedEventArgs e)
         {
             var btnCheckUpdates = this.FindControl<Button>("BtnCheckUpdates");
             if (btnCheckUpdates == null) return;
@@ -878,7 +2006,7 @@ namespace OptiscalerClient.Views
             }
         }
 
-        private async void BtnGithub_Click(object sender, RoutedEventArgs e)
+        private async void BtnGithub_Click(object? sender, RoutedEventArgs e)
         {
             try
             {
@@ -1631,6 +2759,17 @@ namespace OptiscalerClient.Views
 
         #region Window State Persistence
 
+        private void MainWindow_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            // Only save state for relevant properties
+            if (e.Property == Window.WindowStateProperty || 
+                e.Property == Window.WidthProperty || 
+                e.Property == Window.HeightProperty)
+            {
+                SaveWindowState();
+            }
+        }
+
         private void RestoreWindowState()
         {
             var config = _componentService.Config;
@@ -1656,36 +2795,63 @@ namespace OptiscalerClient.Views
             }
         }
 
-        private void Window_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-        {
-            // Save window state on any relevant property change
-            SaveWindowState();
-        }
-
         private void SaveWindowState()
         {
-            var config = _componentService.Config;
-            
-            // Save window size
-            if (this.WindowState != WindowState.Maximized)
+            try
             {
-                config.WindowWidth = this.Width;
-                config.WindowHeight = this.Height;
+                var config = _componentService.Config;
+                
+                // Save window size (only when not maximized)
+                if (this.WindowState != WindowState.Maximized)
+                {
+                    if (this.Width > 0 && this.Height > 0)
+                    {
+                        config.WindowWidth = this.Width;
+                        config.WindowHeight = this.Height;
+                    }
+                }
+                
+                // Save window position
+                var position = this.Position;
+                if (!double.IsNaN(position.X) && !double.IsNaN(position.Y))
+                {
+                    config.WindowLeft = position.X;
+                    config.WindowTop = position.Y;
+                }
+                
+                // Save maximized state
+                config.WindowMaximized = this.WindowState == WindowState.Maximized;
+                
+                // Save configuration
+                _componentService.SaveConfiguration();
             }
-            
-            // Save window position
-            var position = this.Position;
-            config.WindowLeft = position.X;
-            config.WindowTop = position.Y;
-            
-            // Save maximized state
-            config.WindowMaximized = this.WindowState == WindowState.Maximized;
-            
-            // Save configuration
-            _componentService.SaveConfiguration();
+            catch
+            {
+                // Ignore errors during window state saving
+            }
         }
 
         #endregion
+
+        private void LogToFile(string message)
+        {
+            try
+            {
+                var logPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "OptiscalerClient", "crash.log");
+                var logDir = System.IO.Path.GetDirectoryName(logPath);
+                if (!string.IsNullOrEmpty(logDir) && !System.IO.Directory.Exists(logDir))
+                {
+                    System.IO.Directory.CreateDirectory(logDir);
+                }
+                
+                var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                System.IO.File.AppendAllText(logPath, $"[{timestamp}] {message}\n");
+            }
+            catch
+            {
+                // Si falla el logging, no hacer nada para evitar crash adicional
+            }
+        }
 
         private string GetResourceString(string key, string fallback)
         {

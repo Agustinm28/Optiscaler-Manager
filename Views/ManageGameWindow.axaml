@@ -300,8 +300,35 @@
                                 Background="{StaticResource BrBorderSubtle}"
                                 Margin="20,0"/>
 
-                        <!-- Row 2, Col 0: Injector selector -->
-                        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Row 2, Col 0: Profile selector -->
+                        <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+                            <TextBlock Text="Profile"
+                                       Foreground="{StaticResource BrTextSecondary}"
+                                       VerticalAlignment="Center"
+                                       FontSize="{StaticResource FontSizeBody}"
+                                       Width="65"/>
+                            <ComboBox Name="CmbProfile"
+                                      Width="185"
+                                      Classes="BtnSelector"
+                                      SelectedIndex="0"
+                                      HorizontalContentAlignment="Left"
+                                      VerticalContentAlignment="Center" />
+                            <Border Background="{StaticResource BrBgElevated}"
+                                    BorderBrush="{StaticResource BrBorderSubtle}"
+                                    BorderThickness="1" CornerRadius="8"
+                                    Width="16" Height="16"
+                                    Margin="10,0,0,0"
+                                    ToolTip.ShowDelay="100" Cursor="Help"
+                                    ToolTip.Tip="Select a configuration profile for OptiScaler. Profiles control upscaler settings, frame generation, and other options.">
+                                <TextBlock Text="?" Foreground="{StaticResource BrTextSecondary}"
+                                            FontSize="10" FontWeight="Bold"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Margin="0,-1,0,0"/>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Row 3, Col 0: Injector selector -->
+                        <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="{DynamicResource TxtInjectionLbl}"
                                        Foreground="{StaticResource BrTextSecondary}"
                                        VerticalAlignment="Center"

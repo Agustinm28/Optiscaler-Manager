@@ -25,12 +25,104 @@ namespace OptiscalerClient.Views
         private readonly Game _game;
         private readonly IGpuDetectionService _gpuService;
         private HashSet<string> _betaVersions = new();
+        private const string NewProfileTag = "__NEW_PROFILE__";
+        private bool _isUpdatingProfiles;
+        private string? _lastSelectedProfileName;
+        private string? _defaultProfileName;
 
         public bool NeedsScan { get; private set; }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void PopulateProfileSelector(ProfileManagementService profileService, List<OptiScalerProfile> profiles, string? selectedName = null)
+        {
+            var cmbProfile = this.FindControl<ComboBox>("CmbProfile");
+            if (cmbProfile == null) return;
+
+            _isUpdatingProfiles = true;
+            cmbProfile.SelectionChanged -= CmbProfile_SelectionChanged;
+            cmbProfile.Items.Clear();
+
+            foreach (var profile in profiles)
+            {
+                var displayName = profile.Name;
+                var item = new ComboBoxItem
+                {
+                    Content = displayName,
+                    Tag = profile
+                };
+                ToolTip.SetTip(item, profile.Description);
+                cmbProfile.Items.Add(item);
+            }
+
+            cmbProfile.Items.Add(new ComboBoxItem
+            {
+                Content = "+ New Profile",
+                Tag = NewProfileTag
+            });
+
+            var targetName = selectedName;
+            if (string.IsNullOrWhiteSpace(targetName))
+            {
+                targetName = _defaultProfileName;
+                if (string.IsNullOrWhiteSpace(targetName))
+                {
+                    targetName = profileService.GetDefaultProfile().Name;
+                }
+            }
+            var selectedIndex = profiles.FindIndex(p => p.Name == targetName);
+            selectedIndex = selectedIndex >= 0 ? selectedIndex : Math.Max(0, profiles.Count - 1);
+
+            cmbProfile.SelectedIndex = selectedIndex;
+            if (profiles.Count > 0 && selectedIndex >= 0)
+            {
+                _lastSelectedProfileName = profiles[selectedIndex].Name;
+            }
+            else
+            {
+                _lastSelectedProfileName = targetName;
+            }
+
+            cmbProfile.SelectionChanged += CmbProfile_SelectionChanged;
+            _isUpdatingProfiles = false;
+        }
+
+        private async void CmbProfile_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (_isUpdatingProfiles) return;
+            if (sender is not ComboBox cmbProfile) return;
+            if (cmbProfile.SelectedItem is not ComboBoxItem item) return;
+
+            if (item.Tag is OptiScalerProfile profile)
+            {
+                _lastSelectedProfileName = profile.Name;
+                return;
+            }
+
+            if (item.Tag is string tag && tag == NewProfileTag)
+            {
+                var profileService = new ProfileManagementService();
+                var profiles = profileService.GetAllProfiles();
+                var fallbackName = _lastSelectedProfileName
+                    ?? _defaultProfileName
+                    ?? profileService.GetDefaultProfile().Name;
+                var fallbackIndex = profiles.FindIndex(p => p.Name == fallbackName);
+
+                _isUpdatingProfiles = true;
+                cmbProfile.SelectedIndex = fallbackIndex >= 0 ? fallbackIndex : 0;
+                _isUpdatingProfiles = false;
+
+                var manager = new ProfileManagementWindow();
+                await manager.ShowDialog(this);
+
+                var refreshedProfiles = profileService.GetAllProfiles(forceRefresh: true);
+                var refreshedConfig = new ComponentManagementService();
+                _defaultProfileName = refreshedConfig.Config.DefaultProfileName;
+                PopulateProfileSelector(profileService, refreshedProfiles, _defaultProfileName);
+            }
         }
 
         // Avalonia requires an empty parameterless constructor for XAML initialization
@@ -56,7 +148,7 @@ namespace OptiscalerClient.Views
 
                 var x = owner.Position.X + (owner.Bounds.Width * scaling - dialogW) / 2;
                 var y = owner.Position.Y + (owner.Bounds.Height * scaling - dialogH) / 2;
-                
+
                 this.Position = new PixelPoint((int)Math.Max(0, x), (int)Math.Max(0, y));
             }
 
@@ -70,7 +162,7 @@ namespace OptiscalerClient.Views
             }
 
             SetupUI();
-            
+
             // Re-bind TitleBar dragging and Close button
             var titleBar = this.FindControl<Border>("TitleBar");
             if (titleBar != null)
@@ -127,13 +219,24 @@ namespace OptiscalerClient.Views
         private async Task LoadVersionsAsync()
         {
             var componentService = new ComponentManagementService();
-            
+
             // Always call CheckForUpdatesAsync to ensure extras and latest versions are fetched.
             // Internal rate limiter in the service (15m) handles efficiency.
             await componentService.CheckForUpdatesAsync();
 
+            // Load profiles
+            var profileService = new ProfileManagementService();
+            var profiles = profileService.GetAllProfiles();
+            var defaultProfileName = componentService.Config.DefaultProfileName;
+            _defaultProfileName = !string.IsNullOrWhiteSpace(defaultProfileName)
+                && profiles.Any(p => p.Name.Equals(defaultProfileName, StringComparison.OrdinalIgnoreCase))
+                    ? defaultProfileName
+                    : profileService.GetDefaultProfile().Name;
+
             Dispatcher.UIThread.Post(() =>
             {
+                PopulateProfileSelector(profileService, profiles, _lastSelectedProfileName ?? _defaultProfileName);
+
                 var allVersions = componentService.OptiScalerAvailableVersions;
                 var betaVersions = componentService.BetaVersions;
                 var latestBeta = componentService.LatestBetaVersion;
@@ -162,7 +265,7 @@ namespace OptiscalerClient.Views
 
                 // Determine what is truly "latest" - only stable versions get LATEST badge
                 bool hasBeta = !string.IsNullOrEmpty(latestBeta);
-                
+
                 // 1. Latest beta at top (if present) - NO LATEST badge for beta
                 if (hasBeta && latestBeta != null)
                 {
@@ -175,15 +278,15 @@ namespace OptiscalerClient.Views
                 foreach (var ver in stableVersions)
                 {
                     bool isFirstStable = !isLatestStableMarked && !ver.Contains("nightly", StringComparison.OrdinalIgnoreCase);
-                    
+
                     // Mark as latest stable if this is the first stable version
                     bool shouldMarkAsLatest = isFirstStable;
-                    
+
                     if (isFirstStable)
                     {
                         isLatestStableMarked = true;
                     }
-                    
+
                     // Select default version based on user preference
                     if (showBetaVersions && hasBeta)
                     {
@@ -195,7 +298,7 @@ namespace OptiscalerClient.Views
                         // User prefers stable - select the first stable version
                         selectedIndex = currentIndex;
                     }
-                    
+
                     cmbOptiVersion.Items.Add(BuildVersionItem(ver, isBeta: false, isLatest: shouldMarkAsLatest));
                     currentIndex++;
                 }
@@ -245,9 +348,9 @@ namespace OptiscalerClient.Views
                     stack.Children.Add(new Border
                     {
                         CornerRadius = new CornerRadius(4),
-                        Background   = new SolidColorBrush(Color.Parse("#7C3AED")),
-                        Padding      = new Thickness(5, 1),
-                        Child        = new TextBlock { Text = "LATEST", FontSize = 10, Foreground = Brushes.White, FontWeight = Avalonia.Media.FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center }
+                        Background = new SolidColorBrush(Color.Parse("#7C3AED")),
+                        Padding = new Thickness(5, 1),
+                        Child = new TextBlock { Text = "LATEST", FontSize = 10, Foreground = Brushes.White, FontWeight = Avalonia.Media.FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center }
                     });
                 }
                 cmb.Items.Add(new ComboBoxItem { Content = stack, Tag = ver });
@@ -269,7 +372,7 @@ namespace OptiscalerClient.Views
             }
 
             // Determine target index
-            int targetIndex     = 0; // Default to None (index 0)
+            int targetIndex = 0; // Default to None (index 0)
             var globalDefault = componentService.Config.DefaultExtrasVersion;
 
             if (!string.IsNullOrEmpty(globalDefault))
@@ -337,7 +440,7 @@ namespace OptiscalerClient.Views
                 {
                     betaInfoPanel.IsVisible = true;
                 }
-                
+
                 if (chkFakenvapi != null)
                 {
                     chkFakenvapi.IsEnabled = false;
@@ -358,7 +461,7 @@ namespace OptiscalerClient.Views
                 {
                     betaInfoPanel.IsVisible = false;
                 }
-                
+
                 if (chkFakenvapi != null)
                 {
                     chkFakenvapi.IsEnabled = true;
@@ -376,7 +479,7 @@ namespace OptiscalerClient.Views
         {
             var txtGameName = this.FindControl<TextBlock>("TxtGameName");
             var txtInstallPath = this.FindControl<TextBlock>("TxtInstallPath");
-            
+
             if (txtGameName != null) txtGameName.Text = _game.Name;
             if (txtInstallPath != null) txtInstallPath.Text = _game.InstallPath;
 
@@ -398,7 +501,7 @@ namespace OptiscalerClient.Views
             await Task.Delay(220);
             this.Close();
         }
-        
+
         private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -441,20 +544,20 @@ namespace OptiscalerClient.Views
 
         private async Task ExecuteInstallAsync(bool isManualMode)
         {
-            var btnInstall        = this.FindControl<Button>("BtnInstall");
-            var btnInstallManual  = this.FindControl<Button>("BtnInstallManual");
-            var btnUninstall      = this.FindControl<Button>("BtnUninstall");
-            var cmbOptiVersion    = this.FindControl<ComboBox>("CmbOptiVersion");
-            var cmbExtrasVersion  = this.FindControl<ComboBox>("CmbExtrasVersion");
-            var bdProgress        = this.FindControl<Border>("BdProgress");
-            var prgDownload       = this.FindControl<ProgressBar>("PrgDownload");
-            var txtProgressState  = this.FindControl<TextBlock>("TxtProgressState");
+            var btnInstall = this.FindControl<Button>("BtnInstall");
+            var btnInstallManual = this.FindControl<Button>("BtnInstallManual");
+            var btnUninstall = this.FindControl<Button>("BtnUninstall");
+            var cmbOptiVersion = this.FindControl<ComboBox>("CmbOptiVersion");
+            var cmbExtrasVersion = this.FindControl<ComboBox>("CmbExtrasVersion");
+            var bdProgress = this.FindControl<Border>("BdProgress");
+            var prgDownload = this.FindControl<ProgressBar>("PrgDownload");
+            var txtProgressState = this.FindControl<TextBlock>("TxtProgressState");
             var cmbInjectionMethod = this.FindControl<ComboBox>("CmbInjectionMethod");
             var chkInstallFakenvapi = this.FindControl<CheckBox>("ChkInstallFakenvapi");
-            var chkInstallNukemFG   = this.FindControl<CheckBox>("ChkInstallNukemFG");
+            var chkInstallNukemFG = this.FindControl<CheckBox>("ChkInstallNukemFG");
 
             // Read selected Extras (FSR4 INT8) version before any async work
-            var selectedExtrasItem   = cmbExtrasVersion?.SelectedItem as ComboBoxItem;
+            var selectedExtrasItem = cmbExtrasVersion?.SelectedItem as ComboBoxItem;
             var selectedExtrasVersion = selectedExtrasItem?.Tag?.ToString();
             bool injectExtras = !string.IsNullOrEmpty(selectedExtrasVersion) &&
                                 !selectedExtrasVersion.Equals("none", StringComparison.OrdinalIgnoreCase);
@@ -486,11 +589,11 @@ namespace OptiscalerClient.Views
                     {
                         Title = "Select Game Executable (Main .exe)",
                         AllowMultiple = false,
-                        FileTypeFilter = new[] 
-                        { 
-                            new FilePickerFileType("Executable Files (*.exe)") 
-                            { 
-                                Patterns = new[] { "*.exe" } 
+                        FileTypeFilter = new[]
+                        {
+                            new FilePickerFileType("Executable Files (*.exe)")
+                            {
+                                Patterns = new[] { "*.exe" }
                             },
                             new FilePickerFileType("All files")
                             {
@@ -507,6 +610,9 @@ namespace OptiscalerClient.Views
                 if (btnInstallManual != null) btnInstallManual.IsEnabled = false;
                 if (btnUninstall != null) btnUninstall.IsEnabled = false;
                 if (cmbOptiVersion != null) cmbOptiVersion.IsEnabled = false;
+
+                bool retryDone = false;
+            RetryFullInstall:
 
                 bool isDownloadingOpti = true;
                 var progress = new Progress<double>(p =>
@@ -529,9 +635,10 @@ namespace OptiscalerClient.Views
                 {
                     optiCacheDir = await componentService.DownloadOptiScalerAsync(optiscalerVersion, progress);
                     isDownloadingOpti = false;
-                    
+
                     // Hide after download finishes
-                    Dispatcher.UIThread.Post(() => {
+                    Dispatcher.UIThread.Post(() =>
+                    {
                         if (bdProgress != null) bdProgress.IsVisible = false;
                     });
                 }
@@ -556,7 +663,8 @@ namespace OptiscalerClient.Views
                 catch (Exception ex)
                 {
                     isDownloadingOpti = false;
-                    Dispatcher.UIThread.Post(() => {
+                    Dispatcher.UIThread.Post(() =>
+                    {
                         if (bdProgress != null) bdProgress.IsVisible = false;
                     });
                     var msgFormat = GetResourceString("TxtDownloadErrorPrefix", "Failed to download OptiScaler: {0}");
@@ -627,7 +735,7 @@ namespace OptiscalerClient.Views
                     bool provided = await componentService.ProvideNukemFGManuallyAsync(isUpdate: false);
                     if (!provided || !Directory.Exists(nukemCacheDir) || Directory.GetFiles(nukemCacheDir).Length == 0)
                     {
-                        return; 
+                        return;
                     }
                 }
 
@@ -643,45 +751,45 @@ namespace OptiscalerClient.Views
                     if (prgDownload != null) prgDownload.IsIndeterminate = true;
                 });
 
-                await Task.Run(() => {
-                    installService.InstallOptiScaler(_game, optiCacheDir, injectionMethod,
-                                                    installFakenvapi, fakeCacheDir,
-                                                    installNukemFG, nukemCacheDir,
-                                                    optiscalerVersion: optiscalerVersion,
-                                                    overrideGameDir: overrideGameDir);
-                });
+                // Get selected profile
+                OptiScalerProfile? selectedProfile = null;
+                var cmbProfile = this.FindControl<ComboBox>("CmbProfile");
+                if (cmbProfile?.SelectedItem is ComboBoxItem profileItem && profileItem.Tag is OptiScalerProfile profile)
+                {
+                    selectedProfile = profile;
+                }
+
+                try
+                {
+                    await Task.Run(() => {
+                        installService.InstallOptiScaler(_game, optiCacheDir, injectionMethod,
+                                                        installFakenvapi, fakeCacheDir,
+                                                        installNukemFG, nukemCacheDir,
+                                                        optiscalerVersion: optiscalerVersion,
+                                                        overrideGameDir: overrideGameDir,
+                                                        profile: selectedProfile);
+                    });
                 }
                 catch (Exception instEx) when ((instEx.Message.Contains("corrupt or incomplete") || instEx.Message.Contains("not found in the downloaded package")) && !retryDone)
                 {
                     retryDone = true;
-                    DebugWindow.Log($"[Install] Detected corrupt cache. Retrying download and install for {optiscalerVersion}...");
-
-                    if (Directory.Exists(optiCacheDir))
+                    DebugWindow.Log($"[Install] Detected corrupt cache. Missing files. Triggering auto-retry...");
+                    
+                    if (instEx.Message.Contains("Fakenvapi", StringComparison.OrdinalIgnoreCase))
                     {
-                        try { Directory.Delete(optiCacheDir, true); } catch { /* ignore */ }
+                        if (Directory.Exists(fakeCacheDir)) try { Directory.Delete(fakeCacheDir, true); } catch { }
+                    }
+                    else if (instEx.Message.Contains("NukemFG", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (Directory.Exists(nukemCacheDir)) try { Directory.Delete(nukemCacheDir, true); } catch { }
+                    }
+                    else 
+                    {
+                        if (Directory.Exists(optiCacheDir)) try { Directory.Delete(optiCacheDir, true); } catch { }
                     }
 
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        if (bdProgress != null) bdProgress.IsVisible = true;
-                        if (prgDownload != null) { prgDownload.IsIndeterminate = false; prgDownload.Value = 0; }
-                    });
-
-                    isDownloadingOpti = true;
-                    optiCacheDir = await componentService.DownloadOptiScalerAsync(optiscalerVersion, progress);
-                    isDownloadingOpti = false;
-
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        if (txtProgressState != null)
-                        {
-                            var extractFormat = GetResourceString("TxtExtractingFormat", "Extracting and installing v{0}...");
-                            txtProgressState.Text = string.Format(extractFormat, optiscalerVersion);
-                        }
-                        if (prgDownload != null) prgDownload.IsIndeterminate = true;
-                    });
-
-                    goto RetryInstall;
+                    Dispatcher.UIThread.Post(() => { if (prgDownload != null) { prgDownload.Value = 0; prgDownload.IsIndeterminate = true; } });
+                    goto RetryFullInstall;
                 }
 
                 var installedComponents = "OptiScaler";
@@ -721,15 +829,28 @@ namespace OptiscalerClient.Views
                         if (prgDownload != null) { prgDownload.IsIndeterminate = true; }
                     });
 
-                    await Task.Run(() =>
+                    try 
                     {
-                        var installSvc = new GameInstallationService();
-                        var gameDir    = installSvc.DetermineInstallDirectory(_game) ?? _game.InstallPath;
-                        var destPath   = System.IO.Path.Combine(gameDir, "amd_fidelityfx_upscaler_dx12.dll");
-                        File.Copy(extrasDllPath, destPath, overwrite: true);
-                        _game.Fsr4ExtraVersion = selectedExtrasVersion;
-                        DebugWindow.Log($"[ExtrasInject] Copied DLL to {destPath} and set version to {selectedExtrasVersion}");
-                    });
+                        await Task.Run(() =>
+                        {
+                            var installSvc = new GameInstallationService();
+                            var gameDir = installSvc.DetermineInstallDirectory(_game) ?? _game.InstallPath;
+                            var destPath = System.IO.Path.Combine(gameDir, "amd_fidelityfx_upscaler_dx12.dll");
+                            if (!File.Exists(extrasDllPath))
+                                throw new Exception("Installation failed because the FSR4 INT8 package is corrupt or incomplete.");
+                            File.Copy(extrasDllPath, destPath, overwrite: true);
+                            _game.Fsr4ExtraVersion = selectedExtrasVersion;
+                            DebugWindow.Log($"[ExtrasInject] Copied DLL to {destPath} and set version to {selectedExtrasVersion}");
+                        });
+                    }
+                    catch (Exception ex) when ((ex is FileNotFoundException || ex.Message.Contains("corrupt or incomplete")) && !retryDone)
+                    {
+                        retryDone = true;
+                        DebugWindow.Log($"[Install] Detected corrupt FSR4 INT8 cache. Triggering auto-retry...");
+                        try { if (File.Exists(extrasDllPath)) File.Delete(extrasDllPath); } catch { }
+                        Dispatcher.UIThread.Post(() => { if (prgDownload != null) { prgDownload.Value = 0; prgDownload.IsIndeterminate = true; } });
+                        goto RetryFullInstall;
+                    }
 
                     Dispatcher.UIThread.Post(() =>
                     {
@@ -743,7 +864,7 @@ namespace OptiscalerClient.Views
                 {
                     _game.Fsr4ExtraVersion = null;
                 }
-                SkipExtras:
+            SkipExtras:
 
                 NeedsScan = true;
                 UpdateStatus();
@@ -772,11 +893,11 @@ namespace OptiscalerClient.Views
         {
             var bdConfirmUninstall = this.FindControl<Grid>("BdConfirmUninstall");
             if (bdConfirmUninstall != null) bdConfirmUninstall.IsVisible = true;
-            
+
             var btnInstall = this.FindControl<Button>("BtnInstall");
             var btnInstallManual = this.FindControl<Button>("BtnInstallManual");
             var btnUninstall = this.FindControl<Button>("BtnUninstall");
-            
+
             if (btnInstall != null) btnInstall.IsEnabled = false;
             if (btnInstallManual != null) btnInstallManual.IsEnabled = false;
             if (btnUninstall != null) btnUninstall.IsEnabled = false;
@@ -786,11 +907,11 @@ namespace OptiscalerClient.Views
         {
             var bdConfirmUninstall = this.FindControl<Grid>("BdConfirmUninstall");
             if (bdConfirmUninstall != null) bdConfirmUninstall.IsVisible = false;
-            
+
             var btnInstall = this.FindControl<Button>("BtnInstall");
             var btnInstallManual = this.FindControl<Button>("BtnInstallManual");
             var btnUninstall = this.FindControl<Button>("BtnUninstall");
-            
+
             if (btnInstall != null) btnInstall.IsEnabled = true;
             if (btnInstallManual != null) btnInstallManual.IsEnabled = true;
             if (btnUninstall != null) btnUninstall.IsEnabled = true;
@@ -802,11 +923,11 @@ namespace OptiscalerClient.Views
             {
                 var bdConfirmUninstall = this.FindControl<Grid>("BdConfirmUninstall");
                 if (bdConfirmUninstall != null) bdConfirmUninstall.IsVisible = false;
-            
+
                 var btnInstall = this.FindControl<Button>("BtnInstall");
                 var btnInstallManual = this.FindControl<Button>("BtnInstallManual");
                 var btnUninstall = this.FindControl<Button>("BtnUninstall");
-            
+
                 if (btnInstall != null) btnInstall.IsEnabled = true;
                 if (btnInstallManual != null) btnInstallManual.IsEnabled = true;
                 if (btnUninstall != null) btnUninstall.IsEnabled = true;
@@ -853,7 +974,7 @@ namespace OptiscalerClient.Views
             var txtStatus = this.FindControl<TextBlock>("TxtStatus");
             var statusIndicator = this.FindControl<Ellipse>("StatusIndicator");
             var txtVersion = this.FindControl<TextBlock>("TxtVersion");
-            
+
             var btnInstall = this.FindControl<Button>("BtnInstall");
             var btnInstallManual = this.FindControl<Button>("BtnInstallManual");
             var btnUninstall = this.FindControl<Button>("BtnUninstall");
@@ -863,7 +984,7 @@ namespace OptiscalerClient.Views
             if (_game.IsOptiscalerInstalled)
             {
                 if (txtStatus != null) txtStatus.Text = GetResourceString("TxtOptiInstalled", "OptiScaler Installed");
-                if (statusIndicator != null) statusIndicator.Fill = new SolidColorBrush(Color.FromRgb(118, 185, 0)); 
+                if (statusIndicator != null) statusIndicator.Fill = new SolidColorBrush(Color.FromRgb(118, 185, 0));
 
                 if (txtVersion != null)
                 {
@@ -883,7 +1004,7 @@ namespace OptiscalerClient.Views
                     btnInstallManual.IsVisible = true;
                     btnInstallManual.Content = GetResourceString("TxtUpdateOptiManual", "Manual Update");
                 }
-                
+
                 if (installBtnGroup != null) installBtnGroup.IsVisible = true;
                 if (pnlInstallOptions != null) pnlInstallOptions.IsVisible = true;
                 if (btnUninstall != null) btnUninstall.IsVisible = true;
@@ -904,7 +1025,7 @@ namespace OptiscalerClient.Views
                     btnInstallManual.IsVisible = true;
                     btnInstallManual.Content = GetResourceString("TxtBtnManualInstall", "✦ Manual Install");
                 }
-                
+
                 if (installBtnGroup != null) installBtnGroup.IsVisible = true;
                 if (pnlInstallOptions != null) pnlInstallOptions.IsVisible = true;
                 if (btnUninstall != null) btnUninstall.IsVisible = false;
@@ -951,11 +1072,11 @@ namespace OptiscalerClient.Views
         {
             var cmb = sender as ComboBox;
             UpdateCheckboxStatesForVersion(cmb);
-            
+
             // Only configure additional components if not a beta version
             var selectedTag = (cmb?.SelectedItem as ComboBoxItem)?.Tag?.ToString();
             bool isBeta = !string.IsNullOrEmpty(selectedTag) && _betaVersions.Contains(selectedTag);
-            
+
             if (!isBeta)
             {
                 ConfigureAdditionalComponents();
