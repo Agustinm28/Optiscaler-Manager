@@ -1,0 +1,441 @@
+{
+  "pages": [
+    {
+      "id": "about",
+      "title": "About & Feedback",
+      "icon": "\uE946",
+      "sections": [
+        {
+          "type": "app-info",
+          "title": "Application Info"
+        },
+        {
+          "type": "external-resources",
+          "title": "External Resources"
+        },
+        {
+          "type": "system-info",
+          "title": "System"
+        },
+        {
+          "type": "feedback",
+          "title": "Feedback"
+        }
+      ]
+    },
+    {
+      "id": "getting-started",
+      "title": "Getting Started",
+      "icon": "\uE8F4",
+      "fontSize": 14,
+      "sections": [
+        {
+          "type": "text",
+          "title": "Welcome to OptiScaler Client",
+          "content": "OptiScaler Client is a modern, high-performance desktop utility designed to simplify the installation, management, and update of the OptiScaler mod across your entire game library."
+        },
+        {
+          "type": "text",
+          "content": "This guide is designed to help you navigate and understand the program's core features. It serves as a comprehensive help center for any questions you may have, and includes step-by-step tutorials to get you started."
+        },
+        {
+          "type": "steps",
+          "title": "Quick Start",
+          "items": [
+            {
+              "label": "Step 1: Scan for Games",
+              "text": "Click the 'Scan' button in the main window to automatically detect games on your system from Steam, Epic Games, and other platforms."
+            },
+            {
+              "label": "Step 2: Select a Game",
+              "text": "Browse your game library and click 'Manage' on any game you want to enhance with upscaling technology."
+            },
+            {
+              "label": "Step 3: Configure & Install",
+              "text": "Before installing, feel free to adjust the options to your liking. Once you're ready, click 'Auto Install' in the game management window to apply your custom settings automatically."
+            },
+            {
+              "label": "Step 4: Enjoy!",
+              "text": "Everything is ready! You can now launch the game directly and enjoy."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "features",
+      "title": "Features",
+      "icon": "\uE734",
+      "fontSize": 14,
+      "sections": [
+        {
+          "type": "text",
+          "title": "What OptiScaler Client Offers",
+          "fontSize": 16,
+          "content": "OptiScaler Client provides comprehensive management for Optiscaler."
+        },
+        {
+          "type": "list",
+          "items": [
+            {
+              "label": "Automatic Game Detection",
+              "text": "Scans Steam, Epic Games, GOG, and other platforms to find your installed games."
+            },
+            {
+              "label": "One-Click Installation",
+              "text": "Quick install feature deploys OptiScaler with optimal settings in seconds."
+            },
+            {
+              "label": "Profile Management",
+              "text": "Create and manage custom profiles for different games and scenarios."
+            },
+            {
+              "label": "Bulk Operations",
+              "text": "Install or update OptiScaler across multiple games simultaneously."
+            },
+            {
+              "label": "Version Control",
+              "text": "Easily switch between different versions of OptiScaler, Fakenvapi, and NukemFG."
+            },
+            {
+              "label": "Metadata Integration",
+              "text": "Automatic cover art and game information from SteamGridDB."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-window",
+      "title": "Main Window",
+      "icon": "\uE80F",
+      "category": "Guides",
+      "fontSize": 14,
+      "sections": [
+        {
+          "type": "text",
+          "title": "Game Library Overview",
+          "fontSize": 16,
+          "content": "The main window is your central hub for managing all your games. Here you can view your entire game library, scan for new games, and access game management features."
+        },
+        {
+          "type": "list",
+          "items": [
+            {
+              "label": "Game List 🎮",
+              "text": "Displays all detected games with cover art, title, and installation status."
+            },
+            {
+              "label": "Manage Button ⚙️",
+              "text": "Opens the Game Management Window for the selected game, where you can install, configure, and manage OptiScaler."
+            },
+            {
+              "label": "Quick Install Button ✦",
+              "text": "Quickly install OptiScaler with optimal settings for the selected game."
+            },
+            {
+              "label": "Scan Button 🔍",
+              "text": "Automatically detects games from Steam, Epic Games, GOG, EA, Ubisoft, Xbox, and Battle.net. Here you can select which sources you want to scan and even which discs."
+            },
+            {
+              "label": "Add Manual Button ➕",
+              "text": "Allows you to manually add games that weren't automatically detected. Useful for standalone games or custom installations."
+            },
+            {
+              "label": "Bulk Install ⚡",
+              "text": "Open the bulk installation window, allowing you to install OptiScaler on multiple games at once."
+            },
+            {
+              "label": "Search & Filter 🔍",
+              "text": "Quickly find games using the search bar."
+            },
+            {
+              "label": "Grid & List mode buttons 📊",
+              "text": "Switch between grid and list view modes to organize your game library as you prefer."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "game-management",
+      "title": "Game Management",
+      "icon": "\uE7FC",
+      "category": "Guides",
+      "fontSize": 14,
+      "sections": [
+        {
+          "type": "text",
+          "title": "Managing Individual Games",
+          "fontSize": 16,
+          "content": "The Game Management Window provides complete control over OptiScaler installation and configuration for a specific game."
+        },
+        {
+          "type": "list",
+          "items": [
+            {
+              "label": "Game Information 🎮",
+              "text": "View game details including title, executable path, platform, and current OptiScaler installation status."
+            },
+            {
+              "label": "Open folder 📁",
+              "text": "Open the game's installation folder in File Explorer."
+            },
+            {
+              "label": "Auto Install ✦",
+              "text": "It attempts to automatically find the game's executable to install OptiScaler, using an algorithm that considers different scenarios and makes it quite robust, but it's not perfect."
+            },
+            {
+              "label": "Manual Install ✦",
+              "text": "Allows you to manually select the game's executable file to install OptiScaler. It is recommended to use this option if the automated installation fails to find the executable."
+            },
+            {
+              "label": "Uninstall 🗑️",
+              "text": "Completely remove OptiScaler from the game, restoring original files and configurations from backup."
+            },
+            {
+              "label": "Profile Selection 🎯",
+              "text": "Choose from pre-configured Optiscaler profiles or create custom profiles tailored to specific games or performance needs."
+            },
+            {
+              "label": "OptiScaler Version 📦",
+              "text": "Select which version of OptiScaler to install. You can switch between stable releases and beta builds."
+            },
+            {
+              "label": "Fakenvapi & NukemFG 📦",
+              "text": "Optional components that enhance compatibility with certain games. These fields are not required for beta versions of optiscaler that already include these files."
+            },
+            {
+              "label": "Injection method 🚀",
+              "text": "Choose how OptiScaler injects into the game process. For most cases, the default option (dxgi.dll) is sufficient, but if optiscaler is not detected correctly, feel free to try others."
+            },
+            {
+              "label": "FSR 4 INT8 ⚡",
+              "text": "Selector that allows injecting the INT 8 version of FSR 4 for non RDNA 4 GPUs."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "profiles",
+      "title": "Profile System",
+      "icon": "\uE8B7",
+      "category": "Guides",
+      "fontSize": 14,
+      "sections": [
+        {
+          "type": "text",
+          "title": "Creating and Managing Profiles",
+          "content": "Profiles allow you to save and manage your OptiScaler configurations (.ini files) so you can easily deploy them into new installations. This is the most efficient way to maintain consistent settings or apply specialized tweaks across your game library.",
+          "fontSize": 16
+        },
+        {
+          "type": "list",
+          "items": [
+            {
+              "label": "Profile Management Window 📎",
+              "text": "Accessible from the settings menu, this section allows you to manage current profiles, as well as search, create, duplicate, edit, or delete them.",
+              "items": [
+                {
+                  "title": "Default profile",
+                  "text": "Sets which profile will be selected by default when managing a game or using Quick Install.",
+                  "type": "bullet-point"
+                }
+              ]
+            },
+            {
+              "label": "Profile Editor 📝",
+              "text": "Configure all OptiScaler (.ini) settings including upscaling method, quality presets, DLL options, and advanced parameters. The sections that can be seen in that window are:",
+              "items": [
+                {
+                  "title": "Profile name",
+                  "text": "Sets the display name for your profile.",
+                  "type": "bullet-point"
+                },
+                {
+                  "title": "Description",
+                  "text": "Sets a description for your profile.",
+                  "type": "bullet-point"
+                },
+                {
+                  "title": "Mode",
+                  "text": "Choose between Easy and Advanced modes. Easy mode limits settings to the essentials for a quick and simple setup, ideal for beginners. Advanced mode allows full editing of the .ini file, offering total control and maximum customization for power users.",
+                  "type": "bullet-point"
+                },
+                {
+                  "title": "Navigation section",
+                  "text": "Allows you to navigate through the different sections of the profile editor.",
+                  "type": "bullet-point"
+                },
+                {
+                  "title": "Search bar",
+                  "text": "Allows you to search for specific settings within the profile editor.",
+                  "type": "bullet-point"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "title": "Settings & Configuration",
+      "icon": "\uE713",
+      "category": "Guides",
+      "fontSize": 14,
+      "sections": [
+        {
+          "type": "text",
+          "title": "Application Settings",
+          "fontSize": 16,
+          "content": "Configure OptiScaler Client behavior, scan sources, metadata services, and advanced options."
+        },
+        {
+          "type": "list",
+          "items": [
+            {
+              "label": "Local Cache Management",
+              "text": "Allows you to view and delete cached versions of OptiScaler and FSR INT8."
+            },
+            {
+              "label": "Profile Management",
+              "text": "It allows you to manage different profiles. See the 'Profile System' page for more information."
+            },
+            {
+              "label": "Scan Sources",
+              "text": "Allows you to manage which sources are scanned when clicking 'Scan', including platforms like Steam and Epic, as well as custom folders and other locations."
+            },
+            {
+              "label": "FSR INT8 Default",
+              "text": "Allows you to select the default FSR INT8 version for the injection section when managing a game or using Quick Install. It is recommended to set this to 'None' for users with AMD 9000-series graphics cards."
+            },
+            {
+              "label": "Default GPU Selection",
+              "text": "Choose which GPU to use when multiple GPUs are detected in your system."
+            },
+            {
+              "label": "Auto scan on startup",
+              "text": "Automatically scan for games when the application starts."
+            },
+            {
+              "label": "Prefer latest beta as default",
+              "text": "When enabled, OptiScaler Client will prefer to download and use the latest beta versions of components when available."
+            },
+            {
+              "label": "Enable animations",
+              "text": "When enabled, OptiScaler Client will show animations and transitions for a more polished user experience."
+            },
+            {
+              "label": "SteamGridDB API Key",
+              "text": "Used to improve cover art fetching when they cannot be retrieved by default. This parameter is entirely optional."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bulk-operations",
+      "title": "Bulk Operations",
+      "icon": "\uE8F1",
+      "category": "Guides",
+      "fontSize": 14,
+      "sections": [
+        {
+          "type": "text",
+          "title": "Managing Multiple Games",
+          "fontSize": 16,
+          "content": "The Bulk Install Window allows you to install or update OptiScaler across multiple games simultaneously, saving time and ensuring consistency."
+        },
+        {
+          "type": "list",
+          "items": [
+            {
+              "label": "Game Selection",
+              "text": "Choose which games to include in the bulk operation. Select all or manually pick individual games."
+            },
+            {
+              "label": "Unified Configuration",
+              "text": "Apply the same profile, OptiScaler version, and settings to all selected games at once."
+            },
+            {
+              "label": "Progress Tracking",
+              "text": "Monitor installation progress for each game. View success/failure status and detailed logs for troubleshooting."
+            },
+            {
+              "label": "Error Handling",
+              "text": "Continue processing remaining games even if some installations fail. Review errors after completion."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "troubleshooting",
+      "title": "Troubleshooting",
+      "icon": "\uE9D9",
+      "fontSize": 14,
+      "sections": [
+        {
+          "type": "text",
+          "title": "Common Issues",
+          "fontSize": 16,
+          "content": "If you encounter problems, check these common solutions first."
+        },
+        {
+          "type": "faq",
+          "items": [
+            {
+              "label": "Game not detected",
+              "text": "Make sure the game is installed and try adding it manually using 'Add Manual' button. You can also check scan sources in Settings."
+            },
+            {
+              "label": "Installation failed",
+              "text": "Ensure you have write permissions to the game directory. Try running the application as administrator if needed."
+            },
+            {
+              "label": "Game crashes after installation",
+              "text": "Try a different OptiScaler version or profile. Some games may require specific configurations."
+            },
+            {
+              "label": "Upscaling not working in-game",
+              "text": "Check that the game supports DLSS/FSR/XeSS natively. OptiScaler replaces existing upscaling implementations."
+            },
+            {
+              "label": "Performance worse than before",
+              "text": "Experiment with different profiles and settings. Not all games benefit equally from upscaling."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "faq",
+      "title": "FAQ",
+      "icon": "\uE897",
+      "fontSize": 14,
+      "sections": [
+        {
+          "type": "text",
+          "title": "Frequently Asked Questions",
+          "fontSize": 16,
+          "content": "Answers to common questions about OptiScaler Client."
+        },
+        {
+          "type": "faq",
+          "items": [
+            {
+              "label": "What is OptiScaler?",
+              "text": "OptiScaler is a mod that allows you to use different upscaling technologies (DLSS, FSR, XeSS) in games, even if they don't natively support them."
+            },
+            {
+              "label": "Is this app safe to use?",
+              "text": "Yes, the app is completely safe. You can scan it on VirusTotal to confirm there are no threats, and since the project is open-source, the code is available for anyone to review if they wish."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
