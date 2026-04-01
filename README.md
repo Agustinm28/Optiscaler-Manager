@@ -56,6 +56,41 @@ Follow these simple steps to enhance your games:
 
 ---
 
+## 🛡️ Security & Antivirus False Positives
+
+**Is this software safe?**
+
+Yes, OptiScaler Client is completely safe and open-source. However, some antivirus programs may flag it as suspicious due to **false positive detections**.
+
+### Why does this happen?
+
+- **File Downloads**: The app downloads `.zip` and `.dll` files from GitHub (OptiScaler, Fakenvapi, NukemFG)
+- **Heuristic Detection**: Antivirus software may flag download behavior as "potentially unwanted"
+- **Unsigned Binary**: The executable is not digitally signed (code signing certificates cost $100-300/year)
+
+### Common False Positives
+
+- **Zillya**: `Downloader.MLoki.Win64.10` - Known for aggressive heuristics
+- **Other AVs**: May show generic "downloader" or "trojan" warnings
+
+### What you can do
+
+1. **Verify the Source**: Download only from official [GitHub Releases](https://github.com/Agustinm28/Optiscaler-Client/releases)
+2. **Check VirusTotal**: Upload the file to [VirusTotal.com](https://www.virustotal.com) - most reputable AVs will show clean
+3. **Review the Code**: This is open-source - you can inspect all code before running
+4. **Add Exception**: Whitelist `OptiscalerClient.exe` in your antivirus settings
+
+### Transparency
+
+All downloads are from official sources:
+- OptiScaler: `github.com/optiscaler/OptiScaler`
+- Fakenvapi: `github.com/optiscaler/fakenvapi`
+- NukemFG: `github.com/Nukem9/dlssg-to-fsr3`
+
+The application **never** collects personal data, connects to third-party servers, or performs any malicious actions. All source code is available for audit.
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions! If you'd like to improve OptiScaler Client:
