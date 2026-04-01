@@ -1,0 +1,203 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="OptiscalerClient.Views.ProfileEditorWindow"
+        Title="Profile Editor"
+        Width="1100"
+        Height="760"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        CanResize="True"
+        MinWidth="700"
+        MinHeight="600"
+        ShowInTaskbar="False">
+
+    <Panel Margin="16" Name="RootPanel" Opacity="0" PointerPressed="RootPanel_PointerPressed">
+        <Border CornerRadius="12"
+                Background="{StaticResource BrBgBase}"
+                BoxShadow="0 10 30 0 #A0000000">
+            
+            <Grid>
+                <!-- Separate layer for the subtle border -->
+                <Border CornerRadius="12"
+                        BorderBrush="{StaticResource BrBorderSubtle}"
+                        BorderThickness="1"
+                        ZIndex="10"
+                        IsHitTestVisible="False"/>
+
+                <!-- Main Content Layout -->
+                <Border CornerRadius="12"
+                        Background="Transparent"
+                        ClipToBounds="True">
+                    
+                    <Grid RowDefinitions="Auto, *, Auto">
+                        <!-- Custom Title Bar (Draggable) -->
+                        <Border Grid.Row="0"
+                                Name="TitleBar"
+                                Background="{StaticResource BrBgDeep}"
+                                Padding="24,18"
+                                BorderBrush="{StaticResource BrBorderSubtle}"
+                                BorderThickness="0,0,0,1">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Profile Editor"
+                                               FontSize="18"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource BrTextPrimary}"/>
+                                    <TextBlock Text="Configure OptiScaler settings for this profile"
+                                               FontSize="11"
+                                               Foreground="{StaticResource BrTextSecondary}"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+
+                                <Button Grid.Column="1"
+                                        Content="✕"
+                                        Classes="BtnSecondary"
+                                        Padding="8,4"
+                                        MinWidth="32"
+                                        FontSize="14"
+                                        Click="BtnCancel_Click"
+                                        VerticalAlignment="Top"
+                                        Background="Transparent"
+                                        BorderThickness="0"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Sidebar + Settings -->
+                        <Grid Grid.Row="1" ColumnDefinitions="Auto, *" Margin="0,0,0,0">
+                            <!-- Sidebar Navigation -->
+                            <Border Grid.Column="0"
+                                    Background="{StaticResource BrBgDeep}"
+                                    BorderBrush="{StaticResource BrBorderSubtle}"
+                                    BorderThickness="0,0,1,0"
+                                    Padding="12,20,12,20"
+                                    MinWidth="300"
+                                    MaxWidth="360">
+                                <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
+                                    <StackPanel Grid.Row="0">
+                                        <TextBlock Text="Profile Name"
+                                                   Foreground="{StaticResource BrTextSecondary}"
+                                                   FontSize="12"
+                                                   Margin="0,0,0,4"/>
+                                        <TextBox Name="TxtProfileName"
+                                                 Watermark="Enter profile name"
+                                                 Height="32"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Row="1" Spacing="8">
+                                        <StackPanel>
+                                            <TextBlock Text="Description"
+                                                       Foreground="{StaticResource BrTextSecondary}"
+                                                       FontSize="12"
+                                                       Margin="0,0,0,4"/>
+                                            <TextBox Name="TxtDescription"
+                                                     Watermark="Enter profile description (optional)"
+                                                     Height="32"/>
+                                        </StackPanel>
+                                        
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Mode"
+                                                       Foreground="{StaticResource BrTextSecondary}"
+                                                       FontSize="12"
+                                                       FontWeight="Bold"
+                                                       Margin="0,0,0,4"/>
+                                            <Grid ColumnDefinitions="*,*">
+                                                <Button Name="BtnEasyMode"
+                                                        Grid.Column="0"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Center"
+                                                        Padding="12,8"
+                                                        FontSize="12"
+                                                        Classes="BtnPrimary"
+                                                        Click="BtnEasyMode_Click"
+                                                        Margin="0,0,2,0">
+                                                    Easy
+                                                </Button>
+                                                <Button Name="BtnAdvancedMode"
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Center"
+                                                        Padding="12,8"
+                                                        FontSize="12"
+                                                        Classes="BtnSecondary"
+                                                        Click="BtnAdvancedMode_Click"
+                                                        Margin="2,0,0,0">
+                                                    Advanced
+                                                </Button>
+                                            </Grid>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <Border Grid.Row="2"
+                                            Height="1"
+                                            Background="{StaticResource BrBorderSubtle}"/>
+
+                                    <ScrollViewer Grid.Row="3"
+                                                  Margin="0,8,0,0"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel Name="SidebarNav" Spacing="8">
+                                            <TextBlock Text="Navigation"
+                                                       FontSize="12"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource BrTextSecondary}"
+                                                       Margin="0,0,0,8"/>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+
+                            <Grid Grid.Column="1" RowDefinitions="Auto, *">
+                                <!-- Search Box -->
+                                <StackPanel Grid.Row="0" Margin="24,12,24,0">
+                                    <TextBox Name="TxtSettingsSearch"
+                                             Watermark="Search settings..."
+                                             Classes="Input"
+                                             Background="{StaticResource BrBgDeep}"
+                                             BorderBrush="{StaticResource BrBorderSubtle}"
+                                             TextChanged="TxtSettingsSearch_TextChanged"/>
+                                </StackPanel>
+
+                                <!-- Settings ScrollViewer -->
+                                <ScrollViewer Grid.Row="1" Name="SettingsScrollViewer" Padding="0" Margin="24,16,24,20">
+                                    <WrapPanel Name="SectionsWrap"
+                                               Orientation="Horizontal"
+                                               HorizontalAlignment="Stretch"
+                                               VerticalAlignment="Top"/>
+                                </ScrollViewer>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Footer -->
+                        <Border Grid.Row="2"
+                                Padding="24,18"
+                                Background="{StaticResource BrBgDeep}"
+                                BorderBrush="{StaticResource BrBorderSubtle}"
+                                BorderThickness="0,1,0,0">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Grid.Column="0"
+                                           VerticalAlignment="Center"
+                                           FontSize="11"
+                                           Foreground="{StaticResource BrTextSecondary}"
+                                           Text="Only configured settings will override OptiScaler defaults"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                    <Button Name="BtnCancel"
+                                            Content="Cancel"
+                                            Classes="BtnSecondary"
+                                            Padding="16,8"
+                                            Click="BtnCancel_Click"/>
+                                    <Button Name="BtnSave"
+                                            Content="Save Profile"
+                                            Classes="BtnPrimary"
+                                            Padding="20,8"
+                                            Click="BtnSave_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Panel>
+</Window>

@@ -1,0 +1,3261 @@
+{
+  "Layout": {
+    "MaxColumns": 3,
+    "ColumnGap": 16,
+    "RowGap": 16,
+    "CardMinWidth": 260,
+    "CardMaxWidth": 820,
+    "Breakpoints": [
+      { "MinWidth": 0, "Columns": 1 },
+      { "MinWidth": 900, "Columns": 2 },
+      { "MinWidth": 1200, "Columns": 3 }
+    ]
+  },
+  "Sections": [
+    {
+      "Name": "Upscalers",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "Dx11Upscaler",
+          "Label": "DirectX 11 Upscaler",
+          "Tooltip": "Select upscaler for DX11 games. Default: fsr22",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "fsr22", "Label": "FSR 2.2.1" },
+            { "Value": "fsr31", "Label": "FSR 3.1" },
+            { "Value": "xess", "Label": "XeSS" },
+            { "Value": "xess_12", "Label": "XeSS (DX12)" },
+            { "Value": "fsr21_12", "Label": "FSR 2.1.2 (DX12)" },
+            { "Value": "fsr22_12", "Label": "FSR 2.2.1 (DX12)" },
+            { "Value": "fsr31_12", "Label": "FSR 3.1/4 (DX12)" },
+            { "Value": "dlss", "Label": "DLSS" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "Dx12Upscaler",
+          "Label": "DirectX 12 Upscaler",
+          "Tooltip": "Select upscaler for DX12 games. Default: xess",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "xess", "Label": "XeSS" },
+            { "Value": "fsr21", "Label": "FSR 2.1.2" },
+            { "Value": "fsr22", "Label": "FSR 2.2.1" },
+            { "Value": "fsr31", "Label": "FSR 3.1/4" },
+            { "Value": "dlss", "Label": "DLSS" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "VulkanUpscaler",
+          "Label": "Vulkan Upscaler",
+          "Tooltip": "Select upscaler for Vulkan games. Default: fsr22",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "fsr21", "Label": "FSR 2.1.2" },
+            { "Value": "fsr22", "Label": "FSR 2.2.1" },
+            { "Value": "fsr31", "Label": "FSR 3.1" },
+            { "Value": "xess", "Label": "XeSS" },
+            { "Value": "fsr21_12", "Label": "FSR 2.1 (DX12)" },
+            { "Value": "fsr31_12", "Label": "FSR 3.1/4 (DX12)" },
+            { "Value": "dlss", "Label": "DLSS" }
+          ],
+          "Row": 0,
+          "Column": 3
+        }
+      ]
+    },
+    {
+      "Name": "Menu",
+      "Rows": 6,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "OverlayMenu",
+          "Label": "Enable Overlay Menu",
+          "Tooltip": "Enable in-game overlay menu",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "ShowFps",
+          "Label": "Show FPS Counter",
+          "Tooltip": "Display FPS counter in overlay",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "ShortcutKey",
+          "Label": "Menu Shortcut Key",
+          "Tooltip": "Press to set a key. Delete=Disabled, Esc=Cancel. Stored as hex virtual key code.",
+          "ControlType": "keybind",
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "FpsOverlayType",
+          "Label": "FPS Overlay Type",
+          "Tooltip": "FPS display style. 0=Just FPS | 1=Simple | 2=Detailed | 3=Detailed + Graph | 4=Full | 5=Full + Graph | 6=Reflex timings",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0" },
+            { "Value": "1", "Label": "1" },
+            { "Value": "2", "Label": "2" },
+            { "Value": "3", "Label": "3" },
+            { "Value": "4", "Label": "4" },
+            { "Value": "5", "Label": "5" },
+            { "Value": "6", "Label": "6" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "Scale",
+          "Label": "Menu Scale",
+          "Tooltip": "In-game ImGui menu scale. 0.5 to 2.0",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0.5", "Label": "0.5" },
+            { "Value": "0.75", "Label": "0.75" },
+            { "Value": "1.0", "Label": "1.0" },
+            { "Value": "1.25", "Label": "1.25" },
+            { "Value": "1.5", "Label": "1.5" },
+            { "Value": "1.75", "Label": "1.75" },
+            { "Value": "2.0", "Label": "2.0" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "FpsScale",
+          "Label": "FPS Overlay Scale",
+          "Tooltip": "In-game FPS overlay scale. 0.5 to 2.0",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0.5", "Label": "0.5" },
+            { "Value": "0.75", "Label": "0.75" },
+            { "Value": "1.0", "Label": "1.0" },
+            { "Value": "1.25", "Label": "1.25" },
+            { "Value": "1.5", "Label": "1.5" },
+            { "Value": "1.75", "Label": "1.75" },
+            { "Value": "2.0", "Label": "2.0" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "ExtendedLimits",
+          "Label": "Extended Scaling Limits",
+          "Tooltip": "Extends Scaling Ratio limits to 0.1 - 6.0",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "UseHQFont",
+          "Label": "Use High Quality Font",
+          "Tooltip": "Use High Quality Font for Menu. Might use more VRAM",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 1
+        },
+        {
+          "Key": "DisableSplash",
+          "Label": "Disable Startup Splash",
+          "Tooltip": "Disables Startup Splash message",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 2
+        },
+        {
+          "Key": "FpsOverlayPos",
+          "Label": "FPS Overlay Position",
+          "Tooltip": "FPS overlay position. 0=Top Left | 1=Top Right | 2=Bottom Left | 3=Bottom Right",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "Top Left" },
+            { "Value": "1", "Label": "Top Right" },
+            { "Value": "2", "Label": "Bottom Left" },
+            { "Value": "3", "Label": "Bottom Right" }
+          ],
+          "Row": 3,
+          "Column": 0
+        },
+        {
+          "Key": "FpsShortcutKey",
+          "Label": "FPS Overlay Shortcut Key",
+          "Tooltip": "Shortcut key for FPS overlay. Stored as hex virtual key code.",
+          "ControlType": "keybind",
+          "Row": 3,
+          "Column": 1
+        },
+        {
+          "Key": "FpsCycleShortcutKey",
+          "Label": "FPS Cycle Shortcut Key",
+          "Tooltip": "Shortcut key for FPS overlay type cycle. Stored as hex virtual key code.",
+          "ControlType": "keybind",
+          "Row": 3,
+          "Column": 2
+        },
+        {
+          "Key": "FpsOverlayHorizontal",
+          "Label": "FPS Overlay Horizontal",
+          "Tooltip": "Enables Horizontal FPS overlay layout",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 0
+        },
+        {
+          "Key": "FpsOverlayAlpha",
+          "Label": "FPS Overlay Alpha",
+          "Tooltip": "FPS Overlay background alpha. 0.0 to 1.0",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0.0", "Label": "0.0" },
+            { "Value": "0.2", "Label": "0.2" },
+            { "Value": "0.4", "Label": "0.4" },
+            { "Value": "0.6", "Label": "0.6" },
+            { "Value": "0.8", "Label": "0.8" },
+            { "Value": "1.0", "Label": "1.0" }
+          ],
+          "Row": 4,
+          "Column": 1
+        },
+        {
+          "Key": "FGShortcutKey",
+          "Label": "FG Toggle Shortcut Key",
+          "Tooltip": "Shortcut key for Frame Generation enabled/disabled. Stored as hex virtual key code.",
+          "ControlType": "keybind",
+          "Row": 4,
+          "Column": 2
+        },
+        {
+          "Key": "TTFFontPath",
+          "Label": "Custom Font Path",
+          "Tooltip": "Path to a font to be used as HQ Font, requires UseHQFont=true",
+          "ControlType": "text",
+          "Row": 5,
+          "Column": 0,
+          "ColumnSpan": 3
+        }
+      ]
+    },
+    {
+      "Name": "FrameGen",
+      "Rows": 6,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "Enabled",
+          "Label": "Enable Frame Generation",
+          "Tooltip": "Enables Frame Generation. Default: false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "FGInput",
+          "Label": "FG Input Source",
+          "Tooltip": "Selected FG Input/Source. Default: nofg",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "nofg", "Label": "No FG" },
+            { "Value": "dlssg", "Label": "DLSSG" },
+            { "Value": "nukems", "Label": "Nukem FG" },
+            { "Value": "fsrfg", "Label": "FSR FG" },
+            { "Value": "upscaler", "Label": "Upscaler FG" },
+            { "Value": "fsrfg30", "Label": "FSR FG 3.0" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "FGOutput",
+          "Label": "FG Output",
+          "Tooltip": "Selected FG Output. Default: nofg",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "nofg", "Label": "No FG" },
+            { "Value": "fsrfg", "Label": "FSR FG" },
+            { "Value": "xefg", "Label": "XeFG" },
+            { "Value": "nukems", "Label": "Nukem FG" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "FTInput",
+          "Label": "Frametime Source",
+          "Tooltip": "0: Input (DLSSG/FSRFG/OptiFG) | 1: Present calls | 2: Zero (Only for XeFG)",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "Input" },
+            { "Value": "1", "Label": "Present Calls" },
+            { "Value": "2", "Label": "Zero" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "DebugView",
+          "Label": "FG Debug View",
+          "Tooltip": "Enables Frame Generation Debug View",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "DrawUIOverFG",
+          "Label": "Draw UI Over FG",
+          "Tooltip": "Draw UI over FG, requires Hudless",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "UIPremultipliedAlpha",
+          "Label": "UI Premultiplied Alpha",
+          "Tooltip": "Sets the type of a provided UI texture, with DrawUIOverFG + FSR FG it will change how the UI looks",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "DisableHudless",
+          "Label": "Control Hudless",
+          "Tooltip": "Control Hudless feature",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 1
+        },
+        {
+          "Key": "DisableUI",
+          "Label": "Control UI texture",
+          "Tooltip": "Control a UI texture, even if FG source provides one",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 2
+        },
+        {
+          "Key": "SkipReset",
+          "Label": "Skip reset",
+          "Tooltip": "Ignores Reset signals coming from FG inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 0
+        },
+        {
+          "Key": "VelocityValidNow",
+          "Label": "Velocity valid now",
+          "Tooltip": "Always tag Velocity as ValidNow",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 1
+        },
+        {
+          "Key": "HudlessValidNow",
+          "Label": "Hudless valid now",
+          "Tooltip": "Always tag Hudless as ValidNow",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 2
+        },
+        {
+          "Key": "OnlyAcceptFirstHudless",
+          "Label": "Only accept first hudless",
+          "Tooltip": "If source tags more than one hudless only use first one",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 0
+        },
+        {
+          "Key": "PreserveSwapChain",
+          "Label": "Preserve swap chain",
+          "Tooltip": "Preserve and prevent releasing FG swapchain",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 1
+        },
+        {
+          "Key": "SkipResizeBuffers",
+          "Label": "Skip resize buffers",
+          "Tooltip": "Skip ResizeBuffers call to swapchain",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 2
+        },
+        {
+          "Key": "ModifyBufferState",
+          "Label": "Modify buffer state",
+          "Tooltip": "Normally after ResizeBuffers call swapchain buffers",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 5,
+          "Column": 0
+        },
+        {
+          "Key": "ModifySCIndex",
+          "Label": "Modify SC index",
+          "Tooltip": "Normally after ResizeBuffers call swapchain current index",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 5,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "Plugins",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "Path",
+          "Label": "Plugins Path",
+          "Tooltip": "Path that will be searched for same filename plugins (dxgi.dll, winmm.dll, etc.). Default is .\\plugins",
+          "ControlType": "folderpath",
+          "Row": 0,
+          "Column": 0,
+          "ColumnSpan": 2
+        },
+        {
+          "Key": "LoadAsiPlugins",
+          "Label": "Load ASI Plugins",
+          "Tooltip": "Lets OptiScaler load *.asi files in plugins folder",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "LoadSpecialK",
+          "Label": "Load SpecialK",
+          "Tooltip": "Loads SpecialK64.dll from game's exe folder. Please create an empty SpecialK.dxgi file next to SpecialK64.dll to set SpecialK's working mode. BECAUSE OF STABILITY ISSUES, WILL NOT BE LOADED WHEN OPTIFG IS ENABLED",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "LoadReshade",
+          "Label": "Load ReShade",
+          "Tooltip": "Loads Reshade64.dll from game's exe folder. Rename Reshade dll to ReShade64.dll, put next to OptiScaler and set to true",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        }
+      ]
+    },
+    {
+      "Name": "Log",
+      "Rows": 4,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "LogToFile",
+          "Label": "Log to File",
+          "Tooltip": "Enable file logging",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "LogToConsole",
+          "Label": "Log to Console",
+          "Tooltip": "Enable console logging",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "LogLevel",
+          "Label": "Log Level",
+          "Tooltip": "0=Trace, 1=Debug, 2=Info, 3=Warning, 4=Error",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "Trace (0)" },
+            { "Value": "1", "Label": "Debug (1)" },
+            { "Value": "2", "Label": "Info (2)" },
+            { "Value": "3", "Label": "Warning (3)" },
+            { "Value": "4", "Label": "Error (4)" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "LogFile",
+          "Label": "Log File Path",
+          "Tooltip": "Log file path. Default (auto) is OptiScaler.log in same folder",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "LogToNGX",
+          "Label": "Log to NVNGX API",
+          "Tooltip": "Log to NVNGX API",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "LogToDebug",
+          "Label": "Log to Debug Output",
+          "Tooltip": "Log to Debug output",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "OpenConsole",
+          "Label": "Open Console Window",
+          "Tooltip": "Open console window for logs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "SingleFile",
+          "Label": "Single Log File",
+          "Tooltip": "When set to false creates a new log file for every OptiScaler session",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 1
+        },
+        {
+          "Key": "LogAsync",
+          "Label": "Async Logging",
+          "Tooltip": "Enables Async logging",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 2
+        },
+        {
+          "Key": "LogAsyncThreads",
+          "Label": "Async Logging Threads",
+          "Tooltip": "Async logging threads (1-8)",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "1", "Label": "1" },
+            { "Value": "2", "Label": "2" },
+            { "Value": "3", "Label": "3" },
+            { "Value": "4", "Label": "4" },
+            { "Value": "5", "Label": "5" },
+            { "Value": "6", "Label": "6" },
+            { "Value": "7", "Label": "7" },
+            { "Value": "8", "Label": "8" }
+          ],
+          "Row": 3,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "FSRFG",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "DebugTearLines",
+          "Label": "Debug Tear Lines",
+          "Tooltip": "Enables FSR3.1 Frame Generation Tear Lines",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "DebugResetLines",
+          "Label": "Debug Reset Lines",
+          "Tooltip": "Enables FSR3.1 Frame Generation interpolation skip lines",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "DebugPacingLines",
+          "Label": "Debug Pacing Lines",
+          "Tooltip": "Enables FSR3.1 Frame Generation pacing lines",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "AllowAsync",
+          "Label": "Allow Async",
+          "Tooltip": "Enables Async FSR3.1 Frame Generation",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "UseMutexForSwapchain",
+          "Label": "Use Mutex for Swapchain",
+          "Tooltip": "Enables usage of mutex for FG swapchain present calls. Disabling it might improve performance in cost of stability",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "FramePaceTuning",
+      "Rows": 3,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "FramePacingTuning",
+          "Label": "Frame Pace Tuning",
+          "Tooltip": "Enables custom Frame Pace Tuning parameters",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "FPTSafetyMarginInMs",
+          "Label": "Safety Margin (ms)",
+          "Tooltip": "Sets safety margin. Default (auto) is 0.01",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0.01", "Label": "0.01 (Tuning B)" },
+            { "Value": "0.1", "Label": "0.1 (Default)" },
+            { "Value": "0.75", "Label": "0.75 (Tuning A)" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "FPTVarianceFactor",
+          "Label": "Variance Factor",
+          "Tooltip": "Sets variance factor (0.0 - 1.0). Default (auto) is 0.3",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0.1", "Label": "0.1 (Default)" },
+            { "Value": "0.3", "Label": "0.3 (Tuning B)" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "FPTHybridSpin",
+          "Label": "Hybrid Spin",
+          "Tooltip": "Allows pacing spinlock to sleep, should reduce CPU usage. Might cause slow ramp up of FPS",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "FPTHybridSpinTime",
+          "Label": "Hybrid Spin Time",
+          "Tooltip": "How long to spin if FPTHybridSpin is true. Measured in timer resolution units. Default (auto) is 2",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "2", "Label": "2" },
+            { "Value": "4", "Label": "4" },
+            { "Value": "8", "Label": "8" },
+            { "Value": "16", "Label": "16" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "FPTWaitForSingleObjectOnFence",
+          "Label": "Wait For Single Object",
+          "Tooltip": "Allows WaitForSingleObject instead of spinning for fence value",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "EnableWatermark",
+          "Label": "Enable Watermark",
+          "Tooltip": "Enable FSR-FG Redstone Watermark",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "XeFG",
+      "Rows": 3,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "IgnoreInitChecks",
+          "Label": "Ignore Init Checks",
+          "Tooltip": "Skips pre ini checks for XeFG. Might cause bad IQ or crashes!",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "InterpolationCount",
+          "Label": "Interpolation Count",
+          "Tooltip": "Sets interpolated frame count (MFG). 1 = 2X | 2 = 3X | 3 = 4X",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "1", "Label": "1 (2X)" },
+            { "Value": "2", "Label": "2 (3X)" },
+            { "Value": "3", "Label": "3 (4X)" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "DepthInverted",
+          "Label": "Depth Inverted",
+          "Tooltip": "XeFG DepthInverted flag",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "UIComposition",
+          "Label": "UI Composition",
+          "Tooltip": "Disable UI interpolation. Only works when hudless is provided",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "JitteredMV",
+          "Label": "Jittered MV",
+          "Tooltip": "XeFG JitteredMV flag",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "HighResMV",
+          "Label": "High Res MV",
+          "Tooltip": "XeFG HighResMV flag",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "DebugView",
+          "Label": "Debug View",
+          "Tooltip": "Enables XeFG debug squares",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "ForceBorderless",
+          "Label": "Force Borderless",
+          "Tooltip": "Forces Borderless mode instead of Exclusive Fullscreen. It might cause stability issues on mode changes or IQ issues when exclusive fullscreen mode is smaller than display resolution",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "OptiFG",
+      "Rows": 9,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "HUDFix",
+          "Label": "HUD Fix",
+          "Tooltip": "Enables HUD fix FSR3.1 Frame Generation. Might cause crashes, specially with Async",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "HUDLimit",
+          "Label": "HUD Limit",
+          "Tooltip": "Delays HUDless image capture. Might cause crashes, specially if set too high!",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "1", "Label": "1" },
+            { "Value": "2", "Label": "2" },
+            { "Value": "3", "Label": "3" },
+            { "Value": "5", "Label": "5" },
+            { "Value": "10", "Label": "10" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "HUDFixExtended",
+          "Label": "HUD Fix Extended",
+          "Tooltip": "Extended HUDless checks for more image formats. Might cause crash and slowdowns",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "HudfixDisableRTV",
+          "Label": "Disable RTV",
+          "Tooltip": "Do not use CreateRenderTargetView for resource tracking",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "HudfixDisableSRV",
+          "Label": "Disable SRV",
+          "Tooltip": "Do not use CreateShaderResourceView for resource tracking",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "HudfixDisableUAV",
+          "Label": "Disable UAV",
+          "Tooltip": "Do not use CreateUnorderedAccessView for resource tracking",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "HudfixDisableOM",
+          "Label": "Disable OM",
+          "Tooltip": "Do not use OMSetRenderTargets for resource tracking",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "HudfixDisableSCR",
+          "Label": "Disable SCR",
+          "Tooltip": "Do not use SetComputeRootDescriptorTable for resource tracking",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 1
+        },
+        {
+          "Key": "HudfixDisableSGR",
+          "Label": "Disable SGR",
+          "Tooltip": "Do not use SetGraphicsRootDescriptorTable for resource tracking",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 2
+        },
+        {
+          "Key": "HudfixDisableDI",
+          "Label": "Disable DI",
+          "Tooltip": "Do not use DrawInstanced for resource tracking",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 0
+        },
+        {
+          "Key": "HudfixDisableDII",
+          "Label": "Disable DII",
+          "Tooltip": "Do not use DrawIndexedInstanced for resource tracking",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 1
+        },
+        {
+          "Key": "HudfixDisableDispatch",
+          "Label": "Disable Dispatch",
+          "Tooltip": "Do not use Dispatch for resource tracking",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 2
+        },
+        {
+          "Key": "HUDFixDontUseSwapchainBuffers",
+          "Label": "Don't Use Swapchain Buffers",
+          "Tooltip": "Prevent swapchain buffers to be used as Hudless. Might help fixing overlay issues but also might reduce compatibility",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 0
+        },
+        {
+          "Key": "HUDFixRelaxedResolutionCheck",
+          "Label": "Relaxed Resolution Check",
+          "Tooltip": "Relax resolution checks for Hudless by 32 pixels. Helps games which use black borders for some resolutions and screen ratios (e.g. Witcher 3)",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 1
+        },
+        {
+          "Key": "HUDFixImmediate",
+          "Label": "HUD Fix Immediate",
+          "Tooltip": "Enables capturing of resources before shader execution. Increase hudless capture chances but might cause capturing of unnecessary resources",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 2
+        },
+        {
+          "Key": "AlwaysTrackHeaps",
+          "Label": "Always Track Heaps",
+          "Tooltip": "Resource tracking is always enabled regardless of Hudfix setting. Might cause performance issues but disabling might cause stability issues",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 5,
+          "Column": 0
+        },
+        {
+          "Key": "UseShards",
+          "Label": "Use Shards",
+          "Tooltip": "Instead of single mutex use shards for tracking resources. Might improve performance on heavy multithreaded games",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 5,
+          "Column": 1
+        },
+        {
+          "Key": "ResourceBlocking",
+          "Label": "Resource Blocking",
+          "Tooltip": "Block rarely used resources from using as hudless to prevent flickers and other issues",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 5,
+          "Column": 2
+        },
+        {
+          "Key": "MakeDepthCopy",
+          "Label": "Make Depth Copy",
+          "Tooltip": "Makes a copy of Depth to be used with Hudfix FG call. Setting it false most probably cause occasional garbling",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 6,
+          "Column": 0
+        },
+        {
+          "Key": "EnableDepthScale",
+          "Label": "Enable Depth Scale",
+          "Tooltip": "Scale depth buffer according to DepthScaleMax value. Fixes broken depth buffer info for DLSS-D + UE",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 6,
+          "Column": 1
+        },
+        {
+          "Key": "DepthScaleMax",
+          "Label": "Depth Scale Max",
+          "Tooltip": "Scale value for EnableDepthScale. Depth value will be divided to this value",
+          "ControlType": "text",
+          "Row": 6,
+          "Column": 2
+        },
+        {
+          "Key": "MakeMVCopy",
+          "Label": "Make MV Copy",
+          "Tooltip": "Makes a copy of motion vectors to be used with Hudfix FG call. Setting it false most probably cause occasional garbling",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 7,
+          "Column": 0
+        },
+        {
+          "Key": "ResourceFlip",
+          "Label": "Resource Flip",
+          "Tooltip": "Flip Depth & Velocity textures. This should fix OptiFG issues with Unity games",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 7,
+          "Column": 1
+        },
+        {
+          "Key": "ResourceFlipOffset",
+          "Label": "Resource Flip Offset",
+          "Tooltip": "Flip Depth & Velocity textures according to interpolation area. This should fix OptiFG issues with Unity games",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 7,
+          "Column": 2
+        },
+        {
+          "Key": "AlwaysCaptureFSRFGSwapchain",
+          "Label": "Always Capture FSRFG Swapchain",
+          "Tooltip": "Always captures and swaps FSR-FG 3.1 swapchain with selected output. This should fix double present call issue with games create but not use FSR-FG swapchain (Silent Hill f)",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 8,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "Inputs",
+      "Rows": 5,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "EnableDlssInputs",
+          "Label": "Enable DLSS Inputs",
+          "Tooltip": "OptiScaler will hook (nvngx.dll) and use Dlss Inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "EnableXeSSInputs",
+          "Label": "Enable XeSS Inputs",
+          "Tooltip": "OptiScaler will hook (libxess.dll) and use XeSS Inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "EnableFsr2Inputs",
+          "Label": "Enable FSR2 Inputs",
+          "Tooltip": "OptiScaler will hook Fsr2 Inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "UseFsr2Dx11Inputs",
+          "Label": "Use FSR2 DX11 Inputs",
+          "Tooltip": "OptiScaler will hook Fsr2 Dx11 Inputs instead of Dx12 one",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "UseFsr2VulkanInputs",
+          "Label": "Use FSR2 Vulkan Inputs",
+          "Tooltip": "OptiScaler will hook Fsr2 Vulkan Inputs instead of Dx11 & Dx12 ones",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "UseFsr2Inputs",
+          "Label": "Use FSR2 Inputs",
+          "Tooltip": "OptiScaler will use Fsr2 Inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "Fsr2Pattern",
+          "Label": "FSR2 Pattern",
+          "Tooltip": "Try to find FSR2 methods with pattern matching. Will slow down the loading of the game",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "EnableFsr3Inputs",
+          "Label": "Enable FSR3 Inputs",
+          "Tooltip": "OptiScaler will hook Fsr3 Inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 1
+        },
+        {
+          "Key": "UseFsr3Inputs",
+          "Label": "Use FSR3 Inputs",
+          "Tooltip": "OptiScaler will use Fsr3 Inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 2
+        },
+        {
+          "Key": "Fsr3Pattern",
+          "Label": "FSR3 Pattern",
+          "Tooltip": "Try to find FSR3 methods with pattern matching. Will slow down the loading of the game",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 0
+        },
+        {
+          "Key": "EnableFfxInputs",
+          "Label": "Enable FFX Inputs",
+          "Tooltip": "OptiScaler will hook FidelityFX (amd_fidelityfx_dx12.dll) API Inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 1
+        },
+        {
+          "Key": "UseFfxInputs",
+          "Label": "Use FFX Inputs",
+          "Tooltip": "OptiScaler will use FidelityFX API Inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 2
+        },
+        {
+          "Key": "EnableHotSwapping",
+          "Label": "Enable Hot Swapping",
+          "Tooltip": "Enables hot swapping between games FSR3.1 upscaler and OptiScaler's selected upscaler",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "FSRFGInputs",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "SkipConfigForHudless",
+          "Label": "Skip Config for Hudless",
+          "Tooltip": "Do not use Hudless set at ffxConfig",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "SkipDispatchForHudless",
+          "Label": "Skip Dispatch for Hudless",
+          "Tooltip": "Do not use Hudless set at ffxDispatch",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "Framerate",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "FramerateLimit",
+          "Label": "Framerate Limit",
+          "Tooltip": "Frame rate limit that uses Reflex, therefore the game has to support Reflex and have it enabled. AMD users can use Fakenvapi to get this feature working. Default (auto) is 0.0 (disabled)",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "XeSS",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "BuildPipelines",
+          "Label": "Build Pipelines",
+          "Tooltip": "Building pipeline for XeSS before init",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "CreateHeaps",
+          "Label": "Create Heaps",
+          "Tooltip": "Creating heap objects for XeSS before init",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "NetworkModel",
+          "Label": "Network Model",
+          "Tooltip": "Select XeSS network model. Currently doesn't seem to do anything. 0 = KPSS | 1 = Splat | 2 = Model 3 | 3 = Model 4 | 4 = Model 5 | 5 = Model 6",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (KPSS)" },
+            { "Value": "1", "Label": "1 (Splat)" },
+            { "Value": "2", "Label": "2 (Model 3)" },
+            { "Value": "3", "Label": "3 (Model 4)" },
+            { "Value": "4", "Label": "4 (Model 5)" },
+            { "Value": "5", "Label": "5 (Model 6)" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "LibraryPath",
+          "Label": "Library Path",
+          "Tooltip": "Override path of libxess.dll. Example - D:\\Downloads\\OptiScaler\\libxess.dll. Default (auto) is same folder as mod dll",
+          "ControlType": "folderpath",
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "Dx11LibraryPath",
+          "Label": "DX11 Library Path",
+          "Tooltip": "Override path of libxess_dx11.dll. Example - D:\\Downloads\\OptiScaler\\libxess_dx11.dll. Default (auto) is same folder as mod dll",
+          "ControlType": "folderpath",
+          "Row": 1,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "FSR",
+      "Rows": 9,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "VerticalFov",
+          "Label": "Vertical FOV",
+          "Tooltip": "Sets camera vertical FOV value for FSR and FSR FG. 0.0 to 180.0. Default (auto) is 60.0",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "HorizontalFov",
+          "Label": "Horizontal FOV",
+          "Tooltip": "If Vertical FOV is not defined will be used to calculate Vertical FOV. 0.0 to 180.0. Default (auto) is off",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "CameraNear",
+          "Label": "Camera Near",
+          "Tooltip": "Sets camera near value for FSR and FSR FG. 0.0 to max float value. Default (auto) is 0.1",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "CameraFar",
+          "Label": "Camera Far",
+          "Tooltip": "Sets camera far value for FSR and FSR FG. 0.0 to max float value. Default (auto) is 10000.0",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "UseFsrInputValues",
+          "Label": "Use FSR Input Values",
+          "Tooltip": "Enables usage of camera values (near, far, FOV) received from FSR2/3 or FFX inputs",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "DebugView",
+          "Label": "Debug View",
+          "Tooltip": "Enables Debug View for FSR3.X upscaler",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "UpscalerIndex",
+          "Label": "Upscaler Index",
+          "Tooltip": "Selects upscaler backend for FSR3.X/4. 0 = FSR 4.0.2 | 1 = FSR 3.1.5 | 2 = FSR 2.3.4. Default (auto) is 0 - FSR4 for RDNA4, FSR3 for the rest",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (FSR 4.0.2)" },
+            { "Value": "1", "Label": "1 (FSR 3.1.5)" },
+            { "Value": "2", "Label": "2 (FSR 2.3.4)" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "FGIndex",
+          "Label": "FG Index",
+          "Tooltip": "Selects FG backend for FFX. 0 = FSR 4.0.0 | 1 = FSR 3.1.6. Default (auto) is 0 - FSR4 for RDNA4, FSR3 for the rest",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (FSR 4.0.0)" },
+            { "Value": "1", "Label": "1 (FSR 3.1.6)" }
+          ],
+          "Row": 2,
+          "Column": 1
+        },
+        {
+          "Key": "VelocityFactor",
+          "Label": "Velocity Factor",
+          "Tooltip": "Sets Velocity Factor for FSR3.1.1 and above. Value of 0.0f can improve temporal stability of bright pixels. 0.0 to 1.0. Default (auto) is 1.0",
+          "ControlType": "text",
+          "Row": 2,
+          "Column": 2
+        },
+        {
+          "Key": "ReactiveScale",
+          "Label": "Reactive Scale",
+          "Tooltip": "Sets Reactiveness Scale for FSR3.1.4 and above. Meant for development purpose to test if writing a larger value to reactive mask, reduces ghosting. 0.0 to infinite. Default (auto) is 1.0",
+          "ControlType": "text",
+          "Row": 3,
+          "Column": 0
+        },
+        {
+          "Key": "ShadingScale",
+          "Label": "Shading Scale",
+          "Tooltip": "Sets Shading Scale for FSR3.1.4 and above. Increasing this scales fsr3.1 computed shading change value at read to have higher reactiveness. 0.0 to infinite. Default (auto) is 1.0",
+          "ControlType": "text",
+          "Row": 3,
+          "Column": 1
+        },
+        {
+          "Key": "AccAddPerFrame",
+          "Label": "Acc Add Per Frame",
+          "Tooltip": "Sets Accumulation added per frame for FSR3.1.4 and above. 0.0 to 1.0. Default (auto) is 0.333",
+          "ControlType": "text",
+          "Row": 3,
+          "Column": 2
+        },
+        {
+          "Key": "MinDisOccAcc",
+          "Label": "Min DisOcc Acc",
+          "Tooltip": "Sets Minimum Disocclusion Accumulation for FSR3.1.4 and above. -1.0 to 1.0. Default (auto) is -0.333",
+          "ControlType": "text",
+          "Row": 4,
+          "Column": 0
+        },
+        {
+          "Key": "UseReactiveMaskForTransparency",
+          "Label": "Use Reactive Mask for Transparency",
+          "Tooltip": "Use raw DLSS reactive mask as transparency mask",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 1
+        },
+        {
+          "Key": "DlssReactiveMaskBias",
+          "Label": "DLSS Reactive Mask Bias",
+          "Tooltip": "Bias to apply DLSS reactive mask when using with FSR. Higher the value, more bias on new frame. 0.0 - 0.9. Default (auto) is 0.45",
+          "ControlType": "text",
+          "Row": 4,
+          "Column": 2
+        },
+        {
+          "Key": "Fsr4Update",
+          "Label": "FSR4 Update",
+          "Tooltip": "Enables updating of FSR3.X to FSR4. Default (auto) depends on GPU - true for RDNA4",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 5,
+          "Column": 0
+        },
+        {
+          "Key": "Fsr4Model",
+          "Label": "FSR4 Model",
+          "Tooltip": "Select FSR4 model to use. 0 = For FSR Native AA, 1 = Ultra Quality/Quality, 2 = Balanced, 3 = Performance, 4 = DRS, 5 = Ultra Performance. Default (auto) is game's default",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Native AA)" },
+            { "Value": "1", "Label": "1 (Ultra Quality/Quality)" },
+            { "Value": "2", "Label": "2 (Balanced)" },
+            { "Value": "3", "Label": "3 (Performance)" },
+            { "Value": "4", "Label": "4 (DRS)" },
+            { "Value": "5", "Label": "5 (Ultra Performance)" }
+          ],
+          "Row": 5,
+          "Column": 1
+        },
+        {
+          "Key": "Fsr4EnableDebugView",
+          "Label": "FSR4 Enable Debug View",
+          "Tooltip": "Enable FSR4 Debug View visualization. Might consume more VRAM",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 5,
+          "Column": 2
+        },
+        {
+          "Key": "Fsr4EnableWatermark",
+          "Label": "FSR4 Enable Watermark",
+          "Tooltip": "Enable FSR4 Watermark",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 6,
+          "Column": 0
+        },
+        {
+          "Key": "FsrNonLinearColorSpace",
+          "Label": "FSR Non-Linear Color Space",
+          "Tooltip": "Indicates input color resource uses Non-Linear color space. Might improve IQ of FSR4",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 6,
+          "Column": 1
+        },
+        {
+          "Key": "FsrNonLinearSRGB",
+          "Label": "FSR Non-Linear sRGB",
+          "Tooltip": "Indicates input color resource contains perceptual sRGB colors. Might improve IQ of FSR4",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 6,
+          "Column": 2
+        },
+        {
+          "Key": "FsrNonLinearPQ",
+          "Label": "FSR Non-Linear PQ",
+          "Tooltip": "Indicates input color resource contains perceptual PQ colors. Might improve IQ of FSR4",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 7,
+          "Column": 0
+        },
+        {
+          "Key": "FsrAgilitySDKUpgrade",
+          "Label": "FSR Agility SDK Upgrade",
+          "Tooltip": "Updates the DirectX 12 Agility SDK. Enabling the use of FSR4 on Windows 10 in older titles like Cyberpunk 2077. You MUST copy D3D12_OptiScaler folder next to game's exe!",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 7,
+          "Column": 1
+        },
+        {
+          "Key": "FfxDx12Path",
+          "Label": "FFX DX12 Path",
+          "Tooltip": "Override path of amd_fidelityfx_dx12.dll. Default (auto) is same folder as mod dll",
+          "ControlType": "folderpath",
+          "Row": 7,
+          "Column": 2
+        },
+        {
+          "Key": "FfxVkPath",
+          "Label": "FFX Vulkan Path",
+          "Tooltip": "Override path of amd_fidelityfx_vk.dll. Default (auto) is same folder as mod dll",
+          "ControlType": "folderpath",
+          "Row": 8,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "DLSS",
+      "Rows": 6,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "Enabled",
+          "Label": "Enabled",
+          "Tooltip": "Enables calls to original NVNGX",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "LibraryPath",
+          "Label": "Library Path",
+          "Tooltip": "Override path of nvngx.dll / _nvngx.dll. Default (auto) is path defined in registry",
+          "ControlType": "folderpath",
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "FeaturePath",
+          "Label": "Feature Path",
+          "Tooltip": "Path of streamline/nvngx_dlss.dll folder which will be used on initing nvngx api. Default (auto) is OptiScaler dll path",
+          "ControlType": "folderpath",
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "NVNGX_DLSS_Path",
+          "Label": "NVNGX DLSS Path",
+          "Tooltip": "Override path of nvngx_dlss.dll. Default (auto) means override disabled",
+          "ControlType": "folderpath",
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "RenderPresetOverride",
+          "Label": "Render Preset Override",
+          "Tooltip": "Set this to true to enable custom render preset overrides",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "RenderPresetForAll",
+          "Label": "Render Preset For All",
+          "Tooltip": "Render presets for quality settings. 0 = Default | 1 = A | 2 = B | 3 = C | 4 = D | 5 = E | 6 = F | 7 = G | 8 = H | 9 = I | 10 = J | 11 = K | 12 = L | 13 = M | 14 = N | 15 = O. Default (auto) is 0",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" },
+            { "Value": "6", "Label": "6 (F)" },
+            { "Value": "7", "Label": "7 (G)" },
+            { "Value": "8", "Label": "8 (H)" },
+            { "Value": "9", "Label": "9 (I)" },
+            { "Value": "10", "Label": "10 (J)" },
+            { "Value": "11", "Label": "11 (K)" },
+            { "Value": "12", "Label": "12 (L)" },
+            { "Value": "13", "Label": "13 (M)" },
+            { "Value": "14", "Label": "14 (N)" },
+            { "Value": "15", "Label": "15 (O)" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "RenderPresetDLAA",
+          "Label": "Render Preset DLAA",
+          "Tooltip": "Render preset for DLAA quality setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" },
+            { "Value": "6", "Label": "6 (F)" },
+            { "Value": "7", "Label": "7 (G)" },
+            { "Value": "8", "Label": "8 (H)" },
+            { "Value": "9", "Label": "9 (I)" },
+            { "Value": "10", "Label": "10 (J)" },
+            { "Value": "11", "Label": "11 (K)" },
+            { "Value": "12", "Label": "12 (L)" },
+            { "Value": "13", "Label": "13 (M)" },
+            { "Value": "14", "Label": "14 (N)" },
+            { "Value": "15", "Label": "15 (O)" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "RenderPresetUltraQuality",
+          "Label": "Render Preset Ultra Quality",
+          "Tooltip": "Render preset for Ultra Quality setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" },
+            { "Value": "6", "Label": "6 (F)" },
+            { "Value": "7", "Label": "7 (G)" },
+            { "Value": "8", "Label": "8 (H)" },
+            { "Value": "9", "Label": "9 (I)" },
+            { "Value": "10", "Label": "10 (J)" },
+            { "Value": "11", "Label": "11 (K)" },
+            { "Value": "12", "Label": "12 (L)" },
+            { "Value": "13", "Label": "13 (M)" },
+            { "Value": "14", "Label": "14 (N)" },
+            { "Value": "15", "Label": "15 (O)" }
+          ],
+          "Row": 2,
+          "Column": 1
+        },
+        {
+          "Key": "RenderPresetQuality",
+          "Label": "Render Preset Quality",
+          "Tooltip": "Render preset for Quality setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" },
+            { "Value": "6", "Label": "6 (F)" },
+            { "Value": "7", "Label": "7 (G)" },
+            { "Value": "8", "Label": "8 (H)" },
+            { "Value": "9", "Label": "9 (I)" },
+            { "Value": "10", "Label": "10 (J)" },
+            { "Value": "11", "Label": "11 (K)" },
+            { "Value": "12", "Label": "12 (L)" },
+            { "Value": "13", "Label": "13 (M)" },
+            { "Value": "14", "Label": "14 (N)" },
+            { "Value": "15", "Label": "15 (O)" }
+          ],
+          "Row": 2,
+          "Column": 2
+        },
+        {
+          "Key": "RenderPresetBalanced",
+          "Label": "Render Preset Balanced",
+          "Tooltip": "Render preset for Balanced setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" },
+            { "Value": "6", "Label": "6 (F)" },
+            { "Value": "7", "Label": "7 (G)" },
+            { "Value": "8", "Label": "8 (H)" },
+            { "Value": "9", "Label": "9 (I)" },
+            { "Value": "10", "Label": "10 (J)" },
+            { "Value": "11", "Label": "11 (K)" },
+            { "Value": "12", "Label": "12 (L)" },
+            { "Value": "13", "Label": "13 (M)" },
+            { "Value": "14", "Label": "14 (N)" },
+            { "Value": "15", "Label": "15 (O)" }
+          ],
+          "Row": 3,
+          "Column": 0
+        },
+        {
+          "Key": "RenderPresetPerformance",
+          "Label": "Render Preset Performance",
+          "Tooltip": "Render preset for Performance setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" },
+            { "Value": "6", "Label": "6 (F)" },
+            { "Value": "7", "Label": "7 (G)" },
+            { "Value": "8", "Label": "8 (H)" },
+            { "Value": "9", "Label": "9 (I)" },
+            { "Value": "10", "Label": "10 (J)" },
+            { "Value": "11", "Label": "11 (K)" },
+            { "Value": "12", "Label": "12 (L)" },
+            { "Value": "13", "Label": "13 (M)" },
+            { "Value": "14", "Label": "14 (N)" },
+            { "Value": "15", "Label": "15 (O)" }
+          ],
+          "Row": 3,
+          "Column": 1
+        },
+        {
+          "Key": "RenderPresetUltraPerformance",
+          "Label": "Render Preset Ultra Performance",
+          "Tooltip": "Render preset for Ultra Performance setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" },
+            { "Value": "6", "Label": "6 (F)" },
+            { "Value": "7", "Label": "7 (G)" },
+            { "Value": "8", "Label": "8 (H)" },
+            { "Value": "9", "Label": "9 (I)" },
+            { "Value": "10", "Label": "10 (J)" },
+            { "Value": "11", "Label": "11 (K)" },
+            { "Value": "12", "Label": "12 (L)" },
+            { "Value": "13", "Label": "13 (M)" },
+            { "Value": "14", "Label": "14 (N)" },
+            { "Value": "15", "Label": "15 (O)" }
+          ],
+          "Row": 3,
+          "Column": 2
+        },
+        {
+          "Key": "UseGenericAppIdWithDlss",
+          "Label": "Use Generic App ID with DLSS",
+          "Tooltip": "Use generic appid with NGX, fixes OptiScaler preset override not working with certain games",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "DLSSD",
+      "Rows": 3,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "RenderPresetOverride",
+          "Label": "Render Preset Override",
+          "Tooltip": "Set this to true to enable custom render preset overrides",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "RenderPresetForAll",
+          "Label": "Render Preset For All",
+          "Tooltip": "Render presets for quality settings. 0 = Default | 1 = A | 2 = B | 3 = C | 4 = D | 5 = E. Default (auto) is 0",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "RenderPresetDLAA",
+          "Label": "Render Preset DLAA",
+          "Tooltip": "Render preset for DLAA quality setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "RenderPresetUltraQuality",
+          "Label": "Render Preset Ultra Quality",
+          "Tooltip": "Render preset for Ultra Quality setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "RenderPresetQuality",
+          "Label": "Render Preset Quality",
+          "Tooltip": "Render preset for Quality setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "RenderPresetBalanced",
+          "Label": "Render Preset Balanced",
+          "Tooltip": "Render preset for Balanced setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "RenderPresetPerformance",
+          "Label": "Render Preset Performance",
+          "Tooltip": "Render preset for Performance setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "RenderPresetUltraPerformance",
+          "Label": "Render Preset Ultra Performance",
+          "Tooltip": "Render preset for Ultra Performance setting",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (Default)" },
+            { "Value": "1", "Label": "1 (A)" },
+            { "Value": "2", "Label": "2 (B)" },
+            { "Value": "3", "Label": "3 (C)" },
+            { "Value": "4", "Label": "4 (D)" },
+            { "Value": "5", "Label": "5 (E)" }
+          ],
+          "Row": 2,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "Nukems",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "MakeDepthCopy",
+          "Label": "Make Depth Copy",
+          "Tooltip": "Fix broken visuals in some games (mostly non-UE) on AMD GPUs under Windows. Can cause stutters, so best to use only when necessary and mentioned",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "Spoofing",
+      "Rows": 7,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "SpoofedVendorId",
+          "Label": "Spoofed Vendor ID",
+          "Tooltip": "VendorID to spoof. 0x10de = Nvidia | 0x8086 = Intel | 0x1002 = AMD. Default (auto) is 0x10de",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "SpoofedDeviceId",
+          "Label": "Spoofed Device ID",
+          "Tooltip": "DeviceID to spoof. 0x2684 = 4090 | 0xE20B = B580 | 0x7550 9070 XT. Default (auto) is 0x2684 (4090)",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "TargetVendorId",
+          "Label": "Target Vendor ID",
+          "Tooltip": "Target VendorID to be spoofed. Default (auto) is all",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "TargetDeviceId",
+          "Label": "Target Device ID",
+          "Tooltip": "Target DeviceID to be spoofed. Default (auto) is all",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "SpoofedGPUName",
+          "Label": "Spoofed GPU Name",
+          "Tooltip": "Spoofed GPU name. NVIDIA GeForce RTX 4090 | Intel(R) Arc(TM) B580 Graphics | AMD Radeon RX 9070 XT. Default (auto) is NVIDIA GeForce RTX 4090",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "StreamlineSpoofing",
+          "Label": "Streamline Spoofing",
+          "Tooltip": "Enables GPU spoofing for Streamline, even if Dxgi spoofing is disabled for the rest of the game. Usually allows for using Fakenvapi without spoofing the whole game, and sometimes DLSS/DLSSG",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "Dxgi",
+          "Label": "DXGI",
+          "Tooltip": "Enables Nvidia GPU spoofing for DXGI (can be changed above to spoof other vendors). Default (auto) is true for AMD/Intel, false for Nvidia",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "DxgiFactoryWrapping",
+          "Label": "DXGI Factory Wrapping",
+          "Tooltip": "Enables wrapping of DxgiFactory instead of hooking. Might cause issues or help Nvidia cards with other mods",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 1
+        },
+        {
+          "Key": "DxgiBlacklist",
+          "Label": "DXGI Blacklist",
+          "Tooltip": "Skips DXGI GPU spoofing when caller method in the list. Be careful this will disable spoofing for rest of the calls, also does not work on Linux. Default (auto) is disabled",
+          "ControlType": "text",
+          "Row": 2,
+          "Column": 2
+        },
+        {
+          "Key": "DxgiVRAM",
+          "Label": "DXGI VRAM",
+          "Tooltip": "Spoof amount of VRAM for DXGI. Spoofed amount in GBs. Default (auto) is disabled",
+          "ControlType": "text",
+          "Row": 3,
+          "Column": 0
+        },
+        {
+          "Key": "Vulkan",
+          "Label": "Vulkan",
+          "Tooltip": "Enables Nvidia GPU spoofing for Vulkan (can be changed above to spoof other vendors). Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 1
+        },
+        {
+          "Key": "VulkanExtensionSpoofing",
+          "Label": "Vulkan Extension Spoofing",
+          "Tooltip": "Enables Nvidia extension spoofing for Vulkan. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 2
+        },
+        {
+          "Key": "VulkanVRAM",
+          "Label": "Vulkan VRAM",
+          "Tooltip": "Spoof amount of VRAM for Vulkan. Spoofed amount in GBs. Default (auto) is disabled",
+          "ControlType": "text",
+          "Row": 4,
+          "Column": 0
+        },
+        {
+          "Key": "SpoofHAGS",
+          "Label": "Spoof HAGS",
+          "Tooltip": "Enables spoofing of Hardware Accelerated GPU Scheduling. Required for Nukem's mod, also lets RTX40xx series users use DLSSG without HAGS enabled. Default (auto) is false, unless DLSSG mod is enabled",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 1
+        },
+        {
+          "Key": "D3DFeatureLevel",
+          "Label": "D3D Feature Level",
+          "Tooltip": "Enables overriding of requested D3D feature level. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 4,
+          "Column": 2
+        },
+        {
+          "Key": "UEIntelAtomics",
+          "Label": "UE Intel Atomics",
+          "Tooltip": "Prevents DirectX12 not supported error on UE games with Intel cards when spoofing enabled. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 5,
+          "Column": 0
+        },
+        {
+          "Key": "Registry",
+          "Label": "Registry",
+          "Tooltip": "Spoofs Vendor ID, Device ID and Driver Version at registry level. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 5,
+          "Column": 1
+        },
+        {
+          "Key": "RegistryDriver",
+          "Label": "Registry Driver",
+          "Tooltip": "Driver version to be spoofed at registry. Default (auto) is 32.0.15.9155 (For Nvidia)",
+          "ControlType": "text",
+          "Row": 5,
+          "Column": 2
+        },
+        {
+          "Key": "User32",
+          "Label": "User32",
+          "Tooltip": "Spoofs Vendor ID, Device ID at User32 level. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 6,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "NvApi",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "OverrideNvapiDll",
+          "Label": "Override NvAPI DLL",
+          "Tooltip": "Override loading of nvapi64.dll. Default (auto) is false for Nvidia, true for others",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "DisableFlipMetering",
+          "Label": "Disable Flip Metering",
+          "Tooltip": "Disable FlipMetering. Fix the thick frametime graph caused by Nvidia's Flip Metering when using NukemFG, needs Fakenvapi to work. Default (auto) is false for Nvidia, true for others",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "NvapiDllPath",
+          "Label": "NvAPI DLL Path",
+          "Tooltip": "If nvapi override enabled and file path defined here, will try to load it from here, otherwise will check current folder for nvapi64.dll. Default (auto) is local folder",
+          "ControlType": "folderpath",
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "DontUseFakenvapiForXeLLOnNvidia",
+          "Label": "Don't Use Fakenvapi for XeLL on Nvidia",
+          "Tooltip": "Do not use fakenvapi for converting Reflex calls to XeLL calls on Nvidia GPUs. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "Dx11withDx12",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "UseDelayedInit",
+          "Label": "Use Delayed Init",
+          "Tooltip": "Delay some operations during creation of D11wDx12 features to increase compatibility",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "DontUseNTShared",
+          "Label": "Don't Use NT Shared",
+          "Tooltip": "Prefer using D3D11_RESOURCE_MISC_SHARED, which is lower level and a bit more performant and possibly less compatible",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "Hooks",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "EarlyHooking",
+          "Label": "Early Hooking",
+          "Tooltip": "Early hooking of kernel methods. May cause compatibility issues!!!",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "HookOriginalNvngxOnly",
+          "Label": "Hook Original NVNGX Only",
+          "Tooltip": "Skip hooking of local nvngx files and only hook nvngx at registry. Needed for Uniscaler + FG",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "UseNtdllHooks",
+          "Label": "Use NT DLL Hooks",
+          "Tooltip": "Only hook ntdll.dll methods, skip kernel32.dll and kernelbase.dll hooks",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        }
+      ]
+    },
+    {
+      "Name": "Sharpness",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "OverrideSharpness",
+          "Label": "Override Sharpness",
+          "Tooltip": "Override DLSS Sharpness parameter with fixed Sharpness value",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "Sharpness",
+          "Label": "Sharpness",
+          "Tooltip": "Strength of Sharpening, value range between 0.0 and 1.0 (while using upper limit is RCAS 1.3). Default (auto) is 0.3",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "OutputScaling",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "Enabled",
+          "Label": "Enabled",
+          "Tooltip": "Enable Output Scaling option for Dx12 and Dx11 with Dx12 backends",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "Multiplier",
+          "Label": "Multiplier",
+          "Tooltip": "Output Scaling ratio. 0.5 - 3.0. Default (auto) is 1.5",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "Downscaler",
+          "Label": "Downscaler",
+          "Tooltip": "Downscaler to use for Output Scaling. 0 = FSR1 | 1 = Bicubic | 2 = Catmull-Rom | 3 = Lanczos2 | 4 = Lanczos3 | 5 = Kaiser2 | 6 = Kaiser3 | 7 = MAGIC. Default (auto) is 0 (FSR1)",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0 (FSR1)" },
+            { "Value": "1", "Label": "1 (Bicubic)" },
+            { "Value": "2", "Label": "2 (Catmull-Rom)" },
+            { "Value": "3", "Label": "3 (Lanczos2)" },
+            { "Value": "4", "Label": "4 (Lanczos3)" },
+            { "Value": "5", "Label": "5 (Kaiser2)" },
+            { "Value": "6", "Label": "6 (Kaiser3)" },
+            { "Value": "7", "Label": "7 (MAGIC)" }
+          ],
+          "Row": 0,
+          "Column": 2
+        }
+      ]
+    },
+    {
+      "Name": "CAS",
+      "Rows": 3,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "Enabled",
+          "Label": "Enabled",
+          "Tooltip": "Enables RCAS sharpening",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "MotionSharpnessEnabled",
+          "Label": "Motion Sharpness Enabled",
+          "Tooltip": "Enable Motion Sharpness",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "MotionSharpness",
+          "Label": "Motion Sharpness",
+          "Tooltip": "Sharpening will be added or removed according to motion length. value range between -1.3 and 1.3. Default (auto) is 0.4",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "MotionThreshold",
+          "Label": "Motion Threshold",
+          "Tooltip": "How much a pixel should move before Motion Sharpness applied. 0.0 - 100.0. Default (auto) is 0.0",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "MotionScaleLimit",
+          "Label": "Motion Scale Limit",
+          "Tooltip": "How much a pixel should move to reach maximum MotionSharpness value. Values between MotionThreshold and this value will use be used to scale sharpness value. 0.0 - 100.0. Default (auto) is 10.0",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "MotionSharpnessDebug",
+          "Label": "Motion Sharpness Debug",
+          "Tooltip": "Enable Debug Highlighting for Motion Sharpening. Reddish hue for added greenish for reduced sharpness",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "ContrastEnabled",
+          "Label": "Contrast Enabled",
+          "Tooltip": "Enable Contrast based sharpening. Increases sharpness at high contrast areas",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "Contrast",
+          "Label": "Contrast",
+          "Tooltip": "Contrast based sharpening value. Higher values increases sharpness at high contrast areas. High values might cause graphical GLITCHES when used with high sharpness values. 0.0 - 2.0. Default (auto) is 0.0",
+          "ControlType": "text",
+          "Row": 2,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "InitFlags",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "AutoExposure",
+          "Label": "Auto Exposure",
+          "Tooltip": "Force add ENABLE_AUTOEXPOSURE to init flags. Some Unreal Engine games need this, fixes colors specially in dark areas. Default (auto) is DLSS value",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "HDR",
+          "Label": "HDR",
+          "Tooltip": "Force add HDR_INPUT_COLOR to init flags. Default (auto) is DLSS value",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "DepthInverted",
+          "Label": "Depth Inverted",
+          "Tooltip": "Force add INVERTED_DEPTH to init flags. Default (auto) is DLSS value",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "JitterCancellation",
+          "Label": "Jitter Cancellation",
+          "Tooltip": "Force add JITTERED_MV flag to init flags. Default (auto) is DLSS value",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "DisplayResolution",
+          "Label": "Display Resolution",
+          "Tooltip": "Force add HIGH_RES_MV flag to init flags. Default (auto) is DLSS value",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "DisableReactiveMask",
+          "Label": "Disable Reactive Mask",
+          "Tooltip": "Force remove RESPONSIVE_PIXEL_MASK from init flags. Default (auto) is true",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 2
+        }
+      ]
+    },
+    {
+      "Name": "UpscaleRatio",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "UpscaleRatioOverrideEnabled",
+          "Label": "Upscale Ratio Override Enabled",
+          "Tooltip": "Set this to true to enable the internal Resolution Override",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "UpscaleRatioOverrideValue",
+          "Label": "Upscale Ratio Override Value",
+          "Tooltip": "Set the forced Upscale Ratio value. Default (auto) is 1.3",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "QualityOverrides",
+      "Rows": 3,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "QualityRatioOverrideEnabled",
+          "Label": "Quality Ratio Override Enabled",
+          "Tooltip": "Set this to true to enable Custom quality mode overrides",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "QualityRatioDLAA",
+          "Label": "Quality Ratio DLAA",
+          "Tooltip": "Set Custom Upscaling Ratio for DLAA. Default (auto) is 1.0",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "QualityRatioUltraQuality",
+          "Label": "Quality Ratio Ultra Quality",
+          "Tooltip": "Set Custom Upscaling Ratio for Ultra Quality. Default (auto) is 1.3",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "QualityRatioQuality",
+          "Label": "Quality Ratio Quality",
+          "Tooltip": "Set Custom Upscaling Ratio for Quality. Default (auto) is 1.5",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "QualityRatioBalanced",
+          "Label": "Quality Ratio Balanced",
+          "Tooltip": "Set Custom Upscaling Ratio for Balanced. Default (auto) is 1.7",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "QualityRatioPerformance",
+          "Label": "Quality Ratio Performance",
+          "Tooltip": "Set Custom Upscaling Ratio for Performance. Default (auto) is 2.0",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "QualityRatioUltraPerformance",
+          "Label": "Quality Ratio Ultra Performance",
+          "Tooltip": "Set Custom Upscaling Ratio for Ultra Performance. Default (auto) is 3.0",
+          "ControlType": "text",
+          "Row": 2,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "DRS",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "DrsMinOverrideEnabled",
+          "Label": "DRS Min Override Enabled",
+          "Tooltip": "Set this to true to enable limiting DRS min resolution to Rendering resolution",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "DrsMaxOverrideEnabled",
+          "Label": "DRS Max Override Enabled",
+          "Tooltip": "Set this to true to enable limiting DRS max resolution to Rendering resolution",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "HDR",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "ForceHDR",
+          "Label": "Force HDR",
+          "Tooltip": "Force HDR color space",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "UseHDR10",
+          "Label": "Use HDR10",
+          "Tooltip": "Use HDR10. DXGI_FORMAT_R10G10B10A2_UNORM instead of DXGI_FORMAT_R16G16B16A16_FLOAT",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "SkipColorSpace",
+          "Label": "Skip Color Space",
+          "Tooltip": "Skip setting HDR colorspace",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        }
+      ]
+    },
+    {
+      "Name": "V-Sync",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "OverrideVsync",
+          "Label": "Override V-Sync",
+          "Tooltip": "Enable V-Sync controls",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "ForceVsync",
+          "Label": "Force V-Sync",
+          "Tooltip": "Force V-Sync value. Default (auto) is none selected",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "SyncInterval",
+          "Label": "Sync Interval",
+          "Tooltip": "Sync interval value for V-Sync. 0 to 3. Default (auto) is none selected",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "0", "Label": "0" },
+            { "Value": "1", "Label": "1" },
+            { "Value": "2", "Label": "2" },
+            { "Value": "3", "Label": "3" }
+          ],
+          "Row": 0,
+          "Column": 2
+        }
+      ]
+    },
+    {
+      "Name": "Anisotropy",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "AnisotropyOverride",
+          "Label": "Anisotropy Override",
+          "Tooltip": "Override max Anisotropy/Anisotropic Filtering for textures. 2, 4, 8, 16. Default (auto) is disabled",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "2", "Label": "2" },
+            { "Value": "4", "Label": "4" },
+            { "Value": "8", "Label": "8" },
+            { "Value": "16", "Label": "16" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "ModifyComparison",
+          "Label": "Modify Comparison",
+          "Tooltip": "Change comparison filters to Anisotropic ones. Default (auto) is true",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "ModifyMinMax",
+          "Label": "Modify Min Max",
+          "Tooltip": "Change min/max filters to Anisotropic ones. Default (auto) is true",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "SkipPointFilter",
+          "Label": "Skip Point Filter",
+          "Tooltip": "Skip overriding on point filters. Default (auto) is true",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "Mipmap",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "MipmapBiasOverride",
+          "Label": "Mipmap Bias Override",
+          "Tooltip": "Override value for Mipmap LOD bias. -15.0 - 15.0. Default (auto) is disabled",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "MipmapBiasFixedOverride",
+          "Label": "Mipmap Bias Fixed Override",
+          "Tooltip": "Use a fixed value for LOD bias. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "MipmapBiasScaleOverride",
+          "Label": "Mipmap Bias Scale Override",
+          "Tooltip": "Use override value as scale multiplier. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "MipmapBiasOverrideAll",
+          "Label": "Mipmap Bias Override All",
+          "Tooltip": "Override all textures LOD bias (normally only overriding < 0 values). Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "ProcessFilter",
+      "Rows": 1,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "TargetProcessName",
+          "Label": "Target Process Name",
+          "Tooltip": "Only inject into this specific process (case-insensitive). Example: TargetProcessName=endfield.exe. Default (auto) is disabled (injects into all processes)",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "ProcessExclusionList",
+          "Label": "Process Exclusion List",
+          "Tooltip": "Don't inject into this specific process (case-insensitive). Process names seperated with pipe \"|\". Default (auto) is crashpad_handler.exe and others - listed in Config.h under ProcessFilter",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 1
+        }
+      ]
+    },
+    {
+      "Name": "Hotfix",
+      "Rows": 6,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "CheckForUpdate",
+          "Label": "Check For Update",
+          "Tooltip": "Enables checking for latest version from Github. Default (auto) is true",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "DisableOverlays",
+          "Label": "Disable Overlays",
+          "Tooltip": "Enables blocking of Steam and Epic overlays. Also blocks Steam Input. Default (auto) is false, except for OptiFG when true",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "DontCreateD3D12DeviceForLuma",
+          "Label": "Don't Create D3D12 Device For Luma",
+          "Tooltip": "When using Luma mod and Agility update is enabled, OptiScaler will delay loading of Reshade and create D3D12 device for Luma first. This option will prevent creation of D3D12 device for Luma mod. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "PreferDedicatedGpu",
+          "Label": "Prefer Dedicated GPU",
+          "Tooltip": "OptiScaler will try to force High Performance GPU. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "PreferFirstDedicatedGpu",
+          "Label": "Prefer First Dedicated GPU",
+          "Tooltip": "OptiScaler will report only first High Performance GPU. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "RoundInternalResolution",
+          "Label": "Round Internal Resolution",
+          "Tooltip": "Rounds internal resolutions width and height to multiple of this value. 2, 4, 8, 16. Default (auto) is disabled",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "2", "Label": "2" },
+            { "Value": "4", "Label": "4" },
+            { "Value": "8", "Label": "8" },
+            { "Value": "16", "Label": "16" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "SkipFirstFrames",
+          "Label": "Skip First Frames",
+          "Tooltip": "Skips upscaling of n frames. n is integer number. Default (auto) is disabled",
+          "ControlType": "text",
+          "Row": 2,
+          "Column": 0
+        },
+        {
+          "Key": "RestoreComputeSignature",
+          "Label": "Restore Compute Signature",
+          "Tooltip": "Restore last used compute signature after upscaling. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 1
+        },
+        {
+          "Key": "RestoreGraphicSignature",
+          "Label": "Restore Graphic Signature",
+          "Tooltip": "Restore last used graphics signature after upscaling. Default (auto) is false",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 2,
+          "Column": 2
+        },
+        {
+          "Key": "UsePrecompiledShaders",
+          "Label": "Use Precompiled Shaders",
+          "Tooltip": "Use precompiled shaders for RCAS, Output Scaling and Mask Bias. Default (auto) is true",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Enabled" },
+            { "Value": "false", "Label": "Disabled" }
+          ],
+          "Row": 3,
+          "Column": 0
+        },
+        {
+          "Key": "ColorResourceBarrier",
+          "Label": "Color Resource Barrier",
+          "Tooltip": "Color texture resource state to fix for rainbow colors on AMD cards (for mostly UE games). For UE engine games on AMD, set Color to 4 (D3D12_RESOURCE_STATE_RENDER_TARGET)",
+          "ControlType": "text",
+          "Row": 3,
+          "Column": 1
+        },
+        {
+          "Key": "MotionVectorResourceBarrier",
+          "Label": "Motion Vector Resource Barrier",
+          "Tooltip": "For UE engine games on AMD, set MotionVector to 8 (D3D12_RESOURCE_STATE_UNORDERED_ACCESS)",
+          "ControlType": "text",
+          "Row": 3,
+          "Column": 2
+        },
+        {
+          "Key": "DepthResourceBarrier",
+          "Label": "Depth Resource Barrier",
+          "Tooltip": "Depth resource barrier setting",
+          "ControlType": "text",
+          "Row": 4,
+          "Column": 0
+        },
+        {
+          "Key": "ColorMaskResourceBarrier",
+          "Label": "Color Mask Resource Barrier",
+          "Tooltip": "Color mask resource barrier setting",
+          "ControlType": "text",
+          "Row": 4,
+          "Column": 1
+        },
+        {
+          "Key": "ExposureResourceBarrier",
+          "Label": "Exposure Resource Barrier",
+          "Tooltip": "Exposure resource barrier setting",
+          "ControlType": "text",
+          "Row": 4,
+          "Column": 2
+        },
+        {
+          "Key": "OutputResourceBarrier",
+          "Label": "Output Resource Barrier",
+          "Tooltip": "Output resource barrier setting",
+          "ControlType": "text",
+          "Row": 5,
+          "Column": 0
+        }
+      ]
+    }
+  ]
+}

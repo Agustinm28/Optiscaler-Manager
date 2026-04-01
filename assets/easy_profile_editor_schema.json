@@ -1,0 +1,253 @@
+{
+  "Layout": {
+    "CardMinWidth": 260,
+    "CardMaxWidth": 820,
+    "ColumnGap": 16,
+    "MaxColumns": 3,
+    "Breakpoints": [
+      { "MinWidth": 900, "Columns": 2 },
+      { "MinWidth": 1100, "Columns": 3 }
+    ]
+  },
+  "Sections": [
+    {
+      "Name": "Basic Settings",
+      "Rows": 3,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "Upscaler",
+          "Label": "Upscaler Technology",
+          "Tooltip": "Choose which upscaling technology to use. FSR works on all GPUs, DLSS needs NVIDIA, XeSS needs Intel or NVIDIA",
+          "Options": [
+            { "Value": "auto", "Label": "Auto (Let game decide)" },
+            { "Value": "fsr31", "Label": "FSR 3.1 (AMD, works everywhere)" },
+            { "Value": "dlss", "Label": "DLSS (NVIDIA only)" },
+            { "Value": "xess", "Label": "XeSS (Intel/NVIDIA)" }
+          ],
+          "Row": 0,
+          "Column": 0,
+          "AppliesTo": ["Upscaler", "UpscalerDLSS", "UpscalerPreset"]
+        },
+        {
+          "Key": "Quality",
+          "Label": "Image Quality",
+          "Tooltip": "Higher quality = better image but lower performance. Lower quality = more FPS but softer image",
+          "Options": [
+            { "Value": "auto", "Label": "Auto (Game default)" },
+            { "Value": "ultra_quality", "Label": "Ultra Quality (Best image)" },
+            { "Value": "quality", "Label": "Quality (Balanced)" },
+            { "Value": "balanced", "Label": "Balanced" },
+            { "Value": "performance", "Label": "Performance (More FPS)" },
+            { "Value": "ultra_performance", "Label": "Ultra Performance (Most FPS)" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "EnableFrameGeneration",
+          "Label": "Frame Generation",
+          "Tooltip": "Generates extra frames to boost FPS. Works best with 60+ FPS. May add slight input lag",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "On (More FPS)" },
+            { "Value": "false", "Label": "Off" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "Sharpness",
+          "Label": "Image Sharpness",
+          "Tooltip": "How sharp the image looks. 0.0 = soft, 1.0 = very sharp. Start with 0.3",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 0
+        },
+        {
+          "Key": "DlssReactiveMaskBias",
+          "Label": "Anti-Ghosting",
+          "Tooltip": "Reduces ghosting/trails behind moving objects. Higher = less ghosting but may flicker. Try 0.45 first",
+          "ControlType": "text",
+          "Row": 1,
+          "Column": 1
+        },
+        {
+          "Key": "OutputScalingEnabled",
+          "Label": "Output Scaling",
+          "Tooltip": "Renders at lower resolution then scales up. Boosts performance significantly",
+          "Options": [
+            { "Value": "auto", "Label": "Auto (Off)" },
+            { "Value": "true", "Label": "On (Better FPS)" },
+            { "Value": "false", "Label": "Off" }
+          ],
+          "Row": 1,
+          "Column": 2
+        },
+        {
+          "Key": "ShortcutKey",
+          "Label": "Menu Key",
+          "Tooltip": "Key to open OptiScaler menu. Default is '-' (minus key). Click to change",
+          "ControlType": "keybind",
+          "Row": 2,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "Graphics Tweaks",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "AnisotropyOverride",
+          "Label": "Texture Filtering",
+          "Tooltip": "Makes textures look sharper at angles. Higher = better quality. 16x recommended",
+          "Options": [
+            { "Value": "auto", "Label": "Auto (Game default)" },
+            { "Value": "4", "Label": "4x" },
+            { "Value": "8", "Label": "8x" },
+            { "Value": "16", "Label": "16x (Best quality)" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "MipmapBiasOverride",
+          "Label": "Texture Sharpness",
+          "Tooltip": "Negative values = sharper textures. Try -0.5 for sharper look. Too low may shimmer",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "ForceHDR",
+          "Label": "Force HDR",
+          "Tooltip": "Enable if your monitor supports HDR and game doesn't detect it automatically",
+          "Options": [
+            { "Value": "auto", "Label": "Auto (Off)" },
+            { "Value": "true", "Label": "On" },
+            { "Value": "false", "Label": "Off" }
+          ],
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "OverrideVsync",
+          "Label": "V-Sync Control",
+          "Tooltip": "Control screen tearing. On = no tearing but may add lag. Off = more responsive",
+          "Options": [
+            { "Value": "auto", "Label": "Auto (Game decides)" },
+            { "Value": "true", "Label": "Force On" },
+            { "Value": "false", "Label": "Force Off" }
+          ],
+          "Row": 1,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "Performance",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "PreferDedicatedGpu",
+          "Label": "Use Gaming GPU",
+          "Tooltip": "Forces game to use your dedicated graphics card instead of integrated graphics",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Yes (Recommended)" },
+            { "Value": "false", "Label": "No" }
+          ],
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "DisableOverlays",
+          "Label": "Disable Overlays",
+          "Tooltip": "Disables Steam/Epic overlays. Can improve performance and fix some issues",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "Yes (Better performance)" },
+            { "Value": "false", "Label": "No" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "FramerateLimit",
+          "Label": "FPS Limit",
+          "Tooltip": "Cap your framerate. Useful to reduce power/heat. 0 = unlimited. Requires Reflex support",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 2
+        },
+        {
+          "Key": "RoundInternalResolution",
+          "Label": "Fix Resolution Issues",
+          "Tooltip": "Fixes blurry image in some games. Try 16 if image looks wrong",
+          "Options": [
+            { "Value": "auto", "Label": "Auto (Off)" },
+            { "Value": "8", "Label": "8" },
+            { "Value": "16", "Label": "16 (Recommended)" }
+          ],
+          "Row": 1,
+          "Column": 0
+        }
+      ]
+    },
+    {
+      "Name": "Compatibility Fixes",
+      "Rows": 2,
+      "Columns": 3,
+      "Settings": [
+        {
+          "Key": "ColorResourceBarrier",
+          "Label": "Fix Rainbow Colors (AMD)",
+          "Tooltip": "Fixes rainbow/wrong colors in Unreal Engine games on AMD cards. Set to 4 if you see this issue",
+          "ControlType": "text",
+          "Row": 0,
+          "Column": 0
+        },
+        {
+          "Key": "AutoExposure",
+          "Label": "Fix Dark Areas",
+          "Tooltip": "Fixes too dark areas in some Unreal Engine games. Enable if lighting looks wrong",
+          "Options": [
+            { "Value": "auto", "Label": "Auto" },
+            { "Value": "true", "Label": "On (Fix dark areas)" },
+            { "Value": "false", "Label": "Off" }
+          ],
+          "Row": 0,
+          "Column": 1
+        },
+        {
+          "Key": "DxgiSpoofing",
+          "Label": "GPU Spoofing",
+          "Tooltip": "Makes AMD/Intel GPUs appear as NVIDIA. Needed for some features to work on non-NVIDIA cards",
+          "Options": [
+            { "Value": "auto", "Label": "Auto (On for AMD/Intel)" },
+            { "Value": "true", "Label": "On" },
+            { "Value": "false", "Label": "Off" }
+          ],
+          "Row": 0,
+          "Column": 2,
+          "AppliesTo": ["Dxgi"]
+        },
+        {
+          "Key": "UseDelayedInit",
+          "Label": "Compatibility Mode",
+          "Tooltip": "Enable if game crashes on startup or has loading issues",
+          "Options": [
+            { "Value": "auto", "Label": "Auto (Off)" },
+            { "Value": "true", "Label": "On (Fix crashes)" },
+            { "Value": "false", "Label": "Off" }
+          ],
+          "Row": 1,
+          "Column": 0
+        }
+      ]
+    }
+  ]
+}
