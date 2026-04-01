@@ -137,8 +137,14 @@ This version is unavailable for download. Check your internet connection and try
 
     <!-- Help View Strings -->
     <x:String x:Key="TxtAboutTitle">About</x:String>
-    <x:String x:Key="TxtFeedbackTitle">Feedback</x:String>
-    <x:String x:Key="TxtFeedbackDesc">If you want to request features or report bugs, please open an issue in the GitHub repository.</x:String>
+    <x:String x:Key="TxtAppInfoTitle">Application</x:String>
+    <x:String x:Key="TxtExternalResourcesTitle">External Resources</x:String>
+    <x:String x:Key="TxtFeedbackTitle">Feedback &amp; Support</x:String>
+    <x:String x:Key="TxtFeedbackDesc">Your feedback helps improve Optiscaler Client! For bugs, feature requests, or improvements, please open an issue on GitHub using our templates.</x:String>
+    <x:String x:Key="TxtFeedbackBugs">🐛 Bug Reports: Use the "Bug or Error report" template with steps to reproduce</x:String>
+    <x:String x:Key="TxtFeedbackFeatures">✨ Feature Requests: Use the "Feature request" template to suggest new functionality</x:String>
+    <x:String x:Key="TxtFeedbackImprovements">🔧 Improvements: Use the "Improvement request" template for existing features</x:String>
+    <x:String x:Key="TxtFeedbackSystem">Include your OS, GPU, and app version for faster resolution</x:String>
     <x:String x:Key="TxtBuildDateLbl">Last Build Date</x:String>
     <x:String x:Key="TxtCheckUpdatesBtn">Check for updates</x:String>
     <x:String x:Key="TxtGithubBtn">GitHub Repository</x:String>

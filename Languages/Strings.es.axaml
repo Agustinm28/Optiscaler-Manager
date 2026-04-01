@@ -178,8 +178,14 @@ Esta versión no está disponible para descarga. Verificá tu conexión a intern
 
     <!-- Help View Strings -->
     <x:String x:Key="TxtAboutTitle">Acerca de</x:String>
-    <x:String x:Key="TxtFeedbackTitle">Comentarios</x:String>
-    <x:String x:Key="TxtFeedbackDesc">Si deseas solicitar funciones o reportar errores, por favor abre un issue en el repositorio de GitHub.</x:String>
+    <x:String x:Key="TxtAppInfoTitle">Aplicación</x:String>
+    <x:String x:Key="TxtExternalResourcesTitle">Recursos Externos</x:String>
+    <x:String x:Key="TxtFeedbackTitle">Comentarios y Soporte</x:String>
+    <x:String x:Key="TxtFeedbackDesc">¡Tu feedback ayuda a mejorar Optiscaler Client! Para bugs, solicitudes de funciones o mejoras, por favor abre una issue en GitHub usando nuestras plantillas.</x:String>
+    <x:String x:Key="TxtFeedbackBugs">🐛 Reporte de Bugs: Usa la plantilla "Bug or Error report" con pasos para reproducir</x:String>
+    <x:String x:Key="TxtFeedbackFeatures">✨ Solicitudes de Funciones: Usa la plantilla "Feature request" para sugerir nueva funcionalidad</x:String>
+    <x:String x:Key="TxtFeedbackImprovements">🔧 Mejoras: Usa la plantilla "Improvement request" para funciones existentes</x:String>
+    <x:String x:Key="TxtFeedbackSystem">Incluye tu SO, GPU y versión de la app para resolución más rápida</x:String>
     <x:String x:Key="TxtBuildDateLbl">Fecha de compilación</x:String>
     <x:String x:Key="TxtCheckUpdatesBtn">Buscar actualizaciones</x:String>
     <x:String x:Key="TxtGithubBtn">Repositorio de GitHub</x:String>
