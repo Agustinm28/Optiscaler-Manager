@@ -7,14 +7,10 @@ assignees: ''
 
 ---
 
-**Affected component**
-Name of the component, file or module to improve
-
 **Describe the bug or error**
 A clear and concise description of what the bug or error is.
 
-**To Reproduce (optional)**
-Steps to reproduce the behavior:
+**Steps to reproduce**
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -23,14 +19,19 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
+**Actual behavior**
+Describe what actually happened and how that differs from the expected behavior.
+
 **Screenshots (optional)**
 If applicable, add screenshots to help explain your problem.
 
-**System(please complete the following information):**
- - Device: [e.g. PC, Laptop, Smartphone]
- - OS: [e.g. iOS, Windows]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+**System:**
+ - Optiscaler Client version: [e.g. 1.0.0]
+ - Optiscaler version: [e.g. 0.9]
+ - FSR4 INT8 DLL version: [e.g. FSR_4.0.2c]
+ - Affected game: [e.g. Cyberpunk 2077]
+ - GPU: [e.g. AMD Radeon 9070 XT]
+ - OS: [e.g. Windows 11]
 
 **Additional context**
 Add any other context about the problem here.
