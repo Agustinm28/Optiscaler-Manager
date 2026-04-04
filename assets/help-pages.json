@@ -6,6 +6,13 @@
       "icon": "\uE946",
       "sections": [
         {
+          "type": "disclaimer",
+          "title": "Disclaimer ⚠️",
+          "content": "This is not an official OptiScaler project. I am not affiliated with the OptiScaler team. This is a personal project developed without any commercial purpose. Anyone is free to try and use this software at their own risk.\n\nCredits: A Special thanks to the OptiScaler team; this tool is only possible thanks to their incredible work on the original mod.",
+          "backgroundColor": "#FFFBF5",
+          "textColor": "#FF8A65"
+        },
+        {
           "type": "app-info",
           "title": "Application Info"
         },
@@ -180,6 +187,10 @@
             {
               "label": "Open folder 📁",
               "text": "Open the game's installation folder in File Explorer."
+            },
+            {
+              "label": "Edit cover and game name 🎨",
+              "text": "Edit the game's cover image and name."
             },
             {
               "label": "Auto Install ✦",

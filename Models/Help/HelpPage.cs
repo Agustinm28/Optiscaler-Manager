@@ -44,6 +44,12 @@ namespace OptiscalerClient.Models.Help
         [JsonPropertyName("fontSize")]
         public double? FontSize { get; set; }
 
+        [JsonPropertyName("backgroundColor")]
+        public string? BackgroundColor { get; set; }
+
+        [JsonPropertyName("textColor")]
+        public string? TextColor { get; set; }
+
         [JsonPropertyName("items")]
         public List<HelpContentItem>? Items { get; set; }
     }

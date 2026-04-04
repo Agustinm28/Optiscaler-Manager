@@ -55,7 +55,7 @@ namespace OptiscalerClient.Views
         private ScrollViewer? _gameListScrollViewer;
         private ScrollViewer? _gameGridScrollViewer;
         private bool _isInitializingLanguage = true;
-        private bool _isGridView = false;
+        private bool _isGridView = true;
         private DispatcherTimer? _scanDotTimer;
         private double _scanDotPhase = 0;
         private readonly Dictionary<Button, DispatcherTimer> _quickInstallDotTimers = new();
@@ -1124,6 +1124,9 @@ namespace OptiscalerClient.Views
         {
             switch (section.Type)
             {
+                case "disclaimer":
+                    RenderDisclaimerSection(container, section);
+                    break;
                 case "guide-button":
                     RenderGuideButton(container);
                     break;
@@ -1173,6 +1176,54 @@ namespace OptiscalerClient.Views
 
             container.Children.Add(title);
             container.Children.Add(button);
+        }
+
+        private void RenderDisclaimerSection(StackPanel container, HelpSection section)
+        {
+            var border = new Border
+            {
+                Padding = new Thickness(16, 12),
+                Margin = new Thickness(0, 0, 0, 24),
+                BorderThickness = new Thickness(1),
+                Background = this.FindResource("BrBgSurface") as IBrush,
+                BorderBrush = this.FindResource("BrBorderSubtle") as IBrush,
+                CornerRadius = (CornerRadius)(this.FindResource("RadiusMedium") ?? new CornerRadius(8))
+            };
+
+            var stackPanel = new StackPanel();
+
+            if (!string.IsNullOrEmpty(section.Title))
+            {
+                var title = new TextBlock
+                {
+                    Text = section.Title,
+                    FontSize = GetFontSize(16, section.FontSize),
+                    FontWeight = FontWeight.Bold,
+                    Margin = new Thickness(0, 0, 0, 8),
+                    Foreground = section.TextColor != null ? 
+                        new SolidColorBrush(Color.Parse(section.TextColor)) : 
+                        this.FindResource("BrTextPrimary") as IBrush
+                };
+                stackPanel.Children.Add(title);
+            }
+
+            if (!string.IsNullOrEmpty(section.Content))
+            {
+                var content = new TextBlock
+                {
+                    Text = section.Content.Replace("\\n", "\n"),
+                    FontSize = GetFontSize(14, section.FontSize),
+                    TextWrapping = TextWrapping.Wrap,
+                    LineHeight = 20,
+                    Foreground = section.TextColor != null ? 
+                        new SolidColorBrush(Color.Parse(section.TextColor)) : 
+                        this.FindResource("BrTextSecondary") as IBrush
+                };
+                stackPanel.Children.Add(content);
+            }
+
+            border.Child = stackPanel;
+            container.Children.Add(border);
         }
 
         private void RenderAppInfo(StackPanel container)

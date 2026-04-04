@@ -16,18 +16,33 @@
       "Columns": 3,
       "Settings": [
         {
-          "Key": "Upscaler",
-          "Label": "Upscaler Technology",
-          "Tooltip": "Choose which upscaling technology to use. FSR works on all GPUs, DLSS needs NVIDIA, XeSS needs Intel or NVIDIA",
+          "Key": "Dx11/VulkanUpscaler",
+          "Label": "DX11/Vulkan Upscaler",
+          "Tooltip": "Choose which upscaling technology to use for DX11/Vulkan games. FSR and Xess works on all GPUs, DLSS needs NVIDIA.",
           "Options": [
-            { "Value": "auto", "Label": "Auto (Let game decide)" },
-            { "Value": "fsr31", "Label": "FSR 3.1 (AMD, works everywhere)" },
-            { "Value": "dlss", "Label": "DLSS (NVIDIA only)" },
-            { "Value": "xess", "Label": "XeSS (Intel/NVIDIA)" }
+            { "Value": "fsr31_12", "Label": "FSR 3.1/4 (DX12)" },
+            { "Value": "fsr22_12", "Label": "FSR 2.2.1 (DX12)" },
+            { "Value": "fsr31", "Label": "FSR 3.1" },
+            { "Value": "fsr22", "Label": "FSR 2.2.1" },
+            { "Value": "dlss", "Label": "DLSS" },
+            { "Value": "xess", "Label": "XeSS" }
           ],
           "Row": 0,
           "Column": 0,
-          "AppliesTo": ["Upscaler", "UpscalerDLSS", "UpscalerPreset"]
+          "AppliesTo": ["Dx11Upscaler", "VulkanUpscaler"]
+        },
+        {
+          "Key": "Dx12Upscaler",
+          "Label": "DX12 Upscaler",
+          "Tooltip": "Choose which upscaling technology to use for DX12 games. FSR and Xess works on all GPUs, DLSS needs NVIDIA.",
+          "Options": [
+            { "Value": "fsr31", "Label": "FSR 3.1/4" },
+            { "Value": "fsr22", "Label": "FSR 2.2.1" },
+            { "Value": "dlss", "Label": "DLSS" },
+            { "Value": "xess", "Label": "XeSS" }
+          ],
+          "Row": 0,
+          "Column": 1
         },
         {
           "Key": "Quality",
