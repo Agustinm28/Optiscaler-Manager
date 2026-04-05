@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
@@ -152,23 +153,39 @@ public class OptiscalerManagementService
         if (asset == null) asset = release.assets[0]; // Fallback
 
         var archiveName = asset.name ?? "update.zip";
-        var archivePath = Path.Combine(_cacheDir, archiveName);
+        var archivePath = Path.Combine(Path.GetTempPath(), $"OptiScalerLegacy_{Guid.NewGuid()}_{archiveName}");
 
-        // Download
-        var data = await _httpClient.GetByteArrayAsync(asset.browser_download_url);
-        await File.WriteAllBytesAsync(archivePath, data);
+        // Stream download with per-attempt timeout
+        using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
+        using (var dlResponse = await _httpClient.GetAsync(asset.browser_download_url, HttpCompletionOption.ResponseHeadersRead, cts.Token))
+        {
+            dlResponse.EnsureSuccessStatusCode();
+            var totalBytes = dlResponse.Content.Headers.ContentLength ?? 20 * 1024 * 1024;
+            long totalRead = 0;
+            using var fs = new FileStream(archivePath, FileMode.Create, FileAccess.Write, FileShare.None, 65536);
+            using var stream = await dlResponse.Content.ReadAsStreamAsync(cts.Token);
+            var buffer = new byte[65536];
+            int read;
+            while ((read = await stream.ReadAsync(buffer.AsMemory(), cts.Token)) > 0)
+            {
+                await fs.WriteAsync(buffer.AsMemory(0, read), cts.Token);
+                totalRead += read;
+            }
+        }
 
-        // Clear old cache content (except archive) ensures clean install
+        try
+        {
+        // Clear old cache content ensures clean install
         foreach (var file in Directory.GetFiles(_cacheDir))
         {
-            if (file != archivePath) try { File.Delete(file); } catch { }
+            try { File.Delete(file); } catch { }
         }
         foreach (var dir in Directory.GetDirectories(_cacheDir))
         {
             try { Directory.Delete(dir, true); } catch { }
         }
 
-        // Extract using SharpCompress
+        // Extract with path traversal validation
         try
         {
             using (var archive = ArchiveFactory.Open(archivePath))
@@ -177,24 +194,29 @@ public class OptiscalerManagementService
                 {
                     if (!entry.IsDirectory)
                     {
-                        entry.WriteToDirectory(_cacheDir, new ExtractionOptions()
-                        {
-                            ExtractFullPath = true,
-                            Overwrite = true
-                        });
+                        var entryKey = entry.Key ?? string.Empty;
+                        var fullDest = Path.GetFullPath(Path.Combine(_cacheDir, entryKey));
+                        var root = Path.GetFullPath(_cacheDir);
+                        if (!fullDest.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                            throw new InvalidOperationException($"Archive entry '{entryKey}' would extract outside cache directory.");
+                        var destDir = Path.GetDirectoryName(fullDest);
+                        if (destDir != null) Directory.CreateDirectory(destDir);
+                        using var entryStream = entry.OpenEntryStream();
+                        using var fileStream = File.Create(fullDest);
+                        entryStream.CopyTo(fileStream, 81920);
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            // Fallback for simple zip if SharpCompress fails on a zip for some reason, 
-            // but SharpCompress handles Zip too.
             throw new Exception($"Extraction failed: {ex.Message}");
         }
-
-        // Remove archive
-        File.Delete(archivePath);
+        }
+        finally
+        {
+            try { if (File.Exists(archivePath)) File.Delete(archivePath); } catch { }
+        }
 
         // Update stored version
         CurrentLocalVersion = LatestRemoteVersion;

@@ -18,6 +18,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using SharpCompress.Archives;
@@ -404,6 +405,115 @@ namespace OptiscalerClient.Services
             DebugWindow.Log($"[ReleasesCache] Rebuilt in-memory cache: {stablesList.Count} stable + {betasList.Count} beta versions");
         }
 
+        // ── Download helpers ─────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Executes an HTTP GET with per-attempt timeout and exponential-backoff retries on
+        /// transient network errors. Does NOT retry on HTTP error status codes (e.g. 404).
+        /// </summary>
+        private static async Task<HttpResponseMessage> GetWithRetryAsync(
+            HttpClient client, string url,
+            int maxRetries = 3, int timeoutSeconds = 30,
+            CancellationToken cancellationToken = default)
+        {
+            int[] backoff = { 1000, 3000, 7000 };
+            Exception? lastEx = null;
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
+            {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+                try
+                {
+                    return await client.GetAsync(url, cts.Token);
+                }
+                catch (Exception ex) when (ex is HttpRequestException
+                    || (ex is OperationCanceledException && !cancellationToken.IsCancellationRequested))
+                {
+                    lastEx = ex is OperationCanceledException
+                        ? new TimeoutException($"Request timed out after {timeoutSeconds}s (attempt {attempt + 1})")
+                        : ex;
+                    DebugWindow.Log($"[HTTP] Attempt {attempt + 1}/{maxRetries + 1} failed for {url}: {lastEx.Message}");
+                }
+                if (attempt < maxRetries)
+                    await Task.Delay(backoff[Math.Min(attempt, backoff.Length - 1)], cancellationToken);
+            }
+            throw lastEx!;
+        }
+
+        /// <summary>
+        /// Validates that an archive entry path stays inside <paramref name="destinationDir"/>
+        /// (path traversal prevention). Returns the safe full destination path.
+        /// </summary>
+        private static string SafeDestinationPath(string destinationDir, string entryPath)
+        {
+            if (string.IsNullOrEmpty(entryPath))
+                throw new InvalidOperationException("Archive entry has an empty path.");
+            var fullDest = Path.GetFullPath(Path.Combine(destinationDir, entryPath));
+            var root = Path.GetFullPath(destinationDir);
+            if (!fullDest.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(fullDest, root, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException(
+                    $"Archive entry '{entryPath}' would extract outside destination directory.");
+            return fullDest;
+        }
+
+        /// <summary>
+        /// Streams a file from <paramref name="url"/> directly to <paramref name="destPath"/> using
+        /// a 64 KB buffer. Applies a per-attempt timeout and retries with exponential backoff.
+        /// Partial files are deleted before each retry.
+        /// </summary>
+        private static async Task StreamToFileAsync(
+            HttpClient client, string url, string destPath,
+            IProgress<double>? progress = null, long estimatedBytes = 20 * 1024 * 1024,
+            int maxRetries = 3, int timeoutSeconds = 120,
+            CancellationToken cancellationToken = default)
+        {
+            int[] backoff = { 2000, 5000, 10000 };
+            Exception? lastEx = null;
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
+            {
+                if (attempt > 0)
+                {
+                    DebugWindow.Log($"[Download] Retry {attempt}/{maxRetries} for {Path.GetFileName(url)}");
+                    try { if (File.Exists(destPath)) File.Delete(destPath); } catch { }
+                }
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+                try
+                {
+                    using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+                    response.EnsureSuccessStatusCode();
+                    var totalBytes = response.Content.Headers.ContentLength ?? estimatedBytes;
+                    long totalRead = 0;
+                    using var fs = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None, 65536);
+                    using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
+                    var buffer = new byte[65536];
+                    int read;
+                    while ((read = await stream.ReadAsync(buffer.AsMemory(), cts.Token)) > 0)
+                    {
+                        await fs.WriteAsync(buffer.AsMemory(0, read), cts.Token);
+                        totalRead += read;
+                        progress?.Report((double)totalRead / totalBytes * 100.0);
+                    }
+                    progress?.Report(100.0);
+                    return;
+                }
+                catch (Exception ex) when (ex is HttpRequestException
+                    || (ex is OperationCanceledException && !cancellationToken.IsCancellationRequested))
+                {
+                    lastEx = ex is OperationCanceledException
+                        ? new TimeoutException($"Download timed out after {timeoutSeconds}s (attempt {attempt + 1})")
+                        : ex;
+                    DebugWindow.Log($"[Download] Attempt {attempt + 1}/{maxRetries + 1} failed: {lastEx.Message}");
+                }
+                if (attempt < maxRetries)
+                    await Task.Delay(backoff[Math.Min(attempt, backoff.Length - 1)], cancellationToken);
+            }
+            throw lastEx!;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+
         public async Task CheckForUpdatesAsync()
         {
             LastError = null;
@@ -517,7 +627,7 @@ namespace OptiscalerClient.Services
             try
             {
                 var url = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases/latest";
-                var response = await _httpClient.GetAsync(url);
+                var response = await GetWithRetryAsync(_httpClient, url);
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
@@ -559,7 +669,7 @@ namespace OptiscalerClient.Services
 
                 var url = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases?per_page=30";
                 DebugWindow.Log($"[FetchVersions] GET {url}");
-                var response = await _httpClient.GetAsync(url);
+                var response = await GetWithRetryAsync(_httpClient, url);
                 DebugWindow.Log($"[FetchVersions] {repoLabel} → HTTP {(int)response.StatusCode}");
                 response.EnsureSuccessStatusCode();
 
@@ -569,7 +679,7 @@ namespace OptiscalerClient.Services
                     try
                     {
                         var latestUrl = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases/latest";
-                        var latestResponse = await _httpClient.GetAsync(latestUrl);
+                        var latestResponse = await GetWithRetryAsync(_httpClient, latestUrl);
                         if (latestResponse.IsSuccessStatusCode)
                         {
                             var latestJson = await latestResponse.Content.ReadAsStringAsync();
@@ -683,7 +793,7 @@ namespace OptiscalerClient.Services
 
                 var url = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases?per_page=30";
                 DebugWindow.Log($"[FetchVersions] GET {url}");
-                var response = await _httpClient.GetAsync(url);
+                var response = await GetWithRetryAsync(_httpClient, url);
                 DebugWindow.Log($"[FetchVersions] {repoLabel} → HTTP {(int)response.StatusCode}");
                 response.EnsureSuccessStatusCode();
 
@@ -739,7 +849,7 @@ namespace OptiscalerClient.Services
                 }
 
                 var url = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases?per_page=30";
-                var response = await _httpClient.GetAsync(url);
+                var response = await GetWithRetryAsync(_httpClient, url);
                 DebugWindow.Log($"[ExtrasVersions] GET {url} → HTTP {(int)response.StatusCode}");
                 response.EnsureSuccessStatusCode();
 
@@ -853,7 +963,7 @@ namespace OptiscalerClient.Services
                     try
                     {
                         var apiUrl = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases/tags/{prefix}{version}";
-                        var response = await _httpClient.GetAsync(apiUrl);
+                        var response = await GetWithRetryAsync(_httpClient, apiUrl, maxRetries: 2, timeoutSeconds: 15);
                         if (!response.IsSuccessStatusCode) continue;
 
                         var json = await response.Content.ReadAsStringAsync();
@@ -887,47 +997,35 @@ namespace OptiscalerClient.Services
             var tempZip = Path.Combine(Path.GetTempPath(), $"Extras_{version}_{Guid.NewGuid()}.zip");
             DebugWindow.Log($"[ExtrasDownload] Downloading {downloadUrl}");
 
-            // Stream download with progress
-            using (var dlResponse = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))
+            try
             {
-                dlResponse.EnsureSuccessStatusCode();
-                var totalBytes = dlResponse.Content.Headers.ContentLength ?? 5 * 1024 * 1024;
-                long totalRead = 0;
+                // Stream download with retry and per-attempt timeout
+                await StreamToFileAsync(_httpClient, downloadUrl, tempZip, progress, 20 * 1024 * 1024);
 
-                using var fs = new FileStream(tempZip, FileMode.Create, FileAccess.Write, FileShare.None, 65536);
-                using var cs = await dlResponse.Content.ReadAsStreamAsync();
-                var buffer = new byte[65536];
-                int read;
-                while ((read = await cs.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                // Extract only the target DLL with path validation (off the UI thread)
+                DebugWindow.Log($"[ExtrasDownload] Extracting from {Path.GetFileName(tempZip)}");
+                await Task.Run(() =>
                 {
-                    await fs.WriteAsync(buffer, 0, read);
-                    totalRead += read;
-                    progress?.Report((double)totalRead / totalBytes * 100);
-                }
-            }
-            progress?.Report(100);
-
-            // Extract only the target DLL (off the UI thread)
-            DebugWindow.Log($"[ExtrasDownload] Extracting from {Path.GetFileName(tempZip)}");
-            await Task.Run(() =>
-            {
-                using var archive = SharpCompress.Archives.ArchiveFactory.Open(tempZip);
-                foreach (var entry in archive.Entries.Where(e => !e.IsDirectory))
-                {
-                    if (Path.GetFileName(entry.Key ?? "").Equals("amd_fidelityfx_upscaler_dx12.dll",
-                        StringComparison.OrdinalIgnoreCase))
+                    using var archive = SharpCompress.Archives.ArchiveFactory.Open(tempZip);
+                    foreach (var entry in archive.Entries.Where(e => !e.IsDirectory))
                     {
-                        var dest = Path.Combine(extractDir, "amd_fidelityfx_upscaler_dx12.dll");
-                        using var entryStream = entry.OpenEntryStream();
-                        using var outStream = File.Create(dest);
-                        entryStream.CopyTo(outStream, 81920);
-                        DebugWindow.Log($"[ExtrasDownload] Extracted DLL to {dest}");
-                        break;
+                        if (Path.GetFileName(entry.Key ?? "").Equals("amd_fidelityfx_upscaler_dx12.dll",
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            var dest = SafeDestinationPath(extractDir, "amd_fidelityfx_upscaler_dx12.dll");
+                            using var entryStream = entry.OpenEntryStream();
+                            using var outStream = File.Create(dest);
+                            entryStream.CopyTo(outStream, 81920);
+                            DebugWindow.Log($"[ExtrasDownload] Extracted DLL to {dest}");
+                            break;
+                        }
                     }
-                }
-            });
-
-            await Task.Run(() => File.Delete(tempZip));
+                });
+            }
+            finally
+            {
+                try { if (File.Exists(tempZip)) File.Delete(tempZip); } catch { }
+            }
 
             if (!File.Exists(dllPath))
                 throw new Exception("amd_fidelityfx_upscaler_dx12.dll not found inside the downloaded archive.");
@@ -1034,14 +1132,14 @@ namespace OptiscalerClient.Services
                     // Try stable repo with v prefix
                     var url = $"https://api.github.com/repos/{_config.OptiScaler.RepoOwner}/{_config.OptiScaler.RepoName}/releases/tags/v{version}";
                     DebugWindow.Log($"[Download] Trying stable repo (with v prefix): {url}");
-                    response = await _httpClient.GetAsync(url);
+                    response = await GetWithRetryAsync(_httpClient, url, maxRetries: 2, timeoutSeconds: 20);
 
                     if (!response.IsSuccessStatusCode)
                     {
                         // Try stable repo without v prefix
                         url = $"https://api.github.com/repos/{_config.OptiScaler.RepoOwner}/{_config.OptiScaler.RepoName}/releases/tags/{version}";
                         DebugWindow.Log($"[Download] Trying stable repo (without v prefix): {url}");
-                        response = await _httpClient.GetAsync(url);
+                        response = await GetWithRetryAsync(_httpClient, url, maxRetries: 2, timeoutSeconds: 20);
                     }
 
                     if (!response.IsSuccessStatusCode)
@@ -1049,7 +1147,7 @@ namespace OptiscalerClient.Services
                         // Try beta repo with v prefix
                         url = $"https://api.github.com/repos/{_config.OptiScalerBetas.RepoOwner}/{_config.OptiScalerBetas.RepoName}/releases/tags/v{version}";
                         DebugWindow.Log($"[Download] Trying beta repo (with v prefix): {url}");
-                        response = await _httpClient.GetAsync(url);
+                        response = await GetWithRetryAsync(_httpClient, url, maxRetries: 2, timeoutSeconds: 20);
                         repoSource = " (beta repo)";
                     }
 
@@ -1058,7 +1156,7 @@ namespace OptiscalerClient.Services
                         // Try beta repo without v prefix
                         url = $"https://api.github.com/repos/{_config.OptiScalerBetas.RepoOwner}/{_config.OptiScalerBetas.RepoName}/releases/tags/{version}";
                         DebugWindow.Log($"[Download] Trying beta repo (without v prefix): {url}");
-                        response = await _httpClient.GetAsync(url);
+                        response = await GetWithRetryAsync(_httpClient, url, maxRetries: 2, timeoutSeconds: 20);
                         repoSource = " (beta repo)";
                     }
 
@@ -1127,86 +1225,44 @@ namespace OptiscalerClient.Services
                 Directory.CreateDirectory(extractPath);
                 DebugWindow.Log($"[Download] Created cache directory: {extractPath}");
 
-                // Download with optional progress simulation or reading stream. 
-                // We'll read the stream for progress:
-                DebugWindow.Log($"[Download] Starting file download from: {Path.GetFileName(downloadUrl)}");
-                using var dlResponse = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
-                dlResponse.EnsureSuccessStatusCode();
-
-                var totalBytes = dlResponse.Content.Headers.ContentLength ?? 10 * 1024 * 1024; // fallback 10MB
                 var tempZip = Path.Combine(Path.GetTempPath(), $"OptiScaler_{version}_{Guid.NewGuid()}.zip");
-                DebugWindow.Log($"[Download] Download size: {totalBytes:N0} bytes, temp file: {Path.GetFileName(tempZip)}");
+                DebugWindow.Log($"[Download] Streaming from: {Path.GetFileName(downloadUrl)}");
 
-                long totalRead = 0;
-                using (var fs = new FileStream(tempZip, FileMode.Create, FileAccess.Write, FileShare.None, 65536)) // 64KB buffer
-                using (var cs = await dlResponse.Content.ReadAsStreamAsync())
+                try
                 {
-                    var buffer = new byte[65536]; // 64KB buffer for faster download
-                    var isMoreToRead = true;
-                    var lastProgressLog = DateTime.MinValue;
+                    // Stream download with retry and per-attempt timeout
+                    await StreamToFileAsync(_httpClient, downloadUrl, tempZip, progress);
 
-                    do
+                    // Extract with path traversal validation (off the UI thread)
+                    DebugWindow.Log($"[Extract] Starting extraction of {Path.GetFileName(tempZip)} to {extractPath}");
+                    var extractStartTime = DateTime.Now;
+                    var fileCount = 0;
+
+                    await Task.Run(() =>
                     {
-                        var read = await cs.ReadAsync(buffer, 0, buffer.Length);
-                        if (read == 0)
+                        using var archive = ArchiveFactory.Open(tempZip);
+                        var entries = archive.Entries.Where(e => !e.IsDirectory).ToList();
+                        foreach (var entry in entries)
                         {
-                            isMoreToRead = false;
+                            var destPath = SafeDestinationPath(extractPath, entry.Key ?? string.Empty);
+                            var destDir = Path.GetDirectoryName(destPath);
+                            if (destDir != null && !Directory.Exists(destDir))
+                                Directory.CreateDirectory(destDir);
+                            using var entryStream = entry.OpenEntryStream();
+                            using var fileStream = File.Create(destPath);
+                            entryStream.CopyTo(fileStream, 81920);
+                            fileCount++;
                         }
-                        else
-                        {
-                            await fs.WriteAsync(buffer, 0, read);
-                            totalRead += read;
-                            var progressPercent = (double)totalRead / totalBytes * 100;
-                            progress?.Report(progressPercent);
+                    });
 
-                            // Log progress every 10 seconds
-                            if (DateTime.Now - lastProgressLog > TimeSpan.FromSeconds(10))
-                            {
-                                DebugWindow.Log($"[Download] Progress: {progressPercent:F1}% ({totalRead:N0}/{totalBytes:N0} bytes)");
-                                lastProgressLog = DateTime.Now;
-                            }
-                        }
-                    }
-                    while (isMoreToRead);
+                    var extractDuration = DateTime.Now - extractStartTime;
+                    DebugWindow.Log($"[Extract] Extraction completed: {fileCount} files in {extractDuration.TotalSeconds:F1}s");
                 }
-
-                DebugWindow.Log($"[Download] Download completed: {totalRead:N0} bytes downloaded");
-
-                // Ensure 100% is reached
-                progress?.Report(100);
-
-                // Extract (off the UI thread)
-                DebugWindow.Log($"[Extract] Starting extraction of {Path.GetFileName(tempZip)} to {extractPath}");
-                var extractStartTime = DateTime.Now;
-                var fileCount = 0;
-
-                await Task.Run(() =>
+                finally
                 {
-                    using var archive = ArchiveFactory.Open(tempZip);
-                    var entries = archive.Entries.Where(e => !e.IsDirectory).ToList();
-
-                    foreach (var entry in entries)
-                    {
-                        var entryKey = entry.Key ?? string.Empty;
-                        var destPath = Path.Combine(extractPath, entryKey);
-                        var destDir = Path.GetDirectoryName(destPath);
-
-                        if (destDir != null && !Directory.Exists(destDir))
-                            Directory.CreateDirectory(destDir);
-
-                        using var entryStream = entry.OpenEntryStream();
-                        using var fileStream = File.Create(destPath);
-                        entryStream.CopyTo(fileStream, 81920); // 80KB buffer for faster extraction
-
-                        fileCount++;
-                    }
-                });
-
-                var extractDuration = DateTime.Now - extractStartTime;
-                DebugWindow.Log($"[Extract] Extraction completed: {fileCount} files extracted in {extractDuration.TotalSeconds:F1} seconds");
-
-                await Task.Run(() => File.Delete(tempZip));
-                DebugWindow.Log($"[Download] Temporary file deleted: {Path.GetFileName(tempZip)}");
+                    try { if (File.Exists(tempZip)) File.Delete(tempZip); } catch { }
+                    DebugWindow.Log($"[Download] Temp file cleaned up: {Path.GetFileName(tempZip)}");
+                }
 
                 _localVersions.OptiScalerVersion = version; // update the locally assumed latest for other components
                 SaveLocalVersions();
@@ -1318,9 +1374,9 @@ namespace OptiscalerClient.Services
             LastError = null;
             try
             {
-                // Get release info
+                // Get release info (with retry)
                 var url = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases/latest";
-                var response = await _httpClient.GetAsync(url);
+                var response = await GetWithRetryAsync(_httpClient, url);
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
@@ -1335,7 +1391,9 @@ namespace OptiscalerClient.Services
                         if (asset.TryGetProperty("browser_download_url", out var urlProp))
                         {
                             var assetUrl = urlProp.GetString();
-                            if (assetUrl != null && (assetUrl.EndsWith(".zip") || assetUrl.EndsWith(".7z")))
+                            if (assetUrl != null &&
+                                (assetUrl.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
+                                 assetUrl.EndsWith(".7z", StringComparison.OrdinalIgnoreCase)))
                             {
                                 downloadUrl = assetUrl;
                                 break;
@@ -1344,27 +1402,24 @@ namespace OptiscalerClient.Services
                     }
                 }
 
-                // Fallback to zipball_url if no assets found (e.g., NukemFG)
+                // Fallback to zipball_url if no assets found
                 if (downloadUrl == null && doc.RootElement.TryGetProperty("zipball_url", out var zipballProp))
-                {
                     downloadUrl = zipballProp.GetString();
-                }
 
                 if (downloadUrl == null)
                     throw new Exception($"No downloadable asset found for {componentName}. Check if the repository has releases with downloadable files.");
 
-                // Download
+                var tempZip = Path.Combine(Path.GetTempPath(), $"{componentName}_{Guid.NewGuid()}.zip");
+                var extractPath = Path.Combine(_cacheDir, cacheSubDir);
                 try
                 {
-                    var zipData = await _httpClient.GetByteArrayAsync(downloadUrl);
-                    var tempZip = Path.Combine(Path.GetTempPath(), $"{componentName}_{Guid.NewGuid()}.zip");
-                    await File.WriteAllBytesAsync(tempZip, zipData);
+                    // Stream download with retry and per-attempt timeout
+                    DebugWindow.Log($"[Download] Streaming {componentName} from {Path.GetFileName(downloadUrl)}");
+                    await StreamToFileAsync(_httpClient, downloadUrl, tempZip);
 
-                    // Extract
-                    var extractPath = Path.Combine(_cacheDir, cacheSubDir);
+                    // Extract with path traversal validation
                     if (Directory.Exists(extractPath))
                         Directory.Delete(extractPath, true);
-
                     Directory.CreateDirectory(extractPath);
 
                     await Task.Run(() =>
@@ -1372,15 +1427,15 @@ namespace OptiscalerClient.Services
                         using var archive = ArchiveFactory.Open(tempZip);
                         foreach (var entry in archive.Entries.Where(e => !e.IsDirectory))
                         {
-                            entry.WriteToDirectory(extractPath, new ExtractionOptions
-                            {
-                                ExtractFullPath = true,
-                                Overwrite = true
-                            });
+                            var destPath = SafeDestinationPath(extractPath, entry.Key ?? string.Empty);
+                            var destDir = Path.GetDirectoryName(destPath);
+                            if (destDir != null && !Directory.Exists(destDir))
+                                Directory.CreateDirectory(destDir);
+                            using var entryStream = entry.OpenEntryStream();
+                            using var fileStream = File.Create(destPath);
+                            entryStream.CopyTo(fileStream, 81920);
                         }
                     });
-
-                    await Task.Run(() => File.Delete(tempZip));
                 }
                 catch (HttpRequestException httpEx)
                 {
@@ -1389,6 +1444,10 @@ namespace OptiscalerClient.Services
                 catch (IOException ioEx)
                 {
                     throw new Exception($"Failed to extract {componentName}: {ioEx.Message}", ioEx);
+                }
+                finally
+                {
+                    try { if (File.Exists(tempZip)) File.Delete(tempZip); } catch { }
                 }
             }
             catch (Exception ex)
