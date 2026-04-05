@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using OptiscalerClient.Models;
 using OptiscalerClient.Views;
@@ -36,6 +37,102 @@ namespace OptiscalerClient.Services
             return client;
         }
 
+        // ── Download helpers ─────────────────────────────────────────────────────
+
+        private static async Task<HttpResponseMessage> GetWithRetryAsync(
+            HttpClient client, string url,
+            int maxRetries = 3, int timeoutSeconds = 30,
+            CancellationToken cancellationToken = default)
+        {
+            int[] backoff = { 1000, 3000, 7000 };
+            Exception? lastEx = null;
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
+            {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+                try
+                {
+                    return await client.GetAsync(url, cts.Token);
+                }
+                catch (Exception ex) when (ex is HttpRequestException
+                    || (ex is OperationCanceledException && !cancellationToken.IsCancellationRequested))
+                {
+                    lastEx = ex is OperationCanceledException
+                        ? new TimeoutException($"Request timed out after {timeoutSeconds}s (attempt {attempt + 1})")
+                        : ex;
+                    DebugWindow.Log($"[HTTP] Attempt {attempt + 1}/{maxRetries + 1} failed: {lastEx.Message}");
+                }
+                if (attempt < maxRetries)
+                    await Task.Delay(backoff[Math.Min(attempt, backoff.Length - 1)], cancellationToken);
+            }
+            throw lastEx!;
+        }
+
+        private static string SafeDestinationPath(string destinationDir, string entryPath)
+        {
+            if (string.IsNullOrEmpty(entryPath))
+                throw new InvalidOperationException("Archive entry has an empty path.");
+            var fullDest = Path.GetFullPath(Path.Combine(destinationDir, entryPath));
+            var root = Path.GetFullPath(destinationDir);
+            if (!fullDest.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(fullDest, root, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException(
+                    $"Archive entry '{entryPath}' would extract outside destination directory.");
+            return fullDest;
+        }
+
+        private static async Task StreamToFileAsync(
+            HttpClient client, string url, string destPath,
+            IProgress<double>? progress = null, long estimatedBytes = 20 * 1024 * 1024,
+            int maxRetries = 3, int timeoutSeconds = 120,
+            CancellationToken cancellationToken = default)
+        {
+            int[] backoff = { 2000, 5000, 10000 };
+            Exception? lastEx = null;
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
+            {
+                if (attempt > 0)
+                {
+                    DebugWindow.Log($"[AppUpdate] Retry {attempt}/{maxRetries} for download");
+                    try { if (File.Exists(destPath)) File.Delete(destPath); } catch { }
+                }
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+                try
+                {
+                    using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+                    response.EnsureSuccessStatusCode();
+                    var totalBytes = response.Content.Headers.ContentLength ?? estimatedBytes;
+                    long totalRead = 0;
+                    using var fs = new FileStream(destPath, FileMode.Create, FileAccess.Write, FileShare.None, 65536);
+                    using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
+                    var buffer = new byte[65536];
+                    int read;
+                    while ((read = await stream.ReadAsync(buffer.AsMemory(), cts.Token)) > 0)
+                    {
+                        await fs.WriteAsync(buffer.AsMemory(0, read), cts.Token);
+                        totalRead += read;
+                        progress?.Report((double)totalRead / totalBytes * 100.0);
+                    }
+                    progress?.Report(100.0);
+                    return;
+                }
+                catch (Exception ex) when (ex is HttpRequestException
+                    || (ex is OperationCanceledException && !cancellationToken.IsCancellationRequested))
+                {
+                    lastEx = ex is OperationCanceledException
+                        ? new TimeoutException($"Download timed out after {timeoutSeconds}s (attempt {attempt + 1})")
+                        : ex;
+                    DebugWindow.Log($"[AppUpdate] Download attempt {attempt + 1}/{maxRetries + 1} failed: {lastEx.Message}");
+                }
+                if (attempt < maxRetries)
+                    await Task.Delay(backoff[Math.Min(attempt, backoff.Length - 1)], cancellationToken);
+            }
+            throw lastEx!;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+
         public async Task<bool> CheckForAppUpdateAsync()
         {
             IsError = false;
@@ -47,8 +144,8 @@ namespace OptiscalerClient.Services
 
                 var url = $"https://api.github.com/repos/{repo.RepoOwner}/{repo.RepoName}/releases/latest";
                 DebugWindow.Log($"[AppUpdate] Fetching latest App version from: {url}");
-                
-                var response = await _httpClient.GetAsync(url);
+
+                var response = await GetWithRetryAsync(_httpClient, url);
                 if (!response.IsSuccessStatusCode)
                 {
                     DebugWindow.Log($"[AppUpdate] API Error: {response.StatusCode} ({(int)response.StatusCode})");
@@ -96,7 +193,7 @@ namespace OptiscalerClient.Services
                     string currentVersionStr = typeof(AppUpdateService).Assembly
                         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
                         .InformationalVersion ?? "0.0.0.0";
-                    
+
                     // Cleanup version string (remove common git suffixes like +...)
                     if (currentVersionStr.Contains("+")) currentVersionStr = currentVersionStr.Split('+')[0];
                     if (currentVersionStr.StartsWith("v", StringComparison.OrdinalIgnoreCase)) currentVersionStr = currentVersionStr.Substring(1);
@@ -104,9 +201,9 @@ namespace OptiscalerClient.Services
                     if (string.IsNullOrEmpty(LatestVersion)) return false;
 
                     // Normalize LatestVersion too (remove prefixes like 'OptiscalerClient-' or 'v')
-                    if (LatestVersion.StartsWith("OptiscalerClient-", StringComparison.OrdinalIgnoreCase)) 
+                    if (LatestVersion.StartsWith("OptiscalerClient-", StringComparison.OrdinalIgnoreCase))
                         LatestVersion = LatestVersion.Substring("OptiscalerClient-".Length);
-                    if (LatestVersion.StartsWith("v", StringComparison.OrdinalIgnoreCase)) 
+                    if (LatestVersion.StartsWith("v", StringComparison.OrdinalIgnoreCase))
                         LatestVersion = LatestVersion.Substring(1);
 
                     // Support for comparison logs
@@ -135,7 +232,7 @@ namespace OptiscalerClient.Services
                 }
             }
             catch (Exception ex)
-            { 
+            {
                 string errorMsg = $"[AppUpdate] FATAL ERROR: {ex.Message}";
                 DebugWindow.Log(errorMsg);
             }
@@ -152,40 +249,28 @@ namespace OptiscalerClient.Services
 
             try
             {
-                using var dlResponse = await _httpClient.GetAsync(DownloadUrl, HttpCompletionOption.ResponseHeadersRead);
-                dlResponse.EnsureSuccessStatusCode();
-
-                var totalBytes = dlResponse.Content.Headers.ContentLength ?? 10 * 1024 * 1024;
-
-                using (var fs = new FileStream(tempZip, FileMode.Create, FileAccess.Write, FileShare.None))
-                using (var cs = await dlResponse.Content.ReadAsStreamAsync())
-                {
-                    var buffer = new byte[8192];
-                    var isMoreToRead = true;
-                    long totalRead = 0;
-
-                    do
-                    {
-                        var read = await cs.ReadAsync(buffer, 0, buffer.Length);
-                        if (read == 0)
-                            isMoreToRead = false;
-                        else
-                        {
-                            await fs.WriteAsync(buffer, 0, read);
-                            totalRead += read;
-                            progress?.Report((double)totalRead / totalBytes * 100);
-                        }
-                    }
-                    while (isMoreToRead);
-                }
+                // Stream download with retry and per-attempt timeout
+                DebugWindow.Log($"[AppUpdate] Streaming download from {DownloadUrl}");
+                await StreamToFileAsync(_httpClient, DownloadUrl, tempZip, progress);
 
                 if (Directory.Exists(updateFolder))
                     Directory.Delete(updateFolder, true);
                 Directory.CreateDirectory(updateFolder);
 
-                ZipFile.ExtractToDirectory(tempZip, updateFolder, overwriteFiles: true);
+                // Extract with path traversal validation
+                using (var zipArchive = ZipFile.OpenRead(tempZip))
+                {
+                    foreach (var entry in zipArchive.Entries)
+                    {
+                        if (string.IsNullOrEmpty(entry.Name)) continue; // directory entry
+                        var destPath = SafeDestinationPath(updateFolder, entry.FullName);
+                        var destDir = Path.GetDirectoryName(destPath);
+                        if (destDir != null) Directory.CreateDirectory(destDir);
+                        entry.ExtractToFile(destPath, overwrite: true);
+                    }
+                }
 
-                // Check if zip contains a single folder inside it, then we move contents up
+                // Check if zip contains a single folder inside it, then move contents up
                 var extractedDirs = Directory.GetDirectories(updateFolder);
                 var extractedFiles = Directory.GetFiles(updateFolder);
 

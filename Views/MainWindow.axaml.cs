@@ -23,6 +23,8 @@ using Avalonia.VisualTree;
 using OptiscalerClient.Helpers;
 using OptiscalerClient.Models.Help;
 using Avalonia.Styling;
+using System.Text.Json;
+using System.Globalization;
 
 namespace OptiscalerClient.Views
 {
@@ -101,18 +103,19 @@ namespace OptiscalerClient.Views
                 debugWindow.Show();
                 DebugWindow.Log("Application Started in DEBUG mode.");
             }
-            
+
             _componentService.OnStatusChanged += ComponentStatusChanged;
             this.Loaded += MainWindow_Loaded;
             this.Closed += MainWindow_Closed;
-            
+
             // Restore window state
             RestoreWindowState();
-            
+
             // Handle window state changes
             this.PropertyChanged += MainWindow_PropertyChanged;
             this.PositionChanged += (s, e) => SaveWindowState();
             this.SizeChanged += MainWindow_SizeChanged;
+            this.KeyDown += HandleEditorKeyCapture;
         }
 
         private void ComponentStatusChanged()
@@ -123,7 +126,7 @@ namespace OptiscalerClient.Views
         {
             // Save final window state before closing
             SaveWindowState();
-            
+
             if (!_windowLifetimeCts.IsCancellationRequested)
             {
                 _windowLifetimeCts.Cancel();
@@ -157,7 +160,7 @@ namespace OptiscalerClient.Views
             bool hadSavedGames = LoadSavedGames(_windowLifetimeCts.Token);
             _ = LoadGpuInfoAsync();
             _ = ScheduleStartupUpdatesAsync(_windowLifetimeCts.Token);
-            
+
             UpdateAnimationsState(_componentService.Config.AnimationsEnabled);
 
             if (!hadSavedGames)
@@ -190,6 +193,7 @@ namespace OptiscalerClient.Views
         private void MainWindow_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
             UpdateSettingsLayout();
+            UpdateEditorWrapLayout();
         }
 
         private void UpdateSettingsLayout()
@@ -199,7 +203,7 @@ namespace OptiscalerClient.Views
 
             // Determine number of columns based on window width
             int newColumns = this.Width < 1000 ? 1 : 2;
-            
+
             // Update column definitions if needed
             if (settingsGrid.ColumnDefinitions.Count != newColumns)
             {
@@ -304,8 +308,8 @@ namespace OptiscalerClient.Views
         {
             if (_allGames == null) return;
 
-            var filtered = string.IsNullOrWhiteSpace(searchText) 
-                ? _allGames 
+            var filtered = string.IsNullOrWhiteSpace(searchText)
+                ? _allGames
                 : _allGames.Where(g => g.Name != null && g.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
 
             _games.Clear();
@@ -496,7 +500,7 @@ namespace OptiscalerClient.Views
             await guide.ShowDialog(this);
         }
 
-        private static readonly string[] _viewNames = { "ViewGames", "ViewSettings", "ViewHelp" };
+        private static readonly string[] _viewNames = { "ViewGames", "ViewProfiles", "ViewProfileEditor", "ViewSettings", "ViewHelp" };
 
         private void SwitchToView(string viewName)
         {
@@ -513,6 +517,12 @@ namespace OptiscalerClient.Views
         private void NavGames_Click(object sender, RoutedEventArgs e)
         {
             SwitchToView("ViewGames");
+        }
+
+        private void NavProfiles_Click(object sender, RoutedEventArgs e)
+        {
+            SwitchToView("ViewProfiles");
+            LoadProfilesView();
         }
 
         private void NavHelp_Click(object sender, RoutedEventArgs e)
@@ -613,17 +623,837 @@ namespace OptiscalerClient.Views
             await cacheWindow.ShowDialog<object>(this);
         }
 
-        private async void BtnManageProfiles_Click(object sender, RoutedEventArgs e)
-        {
-            var profileWindow = new ProfileManagementWindow();
-            await profileWindow.ShowDialog(this);
-        }
-
         private async void BtnManageScanSources_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new ManageScanSourcesWindow(this, _componentService);
             await dialog.ShowDialog<bool?>(this);
         }
+
+        // ── Profiles View ─────────────────────────────────────────────────────────
+
+        private OptiScalerProfile? _selectedProfileView;
+        private string _profileSearchTextView = string.Empty;
+        private readonly ProfileManagementService _profileService = new ProfileManagementService();
+
+        private void LoadProfilesView(bool forceRefresh = true)
+        {
+            var pnl = this.FindControl<StackPanel>("PnlProfilesView");
+            if (pnl == null) return;
+            pnl.Children.Clear();
+
+            var defaultName = _componentService.Config.DefaultProfileName;
+            if (string.IsNullOrWhiteSpace(defaultName))
+                defaultName = OptiScalerProfile.BuiltInDefaultName;
+
+            var allProfiles = _profileService.GetAllProfiles(forceRefresh);
+            var customCount = allProfiles.Count(p => !p.IsBuiltIn);
+
+            var filtered = allProfiles.Where(p =>
+                string.IsNullOrWhiteSpace(_profileSearchTextView)
+                || p.Name.Contains(_profileSearchTextView, StringComparison.OrdinalIgnoreCase)
+                || (!string.IsNullOrWhiteSpace(p.Description) && p.Description.Contains(_profileSearchTextView, StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+
+            var txtInfo = this.FindControl<TextBlock>("TxtProfileInfoView");
+            if (txtInfo != null)
+            {
+                txtInfo.Text = string.IsNullOrWhiteSpace(_profileSearchTextView)
+                    ? $"{allProfiles.Count} profile(s) ({customCount} custom)."
+                    : $"{filtered.Count} result(s) of {allProfiles.Count}.";
+            }
+
+            if (!filtered.Any())
+            {
+                pnl.Children.Add(new TextBlock
+                {
+                    Text = string.IsNullOrWhiteSpace(_profileSearchTextView) ? "No profiles found." : "No matching profiles found.",
+                    Foreground = Brushes.Gray,
+                    FontSize = 11,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 10)
+                });
+                _selectedProfileView = null;
+            }
+            else
+            {
+                foreach (var profile in filtered)
+                    pnl.Children.Add(CreateProfileCardView(profile, defaultName));
+            }
+
+            // Restore selection
+            if (_selectedProfileView != null)
+                _selectedProfileView = filtered.FirstOrDefault(p => p.Name.Equals(_selectedProfileView.Name, StringComparison.OrdinalIgnoreCase));
+
+            UpdateProfileViewButtons(defaultName);
+            HighlightProfileCardView();
+        }
+
+        private Border CreateProfileCardView(OptiScalerProfile profile, string defaultName)
+        {
+            var titleRow = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 6 };
+            titleRow.Children.Add(new TextBlock
+            {
+                Text = profile.Name,
+                FontWeight = FontWeight.Bold,
+                Foreground = Application.Current?.FindResource("BrTextPrimary") as IBrush ?? Brushes.White
+            });
+
+            if (profile.Name.Equals(defaultName, StringComparison.OrdinalIgnoreCase))
+            {
+                titleRow.Children.Add(new Border
+                {
+                    Background = Application.Current?.FindResource("BrBgElevated") as IBrush ?? Brushes.Transparent,
+                    BorderBrush = Application.Current?.FindResource("BrBorderSubtle") as IBrush ?? Brushes.DimGray,
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(6),
+                    Padding = new Thickness(6, 2),
+                    Child = new TextBlock
+                    {
+                        Text = "Default",
+                        FontSize = 9,
+                        Foreground = Application.Current?.FindResource("BrTextSecondary") as IBrush ?? Brushes.Gray
+                    }
+                });
+            }
+
+            var stack = new StackPanel { VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
+            stack.Children.Add(titleRow);
+            if (!string.IsNullOrWhiteSpace(profile.Description))
+            {
+                stack.Children.Add(new TextBlock
+                {
+                    Text = profile.Description,
+                    FontSize = 10,
+                    Foreground = Application.Current?.FindResource("BrTextSecondary") as IBrush ?? Brushes.Gray,
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                    Margin = new Thickness(0, 2, 0, 0)
+                });
+            }
+
+            var border = new Border
+            {
+                Background = Application.Current?.FindResource("BrBgCard") as IBrush ?? Brushes.Transparent,
+                BorderBrush = Application.Current?.FindResource("BrBorderSubtle") as IBrush ?? Brushes.DimGray,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(16, 10),
+                Child = stack,
+                Tag = profile,
+                Cursor = new Cursor(StandardCursorType.Hand)
+            };
+            border.PointerPressed += (s, e) =>
+            {
+                if (s is Border b && b.Tag is OptiScalerProfile p)
+                {
+                    _selectedProfileView = p;
+                    var def = _componentService.Config.DefaultProfileName ?? OptiScalerProfile.BuiltInDefaultName;
+                    UpdateProfileViewButtons(def);
+                    HighlightProfileCardView();
+                }
+            };
+            return border;
+        }
+
+        private void HighlightProfileCardView()
+        {
+            var pnl = this.FindControl<StackPanel>("PnlProfilesView");
+            if (pnl == null) return;
+            foreach (var child in pnl.Children)
+            {
+                if (child is Border b)
+                {
+                    var selected = b.Tag == _selectedProfileView;
+                    b.Background = selected
+                        ? Application.Current?.FindResource("BrBgElevated") as IBrush ?? Brushes.Transparent
+                        : Application.Current?.FindResource("BrBgCard") as IBrush ?? Brushes.Transparent;
+                    b.BorderThickness = selected ? new Thickness(2) : new Thickness(1);
+                }
+            }
+        }
+
+        private void UpdateProfileViewButtons(string defaultName)
+        {
+            var btnEdit = this.FindControl<Button>("BtnEditProfileView");
+            var btnDup = this.FindControl<Button>("BtnDuplicateProfileView");
+            var btnDel = this.FindControl<Button>("BtnDeleteProfileView");
+            var btnDef = this.FindControl<Button>("BtnSetDefaultView");
+
+            bool hasSelection = _selectedProfileView != null;
+            if (btnEdit != null) btnEdit.IsEnabled = hasSelection && !(_selectedProfileView?.IsBuiltIn ?? true);
+            if (btnDup != null) btnDup.IsEnabled = hasSelection;
+            if (btnDel != null) btnDel.IsEnabled = hasSelection && !(_selectedProfileView?.IsBuiltIn ?? true);
+            if (btnDef != null) btnDef.IsEnabled = hasSelection && !(_selectedProfileView?.Name.Equals(defaultName, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
+        private void TxtProfileSearchView_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox tb)
+            {
+                _profileSearchTextView = tb.Text?.Trim() ?? string.Empty;
+                LoadProfilesView(forceRefresh: false);
+            }
+        }
+
+        private void BtnNewProfileView_Click(object? sender, RoutedEventArgs e)
+        {
+            var newProfile = OptiScalerProfile.CreateEmpty();
+            OpenProfileEditor(newProfile, isNewProfile: true);
+        }
+
+        private async void BtnImportProfileView_Click(object? sender, RoutedEventArgs e)
+        {
+            var topLevel = TopLevel.GetTopLevel(this);
+            if (topLevel == null) return;
+
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Import OptiScaler .ini",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("INI files") { Patterns = new[] { "*.ini" } },
+                    new FilePickerFileType("All files")  { Patterns = new[] { "*.*" } }
+                }
+            });
+
+            if (files.Count == 0) return;
+
+            var path = files[0].Path.LocalPath;
+            Dictionary<string, Dictionary<string, string>> iniSettings;
+            try
+            {
+                iniSettings = ParseIniFile(path);
+            }
+            catch (Exception ex)
+            {
+                await new ConfirmDialog(this, "Import Failed", $"Could not read the file:\n{ex.Message}", isAlert: true).ShowDialog<object>(this);
+                return;
+            }
+
+            if (iniSettings.Count == 0)
+            {
+                await new ConfirmDialog(this, "Import Failed", "The selected file contains no recognisable sections.", isAlert: true).ShowDialog<object>(this);
+                return;
+            }
+
+            // Pre-populate a new profile and let the user set name/description in the editor
+            var profile = OptiScalerProfile.CreateEmpty();
+            profile.Name = System.IO.Path.GetFileNameWithoutExtension(path);
+            profile.Description = $"Imported from {System.IO.Path.GetFileName(path)}";
+            profile.IniSettings = iniSettings;
+            OpenProfileEditor(profile, isNewProfile: true);
+        }
+
+        /// <summary>
+        /// Minimal INI parser: ignores comment lines (;) and blank lines,
+        /// collects [Section] → key=value pairs, skips "=auto" values.
+        /// </summary>
+        private static Dictionary<string, Dictionary<string, string>> ParseIniFile(string path)
+        {
+            var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+            var currentSection = string.Empty;
+
+            foreach (var rawLine in System.IO.File.ReadLines(path))
+            {
+                var line = rawLine.Trim();
+                if (string.IsNullOrEmpty(line) || line.StartsWith(';') || line.StartsWith('#'))
+                    continue;
+
+                if (line.StartsWith('[') && line.EndsWith(']'))
+                {
+                    currentSection = line[1..^1].Trim();
+                    if (!result.ContainsKey(currentSection))
+                        result[currentSection] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(currentSection)) continue;
+
+                var eqIdx = line.IndexOf('=');
+                if (eqIdx <= 0) continue;
+
+                var key   = line[..eqIdx].Trim();
+                var value = line[(eqIdx + 1)..].Trim();
+
+                // Strip inline comments
+                var commentIdx = value.IndexOf(';');
+                if (commentIdx >= 0) value = value[..commentIdx].Trim();
+
+                if (string.IsNullOrEmpty(key)) continue;
+
+                // Only store non-default values
+                if (!string.Equals(value, "auto", StringComparison.OrdinalIgnoreCase))
+                    result[currentSection][key] = value;
+            }
+
+            // Remove empty sections
+            foreach (var key in new List<string>(result.Keys))
+                if (result[key].Count == 0) result.Remove(key);
+
+            return result;
+        }
+
+        private void BtnSetDefaultView_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_selectedProfileView == null) return;
+            _componentService.Config.DefaultProfileName = _selectedProfileView.Name;
+            _componentService.SaveConfiguration();
+            LoadProfilesView();
+        }
+
+        private void BtnEditProfileView_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_selectedProfileView == null) return;
+            var wasDefault = _selectedProfileView.Name.Equals(_componentService.Config.DefaultProfileName, StringComparison.OrdinalIgnoreCase);
+            OpenProfileEditor(_selectedProfileView, isNewProfile: false, wasDefault: wasDefault);
+        }
+
+        private void BtnDuplicateProfileView_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_selectedProfileView == null) return;
+            var dup = _selectedProfileView.Clone();
+            dup.Name = $"{_selectedProfileView.Name} (Copy)";
+            dup.IsBuiltIn = false;
+            OpenProfileEditor(dup, isNewProfile: true);
+        }
+
+        private async void BtnDeleteProfileView_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_selectedProfileView == null) return;
+            var dialog = new ConfirmDialog(this, "Delete Profile",
+                $"Are you sure you want to delete '{_selectedProfileView.Name}'?", false);
+            var result = await dialog.ShowDialog<bool>(this);
+            if (!result) return;
+            try
+            {
+                var wasDefault = _selectedProfileView.Name.Equals(_componentService.Config.DefaultProfileName, StringComparison.OrdinalIgnoreCase);
+                _profileService.DeleteProfile(_selectedProfileView);
+                if (wasDefault)
+                {
+                    _componentService.Config.DefaultProfileName = OptiScalerProfile.BuiltInDefaultName;
+                    _componentService.SaveConfiguration();
+                }
+                _selectedProfileView = null;
+                LoadProfilesView();
+            }
+            catch (Exception ex)
+            {
+                await new ConfirmDialog(this, "Error", $"Failed to delete profile: {ex.Message}").ShowDialog<object>(this);
+            }
+        }
+
+        // ── Profile Editor Inline View ────────────────────────────────────────────
+
+        private OptiScalerProfile? _editorProfile;
+        private bool _editorIsNewProfile;
+        private bool _editorWasDefault;
+        private Dictionary<string, Dictionary<string, SettingControlRef>> _editorSettingControls = new();
+        private SettingsSchema? _editorSchema;
+        private LayoutSettings _editorLayout = new();
+        private WrapPanel? _editorSectionsWrap;
+        private Button? _editorKeyCaptureButton;
+        private string? _editorKeyCapturePreviousValue;
+        private string _editorSearchText = string.Empty;
+        private StackPanel? _editorSidebarNav;
+        private Dictionary<string, Border> _editorSectionBorders = new();
+        private bool _editorIsEasyMode = true;
+
+        private void OpenProfileEditor(OptiScalerProfile profile, bool isNewProfile, bool wasDefault = false)
+        {
+            _editorProfile = profile;
+            _editorIsNewProfile = isNewProfile;
+            _editorWasDefault = wasDefault;
+            _editorSettingControls = new();
+            _editorSchema = null;
+            _editorSearchText = string.Empty;
+            _editorIsEasyMode = true;
+
+            var titleBlock = this.FindControl<TextBlock>("TxtEditorTitle");
+            if (titleBlock != null)
+                titleBlock.Text = isNewProfile ? "New Profile" : $"Edit: {profile.Name}";
+
+            var txtName = this.FindControl<TextBox>("TxtProfileNameEd");
+            if (txtName != null)
+            {
+                txtName.Text = profile.Name;
+                txtName.IsReadOnly = profile.IsBuiltIn;
+            }
+
+            var txtDesc = this.FindControl<TextBox>("TxtDescriptionEd");
+            if (txtDesc != null) txtDesc.Text = profile.Description;
+
+            var txtSearch = this.FindControl<TextBox>("TxtSettingsSearchEd");
+            if (txtSearch != null) txtSearch.Text = string.Empty;
+
+            UpdateEditorModeButtons();
+            BuildEditorSettingsUI();
+            SwitchToView("ViewProfileEditor");
+        }
+
+        private void BuildEditorSettingsUI()
+        {
+            var sectionsWrap = this.FindControl<WrapPanel>("SectionsWrapEd");
+            var sidebarNav = this.FindControl<StackPanel>("SidebarNavEd");
+            if (sectionsWrap == null || sidebarNav == null || _editorProfile == null) return;
+
+            _editorSectionsWrap = sectionsWrap;
+            _editorSidebarNav = sidebarNav;
+            sectionsWrap.Children.Clear();
+
+            while (sidebarNav.Children.Count > 1)
+                sidebarNav.Children.RemoveAt(1);
+
+            _editorSectionBorders.Clear();
+
+            string schemaFileName = _editorIsEasyMode ? "easy_profile_editor_schema.json" : "profile_editor_schema.json";
+            string schemaPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", schemaFileName);
+            if (!File.Exists(schemaPath))
+            {
+                sectionsWrap.Children.Add(new TextBlock { Text = $"Error: Settings schema file not found: {schemaFileName}" });
+                return;
+            }
+
+            try
+            {
+                var json = File.ReadAllText(schemaPath);
+                _editorSchema = JsonSerializer.Deserialize<SettingsSchema>(json);
+            }
+            catch (Exception ex)
+            {
+                sectionsWrap.Children.Add(new TextBlock { Text = $"Error parsing schema: {ex.Message}" });
+                return;
+            }
+
+            if (_editorSchema?.Sections == null) return;
+            _editorLayout = _editorSchema.Layout ?? new LayoutSettings();
+
+            foreach (var section in _editorSchema.Sections)
+            {
+                var sectionName = section.Name;
+                if (string.IsNullOrEmpty(sectionName)) continue;
+
+                if (!_editorSettingControls.ContainsKey(sectionName))
+                    _editorSettingControls[sectionName] = new Dictionary<string, SettingControlRef>();
+
+                if (!_editorProfile.IniSettings.ContainsKey(sectionName))
+                    _editorProfile.IniSettings[sectionName] = new Dictionary<string, string>();
+
+                var sectionCard = BuildEditorSectionCard(sectionName, section);
+                if (sectionCard != null)
+                {
+                    sectionsWrap.Children.Add(sectionCard);
+                    _editorSectionBorders[sectionName] = sectionCard;
+
+                    var navButton = new Button
+                    {
+                        Content = sectionName,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+                        HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+                        Padding = new Thickness(12, 8),
+                        FontSize = 12,
+                        Tag = sectionName,
+                        Margin = new Thickness(0, 0, 8, 0)
+                    };
+                    navButton.Classes.Add("BtnSecondary");
+                    navButton.Click += EditorNavButton_Click;
+                    sidebarNav.Children.Add(navButton);
+                }
+            }
+
+            UpdateEditorWrapLayout();
+        }
+
+        private Border BuildEditorSectionCard(string sectionName, SchemaSection section)
+        {
+            var cardContent = new StackPanel { Spacing = 10 };
+            cardContent.Children.Add(new TextBlock
+            {
+                Text = sectionName,
+                FontSize = 15,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                Foreground = Application.Current?.FindResource("BrTextPrimary") as Avalonia.Media.IBrush ?? Avalonia.Media.Brushes.White
+            });
+
+            var columns = Math.Max(1, section.Columns);
+            var rows = Math.Max(1, section.Rows);
+            var sectionGrid = new Grid();
+            for (int i = 0; i < columns; i++)
+                sectionGrid.ColumnDefinitions.Add(new ColumnDefinition(1, GridUnitType.Star));
+            for (int i = 0; i < rows; i++)
+                sectionGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+            var visibleCount = 0;
+            if (section.Settings != null)
+            {
+                foreach (var setting in section.Settings)
+                {
+                    if (string.IsNullOrEmpty(setting.Key)) continue;
+                    if (!string.IsNullOrWhiteSpace(_editorSearchText))
+                    {
+                        var labelL = (setting.Label ?? setting.Key).ToLowerInvariant();
+                        var ttL = (setting.Tooltip ?? "").ToLowerInvariant();
+                        var searchL = _editorSearchText.ToLowerInvariant();
+                        if (!labelL.Contains(searchL) && !ttL.Contains(searchL)) continue;
+                    }
+
+                    visibleCount++;
+                    var settingPanel = new StackPanel { Spacing = 4, Margin = new Thickness(0, 0, 12, 12) };
+                    var labelRow = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 6 };
+                    labelRow.Children.Add(new TextBlock
+                    {
+                        Text = setting.Label ?? setting.Key,
+                        FontSize = 12,
+                        Foreground = Application.Current?.FindResource("BrTextSecondary") as Avalonia.Media.IBrush ?? Avalonia.Media.Brushes.Gray
+                    });
+
+                    if (!string.IsNullOrWhiteSpace(setting.Tooltip))
+                    {
+                        var tooltipIcon = new Border
+                        {
+                            Width = 16, Height = 16,
+                            CornerRadius = new CornerRadius(8),
+                            BorderThickness = new Thickness(1),
+                            BorderBrush = Application.Current?.FindResource("BrBorderSubtle") as Avalonia.Media.IBrush ?? Avalonia.Media.Brushes.DimGray,
+                            Background = Application.Current?.FindResource("BrBgCard") as Avalonia.Media.IBrush ?? Avalonia.Media.Brushes.Transparent,
+                            Child = new TextBlock
+                            {
+                                Text = "?", FontSize = 10, FontWeight = Avalonia.Media.FontWeight.Bold,
+                                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                                Foreground = Application.Current?.FindResource("BrTextSecondary") as Avalonia.Media.IBrush ?? Avalonia.Media.Brushes.Gray
+                            }
+                        };
+                        ToolTip.SetTip(tooltipIcon, setting.Tooltip);
+                        labelRow.Children.Add(tooltipIcon);
+                    }
+
+                    settingPanel.Children.Add(labelRow);
+
+                    var hasValue = _editorProfile!.IniSettings[sectionName].TryGetValue(setting.Key, out var currentValue);
+                    if (!hasValue || string.IsNullOrWhiteSpace(currentValue))
+                        currentValue = string.Equals(setting.Key, "ShortcutKey", StringComparison.OrdinalIgnoreCase) ? "0x2D" : "auto";
+
+                    Control settingControl;
+                    SettingControlRef settingRef;
+
+                    if (string.Equals(setting.ControlType, "keybind", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var kb = BuildEditorKeybindButton(currentValue);
+                        settingControl = kb;
+                        settingRef = new SettingControlRef(settingControl, () => kb.Tag?.ToString() ?? "auto", setting.AppliesTo);
+                    }
+                    else if (string.Equals(setting.ControlType, "text", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var tb = new TextBox { Text = currentValue == "auto" ? "" : currentValue, Watermark = "auto", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch };
+                        settingControl = tb;
+                        settingRef = new SettingControlRef(settingControl, () => string.IsNullOrWhiteSpace(tb.Text) ? "auto" : tb.Text, setting.AppliesTo);
+                    }
+                    else if (string.Equals(setting.ControlType, "folderpath", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var pathPanel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 8 };
+                        var pathTb = new TextBox { Text = currentValue == "auto" ? "" : currentValue, Watermark = "auto", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch, MinWidth = 180 };
+                        var browseBtn = new Button { Content = "Browse...", Padding = new Thickness(12, 6), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch };
+                        browseBtn.Click += async (s, e) =>
+                        {
+                            var tl = TopLevel.GetTopLevel(this);
+                            if (tl != null)
+                            {
+                                var fp = await tl.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Select Folder", AllowMultiple = false });
+                                if (fp.Count > 0) pathTb.Text = fp[0].Path.LocalPath;
+                            }
+                        };
+                        pathPanel.Children.Add(pathTb);
+                        pathPanel.Children.Add(browseBtn);
+                        settingControl = pathPanel;
+                        settingRef = new SettingControlRef(settingControl, () => string.IsNullOrWhiteSpace(pathTb.Text) ? "auto" : pathTb.Text, setting.AppliesTo);
+                    }
+                    else
+                    {
+                        var combo = new ComboBox { HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch };
+                        var optionItems = BuildEditorOptionItems(setting);
+                        foreach (var opt in optionItems) combo.Items.Add(opt);
+                        combo.SelectedItem = optionItems.FirstOrDefault(x => x.Value == currentValue) ?? optionItems.FirstOrDefault();
+                        settingControl = combo;
+                        settingRef = new SettingControlRef(settingControl, () => combo.SelectedItem is OptionItem oi ? oi.Value : "auto", setting.AppliesTo);
+                    }
+
+                    _editorSettingControls[sectionName][setting.Key] = settingRef;
+                    settingPanel.Children.Add(settingControl);
+                    Grid.SetRow(settingPanel, Math.Clamp(setting.Row, 0, rows - 1));
+                    Grid.SetColumn(settingPanel, Math.Clamp(setting.Column, 0, columns - 1));
+                    sectionGrid.Children.Add(settingPanel);
+                }
+            }
+
+            if (visibleCount == 0 && !string.IsNullOrWhiteSpace(_editorSearchText))
+                return null!;
+
+            cardContent.Children.Add(sectionGrid);
+            return new Border
+            {
+                Background = Application.Current?.FindResource("BrBgCard") as Avalonia.Media.IBrush ?? Avalonia.Media.Brushes.Transparent,
+                BorderBrush = Application.Current?.FindResource("BrBorderSubtle") as Avalonia.Media.IBrush ?? Avalonia.Media.Brushes.DimGray,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(16),
+                Margin = new Thickness(0, 0, _editorLayout.ColumnGap, _editorLayout.RowGap),
+                Child = cardContent
+            };
+        }
+
+        private static List<OptionItem> BuildEditorOptionItems(SchemaSetting setting)
+        {
+            var items = new List<OptionItem>();
+            foreach (var option in setting.Options ?? new List<OptionEntry>())
+            {
+                var value = option.Value ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(value)) continue;
+                items.Add(new OptionItem(value, string.IsNullOrWhiteSpace(option.Label) ? value : option.Label!));
+            }
+            return items;
+        }
+
+        private void UpdateEditorWrapLayout()
+        {
+            if (_editorSectionsWrap == null) return;
+            var availableWidth = _editorSectionsWrap.Bounds.Width;
+            if (availableWidth <= 0)
+                availableWidth = Math.Max(0, Bounds.Width - 120);
+            var columns = CalculateEditorColumns(_editorLayout, availableWidth);
+            var gap = _editorLayout.ColumnGap;
+            var cardWidth = (availableWidth - (columns - 1) * gap) / columns;
+            cardWidth = Math.Clamp(cardWidth, _editorLayout.CardMinWidth, _editorLayout.CardMaxWidth);
+            _editorSectionsWrap.ItemWidth = cardWidth;
+        }
+
+        private static int CalculateEditorColumns(LayoutSettings layout, double width)
+        {
+            int columns = 1;
+            if (layout.Breakpoints != null)
+                foreach (var bp in layout.Breakpoints.OrderBy(b => b.MinWidth))
+                    if (width >= bp.MinWidth) columns = bp.Columns;
+            columns = Math.Min(layout.MaxColumns, Math.Max(1, columns));
+            while (columns > 1)
+            {
+                if ((width - (columns - 1) * layout.ColumnGap) / columns >= layout.CardMinWidth) break;
+                columns--;
+            }
+            return Math.Max(1, columns);
+        }
+
+        private async void EditorNavButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string sectionName && _editorSectionBorders.TryGetValue(sectionName, out var sectionBorder))
+            {
+                var scrollViewer = this.FindControl<ScrollViewer>("SettingsScrollViewerEd");
+                if (scrollViewer != null && _editorSectionsWrap != null)
+                {
+                    await Task.Delay(10);
+                    scrollViewer.InvalidateMeasure();
+                    scrollViewer.InvalidateArrange();
+                    _editorSectionsWrap.InvalidateMeasure();
+                    _editorSectionsWrap.InvalidateArrange();
+                    await Task.Delay(50);
+                    var transform = sectionBorder.TransformToVisual(_editorSectionsWrap);
+                    if (transform.HasValue)
+                    {
+                        var position = transform.Value.Transform(new Point(0, 0));
+                        scrollViewer.Offset = new Vector(0, Math.Max(0, position.Y - 20));
+                    }
+                }
+            }
+        }
+
+        private void TxtSettingsSearchEd_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox tb)
+            {
+                _editorSearchText = tb.Text?.Trim() ?? string.Empty;
+                BuildEditorSettingsUI();
+            }
+        }
+
+        private void BtnEasyModeEd_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_editorIsEasyMode) return;
+            _editorIsEasyMode = true;
+            UpdateEditorModeButtons();
+            BuildEditorSettingsUI();
+        }
+
+        private void BtnAdvancedModeEd_Click(object? sender, RoutedEventArgs e)
+        {
+            if (!_editorIsEasyMode) return;
+            _editorIsEasyMode = false;
+            UpdateEditorModeButtons();
+            BuildEditorSettingsUI();
+        }
+
+        private void UpdateEditorModeButtons()
+        {
+            var btnEasy = this.FindControl<Button>("BtnEasyModeEd");
+            var btnAdv = this.FindControl<Button>("BtnAdvancedModeEd");
+            if (btnEasy == null || btnAdv == null) return;
+            if (_editorIsEasyMode)
+            {
+                btnEasy.Classes.Remove("BtnSecondary"); btnEasy.Classes.Add("BtnPrimary");
+                btnAdv.Classes.Remove("BtnPrimary"); btnAdv.Classes.Add("BtnSecondary");
+            }
+            else
+            {
+                btnEasy.Classes.Remove("BtnPrimary"); btnEasy.Classes.Add("BtnSecondary");
+                btnAdv.Classes.Remove("BtnSecondary"); btnAdv.Classes.Add("BtnPrimary");
+            }
+        }
+
+        private void BtnEditorBack_Click(object? sender, RoutedEventArgs e)
+        {
+            _editorKeyCaptureButton = null;
+            SwitchToView("ViewProfiles");
+        }
+
+        private void BtnEditorSave_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_editorProfile == null) return;
+            var txtName = this.FindControl<TextBox>("TxtProfileNameEd");
+            var txtDesc = this.FindControl<TextBox>("TxtDescriptionEd");
+            if (txtName == null || string.IsNullOrWhiteSpace(txtName.Text)) return;
+
+            if (!_editorProfile.IsBuiltIn)
+                _editorProfile.Name = txtName.Text.Trim();
+            _editorProfile.Description = txtDesc?.Text?.Trim() ?? "";
+
+            foreach (var section in _editorSettingControls)
+            {
+                if (!_editorProfile.IniSettings.ContainsKey(section.Key))
+                    _editorProfile.IniSettings[section.Key] = new Dictionary<string, string>();
+                foreach (var setting in section.Value)
+                {
+                    var value = setting.Value.ValueGetter?.Invoke() ?? "auto";
+                    _editorProfile.IniSettings[section.Key][setting.Key] = value;
+                    if (_editorIsEasyMode && setting.Value.AppliesTo != null)
+                        foreach (var target in setting.Value.AppliesTo)
+                            _editorProfile.IniSettings[section.Key][target] = value;
+                }
+            }
+
+            try
+            {
+                _profileService.SaveProfile(_editorProfile, isBuiltIn: false);
+                if (_editorWasDefault)
+                {
+                    _componentService.Config.DefaultProfileName = _editorProfile.Name;
+                    _componentService.SaveConfiguration();
+                }
+                _editorKeyCaptureButton = null;
+                SwitchToView("ViewProfiles");
+                LoadProfilesView();
+            }
+            catch (Exception ex)
+            {
+                _ = new ConfirmDialog(this, "Error", $"Failed to save profile: {ex.Message}").ShowDialog<object>(this);
+            }
+        }
+
+        private Button BuildEditorKeybindButton(string value)
+        {
+            var button = new Button
+            {
+                Height = 32,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+                Content = EditorFormatKeybindLabel(value),
+                Tag = value
+            };
+            button.Click += (_, __) => BeginEditorKeyCapture(button);
+            return button;
+        }
+
+        private void BeginEditorKeyCapture(Button button)
+        {
+            _editorKeyCaptureButton = button;
+            _editorKeyCapturePreviousValue = button.Tag?.ToString() ?? "auto";
+            button.Content = "Press a key...";
+        }
+
+        private void HandleEditorKeyCapture(object? sender, KeyEventArgs e)
+        {
+            if (_editorKeyCaptureButton == null) return;
+            e.Handled = true;
+            var key = e.Key;
+            if (key == Key.Escape)
+            {
+                SetEditorKeybindValue(_editorKeyCaptureButton, _editorKeyCapturePreviousValue ?? "auto");
+                _editorKeyCaptureButton = null;
+                _editorKeyCapturePreviousValue = null;
+                return;
+            }
+            string? newValue = key switch
+            {
+                Key.Back => "auto",
+                Key.Delete => "-1",
+                _ => TryMapEditorKeyToVirtualKey(key)
+            };
+            SetEditorKeybindValue(_editorKeyCaptureButton, string.IsNullOrWhiteSpace(newValue) ? (_editorKeyCapturePreviousValue ?? "auto") : newValue);
+            _editorKeyCaptureButton = null;
+            _editorKeyCapturePreviousValue = null;
+        }
+
+        private void SetEditorKeybindValue(Button button, string value)
+        {
+            button.Tag = value;
+            button.Content = EditorFormatKeybindLabel(value);
+        }
+
+        private static string? TryMapEditorKeyToVirtualKey(Key key)
+        {
+            if (key >= Key.A && key <= Key.Z) return $"0x{0x41 + (key - Key.A):X2}";
+            if (key >= Key.D0 && key <= Key.D9) return $"0x{0x30 + (key - Key.D0):X2}";
+            if (key >= Key.NumPad0 && key <= Key.NumPad9) return $"0x{0x60 + (key - Key.NumPad0):X2}";
+            if (key >= Key.F1 && key <= Key.F12) return $"0x{0x70 + (key - Key.F1):X2}";
+            return key switch
+            {
+                Key.Insert => "0x2D", Key.Home => "0x24", Key.End => "0x23",
+                Key.PageUp => "0x21", Key.PageDown => "0x22", Key.Back => "0x08",
+                Key.Tab => "0x09", Key.Enter => "0x0D", Key.Space => "0x20",
+                Key.Left => "0x25", Key.Up => "0x26", Key.Right => "0x27", Key.Down => "0x28",
+                Key.Delete => "0x2E", Key.Escape => "0x1B",
+                Key.LeftShift or Key.RightShift => "0x10",
+                Key.LeftCtrl or Key.RightCtrl => "0x11",
+                Key.LeftAlt or Key.RightAlt => "0x12",
+                Key.CapsLock => "0x14", Key.PrintScreen => "0x2C", Key.Pause => "0x13",
+                _ => null
+            };
+        }
+
+        private static string EditorFormatKeybindLabel(string value)
+        {
+            if (string.Equals(value, "auto", StringComparison.OrdinalIgnoreCase)) return "Auto";
+            if (value == "-1") return "Disabled";
+            var normalized = value.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? value[2..] : value;
+            if (int.TryParse(normalized, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var code))
+                return EditorGetVirtualKeyLabel(code);
+            return value;
+        }
+
+        private static string EditorGetVirtualKeyLabel(int code)
+        {
+            if (code >= 0x41 && code <= 0x5A) return ((char)code).ToString();
+            if (code >= 0x30 && code <= 0x39) return ((char)code).ToString();
+            if (code >= 0x70 && code <= 0x7B) return $"F{code - 0x6F}";
+            return code switch
+            {
+                0x2D => "Insert", 0x24 => "Home", 0x23 => "End",
+                0x21 => "Page Up", 0x22 => "Page Down", 0x08 => "Backspace",
+                0x09 => "Tab", 0x0D => "Enter", 0x20 => "Space",
+                0x25 => "Left", 0x26 => "Up", 0x27 => "Right", 0x28 => "Down",
+                0x2E => "Delete", 0x1B => "Escape", 0x10 => "Shift",
+                0x11 => "Ctrl", 0x12 => "Alt", 0x14 => "Caps Lock",
+                0x2C => "Print Screen", 0x13 => "Pause",
+                _ => $"Key {code:X2}"
+            };
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
 
         private void TglAutoScan_IsCheckedChanged(object sender, RoutedEventArgs e)
         {
@@ -754,7 +1584,7 @@ namespace OptiscalerClient.Views
         private void UpdateAnimationsState(bool enabled)
         {
             var duration = enabled ? TimeSpan.FromMilliseconds(180) : TimeSpan.Zero;
-            
+
             // Update main view transitions
             foreach (var viewName in _viewNames)
             {
@@ -764,9 +1594,9 @@ namespace OptiscalerClient.Views
                     grid.Transitions.Clear();
                     if (enabled)
                     {
-                        grid.Transitions.Add(new Avalonia.Animation.DoubleTransition 
-                        { 
-                            Property = Visual.OpacityProperty, 
+                        grid.Transitions.Add(new Avalonia.Animation.DoubleTransition
+                        {
+                            Property = Visual.OpacityProperty,
                             Duration = duration,
                             Easing = new Avalonia.Animation.Easings.CubicEaseOut()
                         });
@@ -814,19 +1644,19 @@ namespace OptiscalerClient.Views
         {
             var sidebar = this.FindControl<StackPanel>("HelpPagesSidebar");
             var contentArea = this.FindControl<StackPanel>("HelpContentArea");
-            
+
             if (sidebar == null || contentArea == null) return;
 
             var pages = _helpPageService.LoadHelpPages();
-            
+
             sidebar.Children.Clear();
-            
+
             // Process pages in order, grouping consecutive pages with same category
             var i = 0;
             while (i < pages.Count)
             {
                 var currentPage = pages[i];
-                
+
                 if (string.IsNullOrEmpty(currentPage.Category))
                 {
                     // Regular page without category
@@ -866,7 +1696,7 @@ namespace OptiscalerClient.Views
                     stack.Children.Add(title);
                     button.Content = stack;
                     button.Click += (s, e) => LoadHelpPage(currentPage.Id);
-                    
+
                     sidebar.Children.Add(button);
                     i++;
                 }
@@ -875,16 +1705,16 @@ namespace OptiscalerClient.Views
                     // Start of a category group - collect all consecutive pages with same category
                     var category = currentPage.Category;
                     var categoryPages = new List<HelpPage>();
-                    
+
                     while (i < pages.Count && pages[i].Category == category)
                     {
                         categoryPages.Add(pages[i]);
                         i++;
                     }
-                    
+
                     // Create expandable category
                     var categoryContainer = new StackPanel();
-                    
+
                     // Category button (expandable)
                     var categoryButton = new Button
                     {
@@ -896,7 +1726,7 @@ namespace OptiscalerClient.Views
                         BorderThickness = new Thickness(0),
                         Cursor = new Cursor(StandardCursorType.Hand)
                     };
-                    
+
                     // Remove hover/pressed effects
                     categoryButton.Styles.Add(new Style(x => x.OfType<Button>().Class(":pointerover"))
                     {
@@ -993,7 +1823,7 @@ namespace OptiscalerClient.Views
                         pageStack.Children.Add(pageTitle);
                         pageButton.Content = pageStack;
                         pageButton.Click += (s, e) => LoadHelpPage(page.Id);
-                        
+
                         childrenContainer.Children.Add(pageButton);
                     }
 
@@ -1009,7 +1839,7 @@ namespace OptiscalerClient.Views
                     sidebar.Children.Add(categoryContainer);
                 }
             }
-            
+
             LoadHelpPage(_currentHelpPageId);
         }
 
@@ -1018,21 +1848,21 @@ namespace OptiscalerClient.Views
             _currentHelpPageId = pageId;
             var contentArea = this.FindControl<StackPanel>("HelpContentArea");
             var sidebar = this.FindControl<StackPanel>("HelpPagesSidebar");
-            
+
             if (contentArea == null) return;
 
             var pages = _helpPageService.LoadHelpPages();
             var page = pages.Find(p => p.Id == pageId);
-            
+
             if (page == null) return;
 
             UpdateSidebarSelection(sidebar, pageId);
-            
+
             contentArea.Children.Clear();
-            
+
             // Store the current page font size for use in rendering
             _currentPageFontSize = page.FontSize;
-            
+
             foreach (var section in page.Sections)
             {
                 RenderSection(contentArea, section);
@@ -1054,7 +1884,7 @@ namespace OptiscalerClient.Views
                 {
                     bool isActive = btn.Tag?.ToString() == selectedPageId;
                     btn.Background = isActive ? activeBg : inactiveBg;
-                    
+
                     if (btn.Content is StackPanel stack)
                     {
                         foreach (var item in stack.Children)
@@ -1080,7 +1910,7 @@ namespace OptiscalerClient.Views
                                 {
                                     bool isActive = nestedBtn.Tag?.ToString() == selectedPageId;
                                     nestedBtn.Background = isActive ? activeBg : inactiveBg;
-                                    
+
                                     if (nestedBtn.Content is StackPanel nestedStack)
                                     {
                                         foreach (var item in nestedStack.Children)
@@ -1184,8 +2014,8 @@ namespace OptiscalerClient.Views
                     FontSize = GetFontSize(16, section.FontSize),
                     FontWeight = FontWeight.Bold,
                     Margin = new Thickness(0, 0, 0, 8),
-                    Foreground = section.TextColor != null ? 
-                        new SolidColorBrush(Color.Parse(section.TextColor)) : 
+                    Foreground = section.TextColor != null ?
+                        new SolidColorBrush(Color.Parse(section.TextColor)) :
                         this.FindResource("BrTextPrimary") as IBrush
                 };
                 stackPanel.Children.Add(title);
@@ -1199,8 +2029,8 @@ namespace OptiscalerClient.Views
                     FontSize = GetFontSize(14, section.FontSize),
                     TextWrapping = TextWrapping.Wrap,
                     LineHeight = 20,
-                    Foreground = section.TextColor != null ? 
-                        new SolidColorBrush(Color.Parse(section.TextColor)) : 
+                    Foreground = section.TextColor != null ?
+                        new SolidColorBrush(Color.Parse(section.TextColor)) :
                         this.FindResource("BrTextSecondary") as IBrush
                 };
                 stackPanel.Children.Add(content);
@@ -1325,21 +2155,21 @@ namespace OptiscalerClient.Views
 
             var stack = new StackPanel();
 
-            var optiScalerRow = CreateResourceRow("Latest OptiScaler", 
+            var optiScalerRow = CreateResourceRow("Latest OptiScaler",
                 string.IsNullOrWhiteSpace(_componentService.OptiScalerVersion) ? "Not installed" : _componentService.OptiScalerVersion,
                 _componentService.IsOptiScalerUpdateAvailable, false);
             optiScalerRow.Margin = new Thickness(0, 0, 0, 16);
             stack.Children.Add(optiScalerRow);
-            
-            stack.Children.Add(CreateResourceRow("Latest Fakenvapi", 
+
+            stack.Children.Add(CreateResourceRow("Latest Fakenvapi",
                 string.IsNullOrWhiteSpace(_componentService.FakenvapiVersion) ? "Not installed" : _componentService.FakenvapiVersion,
                 false, false, "BtnUpdateFakenvapi", BtnUpdateFakenvapi_Click));
-            
-            stack.Children.Add(CreateResourceRow("Latest NukemFG", 
-                _componentService.IsNukemFGInstalled 
+
+            stack.Children.Add(CreateResourceRow("Latest NukemFG",
+                _componentService.IsNukemFGInstalled
                     ? (string.IsNullOrWhiteSpace(_componentService.NukemFGVersion) || _componentService.NukemFGVersion == "manual" ? "Available" : _componentService.NukemFGVersion)
                     : "Not installed",
-                false, false, "BtnUpdateNukemFG", BtnUpdateNukemFG_Click, 
+                false, false, "BtnUpdateNukemFG", BtnUpdateNukemFG_Click,
                 _componentService.IsNukemFGInstalled ? GetResourceString("TxtBtnUpdate", "Update") : "Install"));
 
             border.Child = stack;
@@ -1380,7 +2210,7 @@ namespace OptiscalerClient.Views
             try
             {
                 LogToFile("[RenderSystemInfo] Starting...");
-                
+
                 var title = new TextBlock
                 {
                     Text = string.IsNullOrWhiteSpace(section.Title) ? "System" : section.Title,
@@ -1409,10 +2239,10 @@ namespace OptiscalerClient.Views
                 var osName = GetFriendlyOperatingSystemName();
                 LogToFile($"[RenderSystemInfo] OS name: {osName}");
                 stack.Children.Add(CreateResourceRow("Operating System", osName, false, false));
-                
+
                 LogToFile("[RenderSystemInfo] Adding Architecture...");
                 stack.Children.Add(CreateResourceRow("Architecture", RuntimeInformation.OSArchitecture.ToString(), false, false));
-                
+
                 LogToFile("[RenderSystemInfo] Adding Machine name...");
                 stack.Children.Add(CreateResourceRow("Machine", Environment.MachineName, false, false));
 
@@ -1439,19 +2269,19 @@ namespace OptiscalerClient.Views
             try
             {
                 LogToFile("[GetHelpGpuInfo] Starting...");
-                
+
                 if (!OperatingSystem.IsWindows())
                 {
                     LogToFile("[GetHelpGpuInfo] Not Windows");
                     return ("Not available", true);
                 }
-                
+
                 if (_gpuService == null)
                 {
                     LogToFile("[GetHelpGpuInfo] _gpuService is null");
                     return ("Not available", true);
                 }
-                
+
                 if (_componentService == null)
                 {
                     LogToFile("[GetHelpGpuInfo] _componentService is null");
@@ -1468,12 +2298,12 @@ namespace OptiscalerClient.Views
                         LogToFile("[GetHelpGpuInfo] Detecting GPUs...");
                         var allGpus = _gpuService.DetectGPUs();
                         LogToFile($"[GetHelpGpuInfo] Detected {(allGpus?.Length ?? 0)} GPUs");
-                        
+
                         if (allGpus != null && allGpus.Length > 0)
                         {
                             var defaultGpuId = _componentService.Config?.DefaultGpuId;
                             LogToFile($"[GetHelpGpuInfo] DefaultGpuId: {defaultGpuId ?? "null"}");
-                            
+
 
                             gpu = GpuSelectionHelper.GetPreferredGpu(_gpuService, defaultGpuId)
                                   ?? allGpus.FirstOrDefault();
@@ -1513,7 +2343,7 @@ namespace OptiscalerClient.Views
             try
             {
                 LogToFile("[GetFriendlyOperatingSystemName] Starting...");
-                
+
                 if (!OperatingSystem.IsWindows())
                 {
                     LogToFile("[GetFriendlyOperatingSystemName] Not Windows");
@@ -1590,7 +2420,7 @@ namespace OptiscalerClient.Views
             return name;
         }
 
-        private Grid CreateResourceRow(string label, string version, bool showUpdateBadge, bool isLast, 
+        private Grid CreateResourceRow(string label, string version, bool showUpdateBadge, bool isLast,
             string? buttonName = null, EventHandler<RoutedEventArgs>? buttonClick = null, string? buttonText = null)
         {
             var grid = new Grid { Margin = new Thickness(0, 0, 0, isLast ? 0 : 12) };
@@ -1774,7 +2604,7 @@ namespace OptiscalerClient.Views
                         var bulletGrid = new Grid { Margin = new Thickness(24, 2, 0, 8) };
                         bulletGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
                         bulletGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                        
+
                         var bullet = new TextBlock
                         {
                             Text = "•",
@@ -1804,7 +2634,7 @@ namespace OptiscalerClient.Views
                             };
                             if (bulletText.Inlines != null)
                                 bulletText.Inlines.Add(titleRun);
-                            
+
                             // Add regular text
                             var textRun = new Avalonia.Controls.Documents.Run(item.Text);
                             if (bulletText.Inlines != null)
@@ -1861,13 +2691,13 @@ namespace OptiscalerClient.Views
                         if (item.Items != null)
                         {
                             var bulletContainer = new StackPanel { Margin = new Thickness(0, 8, 0, 0) };
-                            
+
                             foreach (var subItem in item.Items)
                             {
                                 var bulletGrid = new Grid { Margin = new Thickness(0, 2, 0, 4) };
                                 bulletGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
                                 bulletGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                                
+
                                 var bullet = new TextBlock
                                 {
                                     Text = "•",
@@ -1897,7 +2727,7 @@ namespace OptiscalerClient.Views
                                     };
                                     if (bulletText.Inlines != null)
                                         bulletText.Inlines.Add(titleRun);
-                                    
+
                                     // Add regular text
                                     var textRun = new Avalonia.Controls.Documents.Run(subItem.Text);
                                     if (bulletText.Inlines != null)
@@ -1915,7 +2745,7 @@ namespace OptiscalerClient.Views
 
                                 bulletContainer.Children.Add(bulletGrid);
                             }
-                            
+
                             itemStack.Children.Add(bulletContainer);
                         }
 
@@ -1933,14 +2763,14 @@ namespace OptiscalerClient.Views
         {
             var btnUpdateFakenvapi = this.FindControl<Button>("BtnUpdateFakenvapi");
             if (btnUpdateFakenvapi == null) return;
-            
+
             btnUpdateFakenvapi.IsEnabled = false;
             var originalContent = btnUpdateFakenvapi.Content;
             btnUpdateFakenvapi.Content = "Checking...";
             try
             {
                 await _componentService.CheckForUpdatesAsync();
-                
+
                 if (_componentService.IsFakenvapiUpdateAvailable || string.IsNullOrEmpty(_componentService.FakenvapiVersion))
                 {
                     btnUpdateFakenvapi.Content = "Downloading...";
@@ -1970,9 +2800,9 @@ namespace OptiscalerClient.Views
             {
                 bool isUpdate = _componentService.IsNukemFGInstalled;
                 DebugWindow.Log($"[NukemFG] Starting manual {(isUpdate ? "update" : "install")}");
-                
+
                 bool result = await _componentService.ProvideNukemFGManuallyAsync(isUpdate);
-                
+
                 if (result)
                 {
                     DebugWindow.Log("[NukemFG] Manual process completed successfully.");
@@ -2019,18 +2849,18 @@ namespace OptiscalerClient.Views
                     if (await dialog.ShowDialog<bool>(this)) // true if confirmed
                     {
                         btnCheckUpdates.Content = GetResourceString("TxtUpdatingApp", "Updating...");
-                        
+
                         await appUpdateService.DownloadAndPrepareUpdateAsync(new Progress<double>(p => {
                             btnCheckUpdates.Content = $"{GetResourceString("TxtUpdatingApp", "Updating")} ({p:F0}%)";
                         }));
 
                         var readyTitle = GetResourceString("TxtUpdateReady", "Update Ready");
                         var readyMsg = GetResourceString("TxtUpdateReadyMsg", "Update downloaded. Restarting...");
-                        
+
                         await new ConfirmDialog(this, readyTitle, readyMsg).ShowDialog<object>(this);
-                        
+
                         appUpdateService.FinalizeAndRestart();
-                        
+
                         if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
                         {
                             desktop.Shutdown();
@@ -2085,7 +2915,7 @@ namespace OptiscalerClient.Views
         {
             var savedGames = _persistenceService.LoadGames();
             _allGames = savedGames;
-            
+
             ApplyFilter(_txtSearch?.Text);
 
             var loadedFormat = GetResourceString("TxtLoadedGamesFormat", "Loaded {0} games.");
@@ -2484,24 +3314,24 @@ namespace OptiscalerClient.Views
                         // Uninstall OptiScaler directly without confirmation
                         var installService = new GameInstallationService();
                         installService.UninstallOptiScaler(selectedGame);
-                        
+
                         // Update game status
                         selectedGame.IsOptiscalerInstalled = false;
                         selectedGame.OptiscalerVersion = null;
-                        
+
                         // Refresh UI
                         RefreshGameLists();
-                        
+
                         _persistenceService.SaveGames(_games);
                     }
                     else
                     {
                         // Install OptiScaler
                         var installService = new GameInstallationService();
-                        
+
                         // Determine version to install based on beta setting
                         string versionToInstall;
-                        
+
                         if (_componentService.Config.ShowBetaVersions)
                         {
                             // Install latest beta
@@ -2512,7 +3342,7 @@ namespace OptiscalerClient.Views
                             // Install latest stable (use the version marked as latest in GitHub)
                             versionToInstall = _componentService.LatestStableVersion ?? "";
                         }
-                        
+
                         if (string.IsNullOrEmpty(versionToInstall))
                         {
                             await new ConfirmDialog(
@@ -2559,7 +3389,7 @@ namespace OptiscalerClient.Views
                                 }
 
                                 HideToast();
-                                
+
                                 // Show error dialog
                                 await new ConfirmDialog(
                                     this,
@@ -2570,10 +3400,10 @@ namespace OptiscalerClient.Views
                                 return;
                             }
                         }
-                        
+
                         var fakeCacheDir = _componentService.GetFakenvapiCachePath();
                         var nukemCacheDir = _componentService.GetNukemFGCachePath();
-                        
+
                         // Install with default settings (backup always enabled)
                         // Always install Fakenvapi and NukemFG by default
                         SetQuickInstallLoading(button);
@@ -2590,14 +3420,14 @@ namespace OptiscalerClient.Views
                                 optiscalerVersion: versionToInstall
                             );
                         });
-                        
+
                         // Update game status
                         selectedGame.IsOptiscalerInstalled = true;
                         selectedGame.OptiscalerVersion = versionToInstall;
-                        
+
                         // Refresh UI
                         RefreshGameLists();
-                        
+
                         _persistenceService.SaveGames(_games);
                         await HideToastAfterAsync(1200);
                     }
@@ -2642,7 +3472,7 @@ namespace OptiscalerClient.Views
             try
             {
                 if (_txtGpuInfo == null) return;
-                
+
                 GpuInfo? gpu;
                 if (_lastDetectedGpu != null)
                 {
@@ -2817,8 +3647,8 @@ namespace OptiscalerClient.Views
         private void MainWindow_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             // Only save state for relevant properties
-            if (e.Property == Window.WindowStateProperty || 
-                e.Property == Window.WidthProperty || 
+            if (e.Property == Window.WindowStateProperty ||
+                e.Property == Window.WidthProperty ||
                 e.Property == Window.HeightProperty)
             {
                 SaveWindowState();
@@ -2828,21 +3658,21 @@ namespace OptiscalerClient.Views
         private void RestoreWindowState()
         {
             var config = _componentService.Config;
-            
+
             // Restore window size
             if (config.WindowWidth > 0 && config.WindowHeight > 0)
             {
                 this.Width = config.WindowWidth;
                 this.Height = config.WindowHeight;
             }
-            
+
             // Restore window position (only if valid)
             if (!double.IsNaN(config.WindowLeft) && !double.IsNaN(config.WindowTop) &&
                 config.WindowLeft >= 0 && config.WindowTop >= 0)
             {
                 this.Position = new PixelPoint((int)config.WindowLeft, (int)config.WindowTop);
             }
-            
+
             // Restore maximized state
             if (config.WindowMaximized)
             {
@@ -2855,7 +3685,7 @@ namespace OptiscalerClient.Views
             try
             {
                 var config = _componentService.Config;
-                
+
                 // Save window size (only when not maximized)
                 if (this.WindowState != WindowState.Maximized)
                 {
@@ -2865,7 +3695,7 @@ namespace OptiscalerClient.Views
                         config.WindowHeight = this.Height;
                     }
                 }
-                
+
                 // Save window position
                 var position = this.Position;
                 if (!double.IsNaN(position.X) && !double.IsNaN(position.Y))
@@ -2873,10 +3703,10 @@ namespace OptiscalerClient.Views
                     config.WindowLeft = position.X;
                     config.WindowTop = position.Y;
                 }
-                
+
                 // Save maximized state
                 config.WindowMaximized = this.WindowState == WindowState.Maximized;
-                
+
                 // Save configuration
                 _componentService.SaveConfiguration();
             }
@@ -2898,7 +3728,7 @@ namespace OptiscalerClient.Views
                 {
                     System.IO.Directory.CreateDirectory(logDir);
                 }
-                
+
                 var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
                 System.IO.File.AppendAllText(logPath, $"[{timestamp}] {message}\n");
             }
