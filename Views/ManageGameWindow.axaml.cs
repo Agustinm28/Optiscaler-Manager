@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using OptiscalerClient.Models;
 using System.Collections.ObjectModel;
@@ -17,6 +18,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using OptiscalerClient.Helpers;
+using Avalonia.Input;
 
 namespace OptiscalerClient.Views
 {
@@ -25,6 +27,8 @@ namespace OptiscalerClient.Views
         private readonly Game _game;
         private readonly IGpuDetectionService _gpuService;
         private HashSet<string> _betaVersions = new();
+        private string? _pendingCoverPath;
+        private readonly string? _originalCoverPath;
 
         public bool NeedsScan { get; private set; }
 
@@ -45,6 +49,7 @@ namespace OptiscalerClient.Views
         {
             InitializeComponent();
             _game = game;
+            _originalCoverPath = game.CoverImageUrl;
 
             // Frameless centering logic
             this.Opacity = 0;
@@ -326,8 +331,8 @@ namespace OptiscalerClient.Views
             var selectedTag = (cmb?.SelectedItem as ComboBoxItem)?.Tag?.ToString();
             bool isBeta = !string.IsNullOrEmpty(selectedTag) && _betaVersions.Contains(selectedTag);
 
-            var chkFakenvapi = this.FindControl<CheckBox>("ChkInstallFakenvapi");
-            var chkNukemFG = this.FindControl<CheckBox>("ChkInstallNukemFG");
+            var chkFakenvapi = this.FindControl<ToggleSwitch>("ChkInstallFakenvapi");
+            var chkNukemFG = this.FindControl<ToggleSwitch>("ChkInstallNukemFG");
             var betaInfoPanel = this.FindControl<Border>("BetaInfoPanel");
 
             if (isBeta)
@@ -376,13 +381,221 @@ namespace OptiscalerClient.Views
         {
             var txtGameName = this.FindControl<TextBlock>("TxtGameName");
             var txtInstallPath = this.FindControl<TextBlock>("TxtInstallPath");
+            var txtGameNameEdit = this.FindControl<TextBox>("TxtGameNameEdit");
+            var imgGameCover = this.FindControl<Image>("ImgGameCover");
             
             if (txtGameName != null) txtGameName.Text = _game.Name;
             if (txtInstallPath != null) txtInstallPath.Text = _game.InstallPath;
+            if (txtGameNameEdit != null) txtGameNameEdit.Text = _game.Name;
+            TrySetCoverImage(imgGameCover, _game.CoverImageUrl);
 
             UpdateStatus();
             LoadComponents();
             ConfigureAdditionalComponents();
+        }
+
+        private void TrySetCoverImage(Image? image, string? coverPath)
+        {
+            if (image == null || string.IsNullOrWhiteSpace(coverPath)) return;
+
+            try
+            {
+                if (File.Exists(coverPath))
+                {
+                    image.Source = new Bitmap(coverPath);
+                }
+            }
+            catch
+            {
+                // Ignore invalid images to avoid breaking the dialog
+            }
+        }
+
+        private void BtnEditImage_Click(object sender, RoutedEventArgs e)
+        {
+            ShowCoverModal();
+        }
+
+        private void ShowCoverModal()
+        {
+            var bdCoverModal = this.FindControl<Grid>("BdCoverModal");
+            var imgPreview = this.FindControl<Image>("ImgCoverPreview");
+            var txtCoverPath = this.FindControl<TextBlock>("TxtCoverPath");
+
+            _pendingCoverPath = null;
+            if (imgPreview != null) imgPreview.Source = null;
+            if (txtCoverPath != null) txtCoverPath.Text = "Sin imagen seleccionada";
+
+            if (bdCoverModal != null) bdCoverModal.IsVisible = true;
+        }
+
+        private void HideCoverModal()
+        {
+            var bdCoverModal = this.FindControl<Grid>("BdCoverModal");
+            if (bdCoverModal != null) bdCoverModal.IsVisible = false;
+        }
+
+        private async void BtnCoverSelect_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+                {
+                    Title = "Select Game Cover Image",
+                    AllowMultiple = false,
+                    FileTypeFilter = new List<FilePickerFileType>
+                    {
+                        new FilePickerFileType("Image Files")
+                        {
+                            Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp" }
+                        }
+                    }
+                });
+
+                if (files == null || files.Count == 0) return;
+
+                var path = files[0].Path.LocalPath;
+                if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return;
+
+                _pendingCoverPath = path;
+
+                var imgPreview = this.FindControl<Image>("ImgCoverPreview");
+                if (imgPreview != null) imgPreview.Source = new Bitmap(path);
+
+                var txtCoverPath = this.FindControl<TextBlock>("TxtCoverPath");
+                if (txtCoverPath != null) txtCoverPath.Text = path;
+            }
+            catch (Exception ex)
+            {
+                _ = new ConfirmDialog(this, "Error", $"Could not load image:\n{ex.Message}").ShowDialog<object>(this);
+            }
+        }
+
+        private void BtnCoverApply_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(_pendingCoverPath) || !File.Exists(_pendingCoverPath))
+            {
+                HideCoverModal();
+                return;
+            }
+
+            _game.CoverImageUrl = _pendingCoverPath;
+            var imgGameCover = this.FindControl<Image>("ImgGameCover");
+            if (imgGameCover != null) imgGameCover.Source = new Bitmap(_pendingCoverPath);
+
+            HideCoverModal();
+        }
+
+        private void BtnCoverCancel_Click(object sender, RoutedEventArgs e)
+        {
+            HideCoverModal();
+        }
+
+        private async void BtnCoverReset_Click(object sender, RoutedEventArgs e)
+        {
+            _pendingCoverPath = null;
+            _game.CoverImageUrl = null;
+
+            string appIdKey = !string.IsNullOrWhiteSpace(_game.AppId) ? _game.AppId : _game.Name;
+            try
+            {
+                var metadataService = new GameMetadataService();
+                var defaultCover = await metadataService.FetchAndCacheCoverImageAsync(_game.Name, appIdKey);
+                _game.CoverImageUrl = defaultCover;
+            }
+            catch
+            {
+                _game.CoverImageUrl = null;
+            }
+
+            var imgGameCover = this.FindControl<Image>("ImgGameCover");
+            if (imgGameCover != null)
+            {
+                imgGameCover.Source = null;
+                TrySetCoverImage(imgGameCover, _game.CoverImageUrl);
+            }
+
+            var imgPreview = this.FindControl<Image>("ImgCoverPreview");
+            if (imgPreview != null)
+            {
+                imgPreview.Source = null;
+                TrySetCoverImage(imgPreview, _game.CoverImageUrl);
+            }
+
+            var txtCoverPath = this.FindControl<TextBlock>("TxtCoverPath");
+            if (txtCoverPath != null) txtCoverPath.Text = string.IsNullOrWhiteSpace(_game.CoverImageUrl) ? "Sin imagen seleccionada" : _game.CoverImageUrl;
+
+            HideCoverModal();
+        }
+
+        private void BtnEditTitle_Click(object sender, RoutedEventArgs e)
+        {
+            var txtGameName = this.FindControl<TextBlock>("TxtGameName");
+            var txtGameNameEdit = this.FindControl<TextBox>("TxtGameNameEdit");
+            if (txtGameName == null || txtGameNameEdit == null) return;
+
+            if (!txtGameNameEdit.IsVisible)
+            {
+                txtGameNameEdit.Text = _game.Name;
+                txtGameNameEdit.IsVisible = true;
+                txtGameName.IsVisible = false;
+                txtGameNameEdit.Focus();
+                txtGameNameEdit.SelectAll();
+                txtGameNameEdit.KeyDown -= TxtGameNameEdit_KeyDown;
+                txtGameNameEdit.KeyDown += TxtGameNameEdit_KeyDown;
+                txtGameNameEdit.LostFocus -= TxtGameNameEdit_LostFocus;
+                txtGameNameEdit.LostFocus += TxtGameNameEdit_LostFocus;
+            }
+            else
+            {
+                CommitTitleEdit();
+            }
+        }
+
+        private void TxtGameNameEdit_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                CommitTitleEdit();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                CancelTitleEdit();
+                e.Handled = true;
+            }
+        }
+
+        private void TxtGameNameEdit_LostFocus(object? sender, RoutedEventArgs e)
+        {
+            CommitTitleEdit();
+        }
+
+        private void CommitTitleEdit()
+        {
+            var txtGameName = this.FindControl<TextBlock>("TxtGameName");
+            var txtGameNameEdit = this.FindControl<TextBox>("TxtGameNameEdit");
+            if (txtGameName == null || txtGameNameEdit == null) return;
+
+            var newName = txtGameNameEdit.Text?.Trim();
+            if (!string.IsNullOrWhiteSpace(newName))
+            {
+                _game.Name = newName;
+                txtGameName.Text = newName;
+            }
+
+            txtGameNameEdit.IsVisible = false;
+            txtGameName.IsVisible = true;
+        }
+
+        private void CancelTitleEdit()
+        {
+            var txtGameName = this.FindControl<TextBlock>("TxtGameName");
+            var txtGameNameEdit = this.FindControl<TextBox>("TxtGameNameEdit");
+            if (txtGameName == null || txtGameNameEdit == null) return;
+
+            txtGameNameEdit.IsVisible = false;
+            txtGameName.IsVisible = true;
         }
 
         private bool _isAnimatingClose = false;
@@ -450,8 +663,8 @@ namespace OptiscalerClient.Views
             var prgDownload       = this.FindControl<ProgressBar>("PrgDownload");
             var txtProgressState  = this.FindControl<TextBlock>("TxtProgressState");
             var cmbInjectionMethod = this.FindControl<ComboBox>("CmbInjectionMethod");
-            var chkInstallFakenvapi = this.FindControl<CheckBox>("ChkInstallFakenvapi");
-            var chkInstallNukemFG   = this.FindControl<CheckBox>("ChkInstallNukemFG");
+            var chkInstallFakenvapi = this.FindControl<ToggleSwitch>("ChkInstallFakenvapi");
+            var chkInstallNukemFG   = this.FindControl<ToggleSwitch>("ChkInstallNukemFG");
 
             // Read selected Extras (FSR4 INT8) version before any async work
             var selectedExtrasItem   = cmbExtrasVersion?.SelectedItem as ComboBoxItem;
@@ -923,8 +1136,8 @@ namespace OptiscalerClient.Views
             {
                 gpu = _gpuService.GetDiscreteGPU() ?? _gpuService.GetPrimaryGPU();
             }
-            var chkInstallFakenvapi = this.FindControl<CheckBox>("ChkInstallFakenvapi");
-            var chkInstallNukemFG = this.FindControl<CheckBox>("ChkInstallNukemFG");
+            var chkInstallFakenvapi = this.FindControl<ToggleSwitch>("ChkInstallFakenvapi");
+            var chkInstallNukemFG = this.FindControl<ToggleSwitch>("ChkInstallNukemFG");
 
             if (gpu != null && gpu.Vendor == GpuVendor.NVIDIA)
             {
