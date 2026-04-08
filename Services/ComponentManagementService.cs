@@ -139,29 +139,30 @@ namespace OptiscalerClient.Services
                         var json = File.ReadAllText(_configFile);
                         _config = JsonSerializer.Deserialize(json, OptimizerContext.Default.AppConfiguration) ?? new();
                         System.Diagnostics.Debug.WriteLine($"[Config] Loaded from AppData: {_configFile}");
+
+                        // If core repos are empty (e.g. config was generated with blank defaults),
+                        // merge them from the install-dir template so the app stays functional.
+                        if (string.IsNullOrEmpty(_config.OptiScaler.RepoOwner))
+                        {
+                            MergeReposFromTemplate(_config);
+                            try
+                            {
+                                var normalized = JsonSerializer.Serialize(_config, OptimizerContext.Default.AppConfiguration);
+                                File.WriteAllText(_configFile, normalized);
+                            }
+                            catch { /* Ignore write errors */ }
+                        }
                     }
-                    // PRIORITY 2: If no AppData config exists, use project config.json as template
+                    // No AppData config exists yet — seed from the install-dir config.json.
+                    // That file is the developer-maintained template with repo configs,
+                    // scan exclusions, etc. User preferences edited later are saved back
+                    // to AppData and the install-dir file is never read again.
                     else
                     {
-                        var currentDirConfig = Path.Combine(Environment.CurrentDirectory, "config.json");
-                        var baseDirConfig = Path.Combine(AppContext.BaseDirectory, "config.json");
-                        var templateConfig = File.Exists(currentDirConfig)
-                            ? currentDirConfig
-                            : (File.Exists(baseDirConfig) ? baseDirConfig : null);
+                        _config = new AppConfiguration();
+                        MergeReposFromTemplate(_config);
 
-                        if (templateConfig != null)
-                        {
-                            // Use project config as template for first-time setup
-                            var json = File.ReadAllText(templateConfig);
-                            _config = JsonSerializer.Deserialize(json, OptimizerContext.Default.AppConfiguration) ?? new();
-                        }
-                        else
-                        {
-                            // No config found anywhere, use defaults
-                            _config = new AppConfiguration();
-                        }
-
-                        // Save initial config to AppData
+                        // Persist to AppData — this is the only time the install-dir file is read.
                         try
                         {
                             var normalized = JsonSerializer.Serialize(_config, OptimizerContext.Default.AppConfiguration);
@@ -176,9 +177,42 @@ namespace OptiscalerClient.Services
             catch { /* Use defaults */ }
         }
 
-        public void SaveConfiguration()
+        /// <summary>
+        /// Reads the install-dir config.json (if present) and copies any non-empty
+        /// RepositoryConfig values into <paramref name="target"/>. User preferences
+        /// (language, debug, window state, etc.) already in target are left untouched.
+        /// </summary>
+        private static void MergeReposFromTemplate(AppConfiguration target)
         {
             try
+            {
+                var currentDirConfig = Path.Combine(Environment.CurrentDirectory, "config.json");
+                var baseDirConfig    = Path.Combine(AppContext.BaseDirectory, "config.json");
+                var templatePath     = File.Exists(currentDirConfig) ? currentDirConfig
+                                     : File.Exists(baseDirConfig)    ? baseDirConfig
+                                     : null;
+
+                if (templatePath == null) return;
+
+                var json     = File.ReadAllText(templatePath);
+                var template = JsonSerializer.Deserialize(json, OptimizerContext.Default.AppConfiguration);
+                if (template == null) return;
+
+                if (!string.IsNullOrEmpty(template.App.RepoOwner))            target.App            = template.App;
+                if (!string.IsNullOrEmpty(template.OptiScaler.RepoOwner))     target.OptiScaler     = template.OptiScaler;
+                if (!string.IsNullOrEmpty(template.OptiScalerBetas.RepoOwner))target.OptiScalerBetas= template.OptiScalerBetas;
+                if (!string.IsNullOrEmpty(template.OptiScalerExtras.RepoOwner))target.OptiScalerExtras = template.OptiScalerExtras;
+                if (!string.IsNullOrEmpty(template.Fakenvapi.RepoOwner))      target.Fakenvapi      = template.Fakenvapi;
+                if (!string.IsNullOrEmpty(template.NukemFG.RepoOwner))        target.NukemFG        = template.NukemFG;
+
+                if (target.ScanExclusions.Count == 0 && template.ScanExclusions.Count > 0)
+                    target.ScanExclusions = template.ScanExclusions;
+            }
+            catch { /* If template is missing or corrupt, continue with whatever we have */ }
+        }
+
+        public void SaveConfiguration()
+        {            try
             {
                 lock (_configLock)
                 {
@@ -424,7 +458,14 @@ namespace OptiscalerClient.Services
                 cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
                 try
                 {
-                    return await client.GetAsync(url, cts.Token);
+                    var resp = await client.GetAsync(url, cts.Token);
+                    if ((int)resp.StatusCode == 403)
+                        throw new GitHubRateLimitException();
+                    return resp;
+                }
+                catch (GitHubRateLimitException)
+                {
+                    throw; // propagate immediately, no retry
                 }
                 catch (Exception ex) when (ex is HttpRequestException
                     || (ex is OperationCanceledException && !cancellationToken.IsCancellationRequested))
@@ -587,6 +628,8 @@ namespace OptiscalerClient.Services
                         // Still rebuild from cache in case it was just loaded
                         RebuildInMemoryCacheFromReleases();
                         RebuildInMemoryExtrasCache();
+                        // Rate limit must propagate so the UI can show a warning dialog
+                        if (apiEx is GitHubRateLimitException) throw;
                     }
                 }
 

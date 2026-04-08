@@ -47,7 +47,7 @@ namespace OptiscalerClient.Models
     /// </summary>
     public class AppConfiguration
     {
-        public RepositoryConfig App { get; set; } = new() { RepoOwner = "Agustinm28", RepoName = "Optiscaler-Switcher" };
+        public RepositoryConfig App { get; set; } = new();
         public RepositoryConfig OptiScaler { get; set; } = new();
         public RepositoryConfig OptiScalerBetas { get; set; } = new();
         public RepositoryConfig OptiScalerExtras { get; set; } = new();
