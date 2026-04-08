@@ -237,6 +237,8 @@ Esta versión no está disponible para descarga. Verificá tu conexión a intern
 
     <x:String x:Key="TxtViewGrid">Vista de cuadrícula</x:String>
     <x:String x:Key="TxtViewList">Vista de lista</x:String>
+    <x:String x:Key="TxtLoadingResources">Loading resources...</x:String>
+    <x:String x:Key="TxtLoadingResourcesDesc">Fetching version data from GitHub</x:String>
 </ResourceDictionary>
 
 

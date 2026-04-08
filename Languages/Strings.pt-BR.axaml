@@ -229,6 +229,8 @@
 
     <x:String x:Key="TxtViewGrid">Grid view</x:String>
     <x:String x:Key="TxtViewList">List view</x:String>
+    <x:String x:Key="TxtLoadingResources">Loading resources...</x:String>
+    <x:String x:Key="TxtLoadingResourcesDesc">Fetching version data from GitHub</x:String>
 </ResourceDictionary>
 
 

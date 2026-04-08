@@ -121,6 +121,35 @@
                 </Animation>
             </Style.Animations>
         </Style>
+
+        <!-- Loading overlay dot bounce animations -->
+        <Style Selector="Ellipse#LoadDot1">
+            <Style.Animations>
+                <Animation Duration="0:0:0.6" IterationCount="INFINITE" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%"><Setter Property="Margin" Value="4,12,4,0"/></KeyFrame>
+                    <KeyFrame Cue="50%"><Setter Property="Margin" Value="4,2,4,10"/></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Margin" Value="4,12,4,0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse#LoadDot2">
+            <Style.Animations>
+                <Animation Duration="0:0:0.6" Delay="0:0:0.2" IterationCount="INFINITE" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%"><Setter Property="Margin" Value="4,12,4,0"/></KeyFrame>
+                    <KeyFrame Cue="50%"><Setter Property="Margin" Value="4,2,4,10"/></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Margin" Value="4,12,4,0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse#LoadDot3">
+            <Style.Animations>
+                <Animation Duration="0:0:0.6" Delay="0:0:0.4" IterationCount="INFINITE" Easing="SineEaseInOut">
+                    <KeyFrame Cue="0%"><Setter Property="Margin" Value="4,12,4,0"/></KeyFrame>
+                    <KeyFrame Cue="50%"><Setter Property="Margin" Value="4,2,4,10"/></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Margin" Value="4,12,4,0"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
     </Window.Styles>
 
     <Grid>
@@ -1600,6 +1629,77 @@
                                                   IsCheckedChanged="TglAnimations_IsCheckedChanged"/>
                                 </Grid>
                             </Border>
+
+                            <!-- Clear Application Cache -->
+                            <Border Background="{StaticResource BrBgCard}"
+                                    BorderBrush="{StaticResource BrBorderSubtle}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusLarge}"
+                                    Padding="20,16"
+                                    Margin="0,0,16,16"
+                                    HorizontalAlignment="Left">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="Clear Application Cache"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource BrTextPrimary}"/>
+                                        <TextBlock Text="Remove scanned games, cover art and cached version data. The app will re-scan and re-download on next launch."
+                                                   Foreground="{StaticResource BrTextSecondary}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,4,16,0"
+                                                   FontSize="{StaticResource FontSizeCaption}"/>
+                                    </StackPanel>
+                                    <Button Name="BtnClearAppCache"
+                                            Grid.Column="1"
+                                            Content="Clear Cache"
+                                            Classes="BtnBase"
+                                            Padding="16,8"
+                                            VerticalAlignment="Center"
+                                            Click="BtnClearAppCache_Click"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- SteamGridDB API Key -->
+                            <Border Background="{StaticResource BrBgCard}"
+                                    BorderBrush="{StaticResource BrBorderSubtle}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusLarge}"
+                                    Padding="20,16"
+                                    Margin="0,0,16,16"
+                                    HorizontalAlignment="Left">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource TxtSteamGridApiKey}"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource BrTextPrimary}"/>
+                                        <TextBlock Text="{DynamicResource TxtSteamGridApiKeyDesc}"
+                                                   Foreground="{StaticResource BrTextSecondary}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,4,16,0"
+                                                   FontSize="{StaticResource FontSizeCaption}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                                        <TextBox Name="TxtSteamGridApiKey"
+                                                 Width="300"
+                                                 Watermark="{DynamicResource TxtSteamGridApiKeyPlaceholder}"
+                                                 LostFocus="TxtSteamGridApiKey_LostFocus"/>
+                                        <Button Name="BtnSteamGridApiGuide"
+                                                Content="{DynamicResource TxtSteamGridGetApiKey}"
+                                                Classes="BtnBase"
+                                                HorizontalAlignment="Right"
+                                                Padding="12,6"
+                                                Click="BtnSteamGridApiGuide_Click"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
                         </WrapPanel>
                     </StackPanel>
                  </ScrollViewer>
@@ -1747,5 +1847,35 @@
              </Border>
 
         </Grid>
+
+        <!-- LOADING RESOURCES OVERLAY (covers full window while version data is being fetched) -->
+        <Grid Name="OverlayLoading" Grid.ColumnSpan="2" Background="#CC000000" IsVisible="False" ZIndex="500">
+            <Border Background="{StaticResource BrBgElevated}"
+                    BorderBrush="{StaticResource BrAccent}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource RadiusLarge}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Padding="60,50">
+                <StackPanel HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,24">
+                        <Ellipse Name="LoadDot1" Width="12" Height="12" Fill="{StaticResource BrAccent}" Margin="4,12,4,0"/>
+                        <Ellipse Name="LoadDot2" Width="12" Height="12" Fill="{StaticResource BrAccent}" Margin="4,12,4,0"/>
+                        <Ellipse Name="LoadDot3" Width="12" Height="12" Fill="{StaticResource BrAccent}" Margin="4,12,4,0"/>
+                    </StackPanel>
+                    <TextBlock Text="{DynamicResource TxtLoadingResources}"
+                               FontSize="{StaticResource FontSizeSubtitle}"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource BrTextPrimary}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,8"/>
+                    <TextBlock Text="{DynamicResource TxtLoadingResourcesDesc}"
+                               FontSize="{StaticResource FontSizeBody}"
+                               Foreground="{StaticResource BrTextSecondary}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
     </Grid>
 </Window>

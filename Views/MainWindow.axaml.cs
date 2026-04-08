@@ -79,6 +79,7 @@ namespace OptiscalerClient.Views
         private Button? _btnEditMode;
         private Border? _editModeBanner;
         private Grid? _overlayScanning;
+        private Grid? _overlayLoading;
         private TextBox? _txtSearch;
         private TextBlock? _txtSearchPlaceholder;
         private TextBlock? _txtGpuInfo;
@@ -162,6 +163,7 @@ namespace OptiscalerClient.Views
 
         private void ComponentStatusChanged()
         {
+            Dispatcher.UIThread.Post(RepopulateVersionCombos);
         }
 
         private void MainWindow_Closed(object? sender, EventArgs e)
@@ -192,6 +194,7 @@ namespace OptiscalerClient.Views
             _editModeBanner = this.FindControl<Border>("EditModeBanner");
             _dragGhostCanvas = this.FindControl<Canvas>("DragGhostCanvas");
             _overlayScanning = this.FindControl<Grid>("OverlayScanning");
+            _overlayLoading = this.FindControl<Grid>("OverlayLoading");
             _txtSearch = this.FindControl<TextBox>("TxtSearch");
             _txtSearchPlaceholder = this.FindControl<TextBlock>("TxtSearchPlaceholder");
             _txtGpuInfo = this.FindControl<TextBlock>("TxtGpuInfo");
@@ -1259,39 +1262,54 @@ namespace OptiscalerClient.Views
                 txtSteamGridApiKey.Text = _componentService.Config.SteamGridDBApiKey ?? string.Empty;
             }
 
+            PopulateDefaultGpuComboBox();
+            RepopulateVersionCombos();
+        }
+
+        private void RepopulateVersionCombos()
+        {
             // Populate FSR4 INT8 default version selector
             var cmbDefaultExtras = this.FindControl<ComboBox>("CmbDefaultExtrasVersion");
             if (cmbDefaultExtras != null)
             {
-                _isInitializingLanguage = true; // reuse flag to suppress SelectionChanged during init
+                _isInitializingLanguage = true;
                 cmbDefaultExtras.Items.Clear();
-                cmbDefaultExtras.Items.Add(new ComboBoxItem { Content = "None", Tag = "none" });
-                foreach (var ver in _componentService.ExtrasAvailableVersions)
-                {
-                    cmbDefaultExtras.Items.Add(new ComboBoxItem { Content = ver, Tag = ver });
-                }
 
-                var savedDefault = _componentService.Config.DefaultExtrasVersion;
-                cmbDefaultExtras.SelectedIndex = 0; // default: None
-                if (!string.IsNullOrEmpty(savedDefault) &&
-                    !savedDefault.Equals("none", StringComparison.OrdinalIgnoreCase))
+                if (_componentService.ExtrasAvailableVersions.Count == 0)
                 {
-                    for (int i = 1; i < cmbDefaultExtras.Items.Count; i++)
+                    cmbDefaultExtras.Items.Add(new ComboBoxItem { Content = GetResourceString("TxtNoVersions", "No Versions Available"), Tag = "none" });
+                    cmbDefaultExtras.SelectedIndex = 0;
+                    cmbDefaultExtras.IsEnabled = false;
+                }
+                else
+                {
+                    cmbDefaultExtras.IsEnabled = true;
+                    cmbDefaultExtras.Items.Add(new ComboBoxItem { Content = "None", Tag = "none" });
+                    foreach (var ver in _componentService.ExtrasAvailableVersions)
                     {
-                        if ((cmbDefaultExtras.Items[i] as ComboBoxItem)?.Tag?.ToString() == savedDefault)
+                        cmbDefaultExtras.Items.Add(new ComboBoxItem { Content = ver, Tag = ver });
+                    }
+
+                    var savedDefault = _componentService.Config.DefaultExtrasVersion;
+                    cmbDefaultExtras.SelectedIndex = 0;
+                    if (!string.IsNullOrEmpty(savedDefault) &&
+                        !savedDefault.Equals("none", StringComparison.OrdinalIgnoreCase))
+                    {
+                        for (int i = 1; i < cmbDefaultExtras.Items.Count; i++)
                         {
-                            cmbDefaultExtras.SelectedIndex = i;
-                            break;
+                            if ((cmbDefaultExtras.Items[i] as ComboBoxItem)?.Tag?.ToString() == savedDefault)
+                            {
+                                cmbDefaultExtras.SelectedIndex = i;
+                                break;
+                            }
                         }
                     }
                 }
+
                 _isInitializingLanguage = false;
             }
 
-            PopulateDefaultGpuComboBox();
-
             // Populate OptiScaler default version selector
-            // Restore to whichever channel the saved version belongs to
             var savedOptiDefault = _componentService.Config.DefaultOptiScalerVersion;
             bool savedIsBeta = !string.IsNullOrEmpty(savedOptiDefault) && _componentService.BetaVersions.Contains(savedOptiDefault);
             _optiDefaultShowingBeta = savedIsBeta;
@@ -1319,6 +1337,57 @@ namespace OptiscalerClient.Views
         {
             var cacheWindow = new CacheManagementWindow(this);
             await cacheWindow.ShowDialog<object>(this);
+        }
+
+        private async void BtnClearAppCache_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new ConfirmDialog(
+                this,
+                "Clear Application Cache",
+                "Warning: This will permanently delete all scanned games, cover art and cached OptiScaler version data.\n\nThe application will close after clearing. On the next launch it will re-scan your library and re-download version information.");
+
+            var confirmed = await dialog.ShowDialog<bool>(this);
+            if (!confirmed) return;
+
+            try
+            {
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var baseDir = System.IO.Path.Combine(appData, "OptiscalerClient");
+
+                string[] filesToDelete =
+                [
+                    System.IO.Path.Combine(baseDir, "games.json"),
+                    System.IO.Path.Combine(baseDir, "extras_cache.json"),
+                    System.IO.Path.Combine(baseDir, "releases_cache.json"),
+                    System.IO.Path.Combine(baseDir, "versions.json"),
+                    System.IO.Path.Combine(baseDir, "analysis_cache.json"),
+                    System.IO.Path.Combine(baseDir, "config.json"),
+                ];
+
+                string[] dirsToDelete =
+                [
+                    System.IO.Path.Combine(baseDir, "Covers"),
+                    System.IO.Path.Combine(baseDir, "Cache"),
+                ];
+
+                foreach (var file in filesToDelete)
+                {
+                    if (File.Exists(file))
+                        File.Delete(file);
+                }
+
+                foreach (var dir in dirsToDelete)
+                {
+                    if (Directory.Exists(dir))
+                        Directory.Delete(dir, recursive: true);
+                }
+
+                Close();
+            }
+            catch (Exception ex)
+            {
+                await new ConfirmDialog(this, "Error", $"Failed to clear cache: {ex.Message}", isAlert: true).ShowDialog<object>(this);
+            }
         }
 
         private async void BtnManageScanSources_Click(object sender, RoutedEventArgs e)
@@ -2421,7 +2490,16 @@ namespace OptiscalerClient.Views
             }
 
             // Default to the first item (latest in channel); restore saved if requested
-            cmb.SelectedIndex = cmb.Items.Count > 0 ? 0 : -1;
+            if (cmb.Items.Count == 0)
+            {
+                cmb.Items.Add(new ComboBoxItem { Content = GetResourceString("TxtNoVersions", "No Versions Available"), Tag = "auto" });
+                cmb.SelectedIndex = 0;
+                cmb.IsEnabled = false;
+                _isInitializingLanguage = false;
+                return;
+            }
+            cmb.IsEnabled = true;
+            cmb.SelectedIndex = 0;
             if (restoreSaved)
             {
                 var saved = _componentService.Config.DefaultOptiScalerVersion;
@@ -2595,18 +2673,37 @@ namespace OptiscalerClient.Views
 
         private async Task ScheduleStartupUpdatesAsync(CancellationToken cancellationToken)
         {
+            bool versionsEmpty = _componentService.OptiScalerAvailableVersions.Count == 0;
+
+            if (versionsEmpty)
+            {
+                // No cached data — show loading overlay immediately and skip the idle delay
+                if (_overlayLoading != null) _overlayLoading.IsVisible = true;
+            }
+
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(8), cancellationToken);
-                if (cancellationToken.IsCancellationRequested) return;
+                if (!versionsEmpty)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(8), cancellationToken);
+                    if (cancellationToken.IsCancellationRequested) return;
+                }
 
                 await CheckUpdatesOnStartupAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {
             }
+            catch (GitHubRateLimitException)
+            {
+                await ShowGitHubRateLimitDialogAsync();
+            }
             catch
             {
+            }
+            finally
+            {
+                if (_overlayLoading != null) _overlayLoading.IsVisible = false;
             }
         }
 
@@ -2619,6 +2716,11 @@ namespace OptiscalerClient.Views
                 await _componentService.CheckForUpdatesAsync();
             }
             catch (OperationCanceledException) { }
+            catch (GitHubRateLimitException)
+            {
+                if (_txtStatus != null) _txtStatus.Text = GetResourceString("TxtReady", "Ready");
+                throw; // bubble up to ScheduleStartupUpdatesAsync
+            }
             catch { }
             finally
             {
@@ -2626,6 +2728,16 @@ namespace OptiscalerClient.Views
                 if (!cancellationToken.IsCancellationRequested && _txtStatus != null)
                     _txtStatus.Text = GetResourceString("TxtReady", "Ready");
             }
+        }
+
+        private async Task ShowGitHubRateLimitDialogAsync()
+        {
+            await new ConfirmDialog(
+                this,
+                "GitHub Rate Limit Reached",
+                "Could not fetch version data from GitHub (HTTP 403 — too many requests).\n\nPlease wait a few minutes and restart the application.\n\nIn the meantime, you can still install any OptiScaler versions already cached locally.",
+                isAlert: true
+            ).ShowDialog<object>(this);
         }
 
         private void PopulateHelpContent()
@@ -3988,12 +4100,75 @@ namespace OptiscalerClient.Views
             if (options == null)
                 return;
 
+            if (options.RefreshCoversOnly)
+            {
+                await RunRefreshCoversAsync();
+                return;
+            }
+
             _componentService.Config.ScanSources = options.ScanSources;
             _componentService.Config.ScanDriveRoots = options.DriveRoots;
             _componentService.Config.HasCompletedInitialScan = true;
             _componentService.SaveConfiguration();
 
             await RunScanAsync();
+        }
+
+        private async Task RunRefreshCoversAsync()
+        {
+            if (_btnScan != null) _btnScan.IsEnabled = false;
+            if (_txtStatus != null) _txtStatus.Text = "Refreshing missing covers...";
+
+            try
+            {
+                var missing = _games
+                    .Where(g => string.IsNullOrEmpty(g.CoverImageUrl))
+                    .ToList();
+
+                if (missing.Count == 0)
+                {
+                    if (_txtStatus != null) _txtStatus.Text = GetResourceString("TxtReady", "Ready");
+                    return;
+                }
+
+                // Delete sentinels so FetchAndCacheCoverImageAsync tries again
+                foreach (var game in missing)
+                {
+                    var key = !string.IsNullOrEmpty(game.AppId) ? game.AppId : game.Name;
+                    _metadataService.DeleteSentinel(key);
+                }
+
+                using var sem = new SemaphoreSlim(6, 6);
+                var tasks = missing.Select(game =>
+                {
+                    var key = !string.IsNullOrEmpty(game.AppId) ? game.AppId : game.Name;
+                    return Task.Run(async () =>
+                    {
+                        await sem.WaitAsync();
+                        try { game.CoverImageUrl = await _metadataService.FetchAndCacheCoverImageAsync(game.Name, key); }
+                        finally { sem.Release(); }
+                    });
+                }).ToList();
+
+                await Task.WhenAll(tasks);
+
+                _persistenceService.SaveGames(_games);
+                ApplyFilter(_txtSearch?.Text);
+
+                var found = missing.Count(g => !string.IsNullOrEmpty(g.CoverImageUrl));
+                if (_txtStatus != null)
+                    _txtStatus.Text = $"Cover refresh complete. Found {found}/{missing.Count} missing covers.";
+                ShowToast($"Cover refresh complete — {found}/{missing.Count} covers found.");
+            }
+            catch (Exception ex)
+            {
+                await new ConfirmDialog(this, "Error", ex.Message).ShowDialog<object>(this);
+                if (_txtStatus != null) _txtStatus.Text = GetResourceString("TxtReady", "Ready");
+            }
+            finally
+            {
+                if (_btnScan != null) _btnScan.IsEnabled = true;
+            }
         }
 
         private async Task RunScanAsync()
