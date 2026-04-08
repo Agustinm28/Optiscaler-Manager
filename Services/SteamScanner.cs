@@ -3,13 +3,11 @@ using OptiscalerClient.Models;
 using OptiscalerClient.Views;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 
 namespace OptiscalerClient.Services;
 
-[SupportedOSPlatform("windows")]
 public class SteamScanner : IGameScanner
 {
     private const string REGISTRY_PATH = @"SOFTWARE\Valve\Steam";
@@ -23,7 +21,7 @@ public class SteamScanner : IGameScanner
             return games;
 
         var libraryFolders = GetLibraryFolders(installPath);
-        
+
         foreach (var libraryPath in libraryFolders)
         {
             try
@@ -54,6 +52,14 @@ public class SteamScanner : IGameScanner
 
     private string? GetSteamInstallPath()
     {
+        if (OperatingSystem.IsWindows())
+            return GetSteamInstallPathWindows();
+        return GetSteamInstallPathLinux();
+    }
+
+    [SupportedOSPlatform("windows")]
+    private string? GetSteamInstallPathWindows()
+    {
         try
         {
             // Try 32-bit registry view first (Steam is usually 32-bit app)
@@ -61,10 +67,23 @@ public class SteamScanner : IGameScanner
             using var key = baseKey.OpenSubKey(REGISTRY_PATH);
             return key?.GetValue("InstallPath") as string;
         }
-        catch 
+        catch
         {
-            return null; 
+            return null;
         }
+    }
+
+    private string? GetSteamInstallPathLinux()
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var candidates = new[]
+        {
+            Path.Combine(home, ".steam", "steam"),
+            Path.Combine(home, ".local", "share", "Steam"),
+            Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", ".local", "share", "Steam"),
+            Path.Combine(home, "snap", "steam", "common", ".steam", "steam"),
+        };
+        return candidates.FirstOrDefault(p => Directory.Exists(Path.Combine(p, "steamapps")));
     }
 
     private List<string> GetLibraryFolders(string steamPath)
@@ -77,17 +96,16 @@ public class SteamScanner : IGameScanner
         try
         {
             var content = File.ReadAllText(vdfPath);
-            // Regex to find "path" "C:\\..."
-            // VDF format uses "path" <tab/space> "value"
+            // Regex to find "path" "..."
             var matches = Regex.Matches(content, "\"path\"\\s+\"([^\"]+)\"");
 
             foreach (Match match in matches)
             {
                 if (match.Success && match.Groups.Count > 1)
                 {
-                    // Unescape backslashes (VDF escapes them as \\)
+                    // Unescape backslashes (VDF escapes them as \\ on Windows)
                     var path = match.Groups[1].Value.Replace("\\\\", "\\");
-                    if (!folders.Contains(path, StringComparer.OrdinalIgnoreCase))
+                    if (!folders.Contains(path, StringComparer.Ordinal))
                     {
                         folders.Add(path);
                     }
@@ -104,7 +122,7 @@ public class SteamScanner : IGameScanner
         try
         {
             var content = File.ReadAllText(manifestPath);
-            
+
             // Extract AppID
             var appIdMatch = Regex.Match(content, "\"appid\"\\s+\"(\\d+)\"");
             var appId = appIdMatch.Success ? appIdMatch.Groups[1].Value : Path.GetFileName(manifestPath).Replace("appmanifest_", "").Replace(".acf", "");
@@ -118,14 +136,7 @@ public class SteamScanner : IGameScanner
             if (!installDirMatch.Success) return null;
 
             var installDirName = installDirMatch.Groups[1].Value;
-            var libraryPath = Path.GetDirectoryName(Path.GetDirectoryName(manifestPath)); // Go up from steamapps/appmanifest_... to library root?
-            // Actually manifest is in steamapps, game is in steamapps/common/
-            
-            // The libraryPath in GetLibraryFolders returns the root (e.g. C:\Steam).
-            // manifestPath is C:\Steam\steamapps\appmanifest_123.acf
-            // Game path is C:\Steam\steamapps\common\GameName
-            
-            var steamappsPath = Path.GetDirectoryName(manifestPath); // ...\steamapps
+            var steamappsPath = Path.GetDirectoryName(manifestPath); // .../steamapps
             if (steamappsPath == null) return null;
 
             var commonPath = Path.Combine(steamappsPath, "common");

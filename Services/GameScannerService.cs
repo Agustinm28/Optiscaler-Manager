@@ -17,31 +17,33 @@
 using OptiscalerClient.Models;
 using OptiscalerClient.Views;
 using System.IO;
-using System.Runtime.Versioning;
 
 namespace OptiscalerClient.Services;
 
-[SupportedOSPlatform("windows")]
 public class GameScannerService
 {
     private readonly IGameScanner _steamScanner;
-    private readonly IGameScanner _epicScanner;
-    private readonly IGameScanner _gogScanner;
-    private readonly IGameScanner _xboxScanner;
-    private readonly IGameScanner _eaScanner;
-    private readonly IGameScanner _battleNetScanner;
-    private readonly IGameScanner _ubisoftScanner;
+    private readonly IGameScanner? _epicScanner;
+    private readonly IGameScanner? _gogScanner;
+    private readonly IGameScanner? _xboxScanner;
+    private readonly IGameScanner? _eaScanner;
+    private readonly IGameScanner? _battleNetScanner;
+    private readonly IGameScanner? _ubisoftScanner;
     private readonly ExclusionService _exclusions;
 
     public GameScannerService()
     {
         _steamScanner = new SteamScanner();
-        _epicScanner = new EpicScanner();
-        _gogScanner = new GogScanner();
-        _xboxScanner = new XboxScanner();
-        _eaScanner = new EaScanner();
-        _battleNetScanner = new BattleNetScanner();
-        _ubisoftScanner = new UbisoftScanner();
+
+        if (OperatingSystem.IsWindows())
+        {
+            _epicScanner = new EpicScanner();
+            _gogScanner = new GogScanner();
+            _xboxScanner = new XboxScanner();
+            _eaScanner = new EaScanner();
+            _battleNetScanner = new BattleNetScanner();
+            _ubisoftScanner = new UbisoftScanner();
+        }
 
         // config.json lives next to the executable (copied by the build)
         var configPath = Path.Combine(AppContext.BaseDirectory, "config.json");
@@ -83,7 +85,7 @@ public class GameScannerService
                 catch (Exception ex) { DebugWindow.Log($"[Scanner] Steam scan error: {ex.Message}"); }
             }
 
-            if (scanConfig.ScanEpic)
+            if (scanConfig.ScanEpic && _epicScanner != null)
             {
                 try
                 {
@@ -93,7 +95,7 @@ public class GameScannerService
                 catch (Exception ex) { DebugWindow.Log($"[Scanner] Epic scan error: {ex.Message}"); }
             }
 
-            if (scanConfig.ScanGOG)
+            if (scanConfig.ScanGOG && _gogScanner != null)
             {
                 try
                 {
@@ -103,7 +105,7 @@ public class GameScannerService
                 catch (Exception ex) { DebugWindow.Log($"[Scanner] GOG scan error: {ex.Message}"); }
             }
 
-            if (scanConfig.ScanXbox)
+            if (scanConfig.ScanXbox && _xboxScanner != null)
             {
                 try
                 {
@@ -113,7 +115,7 @@ public class GameScannerService
                 catch (Exception ex) { DebugWindow.Log($"[Scanner] Xbox scan error: {ex.Message}"); }
             }
 
-            if (scanConfig.ScanEA)
+            if (scanConfig.ScanEA && _eaScanner != null)
             {
                 try
                 {
@@ -124,14 +126,17 @@ public class GameScannerService
             }
 
             // Always scan Battle.net (no config switch yet)
-            try
+            if (_battleNetScanner != null)
             {
-                DebugWindow.Log("[Scanner] Scanning Battle.net library...");
-                ProcessGames(_battleNetScanner.Scan());
+                try
+                {
+                    DebugWindow.Log("[Scanner] Scanning Battle.net library...");
+                    ProcessGames(_battleNetScanner.Scan());
+                }
+                catch (Exception ex) { DebugWindow.Log($"[Scanner] Battle.net scan error: {ex.Message}"); }
             }
-            catch (Exception ex) { DebugWindow.Log($"[Scanner] Battle.net scan error: {ex.Message}"); }
 
-            if (scanConfig.ScanUbisoft)
+            if (scanConfig.ScanUbisoft && _ubisoftScanner != null)
             {
                 try
                 {

@@ -68,26 +68,17 @@ namespace OptiscalerClient.Views
         public MainWindow()
         {
             InitializeComponent();
-            if (OperatingSystem.IsWindows())
-            {
-                _scannerService = new GameScannerService();
-            }
-            else
-            {
-                _scannerService = null!; // TODO: Implement Linux game scanner
-            }
+            _scannerService = new GameScannerService();
             _persistenceService = new GamePersistenceService();
             _componentService = new ComponentManagementService();
             _metadataService = new GameMetadataService(_componentService);
             App.ChangeLanguage(_componentService.Config.Language);
             if (OperatingSystem.IsWindows())
-            {
                 _gpuService = new WindowsGpuDetectionService();
-            }
+            else if (OperatingSystem.IsLinux())
+                _gpuService = new LinuxGpuDetectionService();
             else
-            {
-                _gpuService = null!; // TODO: Implement Linux GPU detection
-            }
+                _gpuService = null!;
             _games = new ObservableCollection<Game>();
 
             // Debug Window check
@@ -650,7 +641,7 @@ namespace OptiscalerClient.Views
             try
             {
                 List<Game> scanResults;
-                if (OperatingSystem.IsWindows() && _scannerService != null)
+                if (_scannerService != null)
                 {
                     scanResults = await _scannerService.ScanAllGamesAsync(_componentService.Config.ScanSources);
                 }
@@ -1006,7 +997,7 @@ namespace OptiscalerClient.Views
                     _txtGpuInfo!.Text = GetResourceString("TxtDefaultGpu", "Detecting GPU...");
                     gpu = await Task.Run(() =>
                     {
-                        if (OperatingSystem.IsWindows() && _gpuService != null)
+                        if (_gpuService != null)
                         {
                             try
                             {

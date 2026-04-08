@@ -55,6 +55,11 @@ TestResult.xml
 nunit-*.xml
 # Application logs and local errors
 error_log.txt
+crash.log
+
+# Runtime-generated update scripts
+update.bat
+update.sh
 
 # User-specific project settings
 *.csproj.user

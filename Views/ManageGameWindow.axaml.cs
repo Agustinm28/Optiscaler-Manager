@@ -77,13 +77,11 @@ namespace OptiscalerClient.Views
             }
 
             if (OperatingSystem.IsWindows())
-            {
                 _gpuService = new WindowsGpuDetectionService();
-            }
+            else if (OperatingSystem.IsLinux())
+                _gpuService = new LinuxGpuDetectionService();
             else
-            {
                 _gpuService = null!;
-            }
 
             SetupUI();
             
@@ -271,7 +269,7 @@ namespace OptiscalerClient.Views
 
             // Determine default selection
             bool isRdna4 = false;
-            if (OperatingSystem.IsWindows() && _gpuService != null)
+            if (_gpuService != null)
             {
                 try
                 {
@@ -436,8 +434,10 @@ namespace OptiscalerClient.Views
                     return;
                 }
 
-                // Robust way on Windows
-                Process.Start("explorer.exe", $"\"{dirToOpen}\"");
+                if (OperatingSystem.IsWindows())
+                    Process.Start("explorer.exe", $"\"{dirToOpen}\"");
+                else
+                    Process.Start(new ProcessStartInfo("xdg-open", dirToOpen) { UseShellExecute = false });
             }
             catch (Exception ex)
             {
@@ -935,7 +935,7 @@ namespace OptiscalerClient.Views
         private void ConfigureAdditionalComponents()
         {
             GpuInfo? gpu = null;
-            if (OperatingSystem.IsWindows() && _gpuService != null)
+            if (_gpuService != null)
             {
                 gpu = _gpuService.GetDiscreteGPU() ?? _gpuService.GetPrimaryGPU();
             }
