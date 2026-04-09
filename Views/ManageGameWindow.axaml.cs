@@ -21,12 +21,14 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using OptiscalerClient.Models;
 using System.Collections.ObjectModel;
 using Avalonia.Controls.Shapes;
+
 using Avalonia.Layout;
 using OptiscalerClient.Services;
 using Avalonia.Markup.Xaml;
@@ -335,6 +337,24 @@ namespace OptiscalerClient.Views
             cmb.SelectedIndex = targetIndex;
         }  // end PopulateExtrasComboBox
 
+        private void CheckIfAntiCheat()
+        {
+            const string anticheatName = "start_protected_game.exe";
+            // The CheckBox is inside a StackPanel; find the named Border directly.
+            var anticheatPanel = this.FindControl<Border>("EasyAntiCheat");
+
+            bool AntiCheatFounded = !string.IsNullOrEmpty(_game?.InstallPath) &&
+                         File.Exists(System.IO.Path.Combine(_game.InstallPath, anticheatName));
+
+            if (anticheatPanel != null)
+            {
+                // Make the surrounding panel visible when anti-cheat is detected
+                anticheatPanel.IsVisible = AntiCheatFounded;
+                anticheatPanel.IsEnabled = AntiCheatFounded;
+            }
+        }
+
+
         private void UpdateCheckboxStatesForVersion(ComboBox? cmb)
         {
             if (cmb == null) return;
@@ -392,13 +412,14 @@ namespace OptiscalerClient.Views
         {
             var txtGameName = this.FindControl<TextBlock>("TxtGameName");
             var txtInstallPath = this.FindControl<TextBlock>("TxtInstallPath");
-            
             if (txtGameName != null) txtGameName.Text = _game.Name;
             if (txtInstallPath != null) txtInstallPath.Text = _game.InstallPath;
 
             UpdateStatus();
             LoadComponents();
             ConfigureAdditionalComponents();
+            CheckIfAntiCheat();
+
         }
 
         private bool _isAnimatingClose = false;
@@ -468,6 +489,7 @@ namespace OptiscalerClient.Views
             var cmbInjectionMethod = this.FindControl<ComboBox>("CmbInjectionMethod");
             var chkInstallFakenvapi = this.FindControl<CheckBox>("ChkInstallFakenvapi");
             var chkInstallNukemFG   = this.FindControl<CheckBox>("ChkInstallNukemFG");
+            var Anticheat = this.FindControl<CheckBox>("EasyAntiCheat");
 
             // Read selected Extras (FSR4 INT8) version before any async work
             var selectedExtrasItem   = cmbExtrasVersion?.SelectedItem as ComboBoxItem;
@@ -510,7 +532,7 @@ namespace OptiscalerClient.Views
                     });
 
                     if (files == null || !files.Any()) return; // User cancelled
-                    overrideGameDir = System.IO.Path.GetDirectoryName(files[0].Path.LocalPath);
+                    overrideGameDir = System.IO.Path.GetDirectoryName(files[0].Path.LocalPath); 
                 }
 
                 if (btnInstall != null) btnInstall.IsEnabled = false;
@@ -553,7 +575,7 @@ namespace OptiscalerClient.Views
                     var msg = GetResourceString(
                         "TxtVersionUnavailable",
                         "Cannot install OptiScaler v{0} right now.\n\nCheck your internet connection and try again later.");
-                    await new ConfirmDialog(this, title, string.Format(msg, vex.Version)).ShowDialog<object>(this);
+                    await new ConfirmDialog(this, title, string.Format(msg, vex.Version)).ShowDialog<Object>(this);
                     return;
                 }
                 catch (Exception ex)
@@ -564,7 +586,7 @@ namespace OptiscalerClient.Views
                     });
                     var msgFormat = GetResourceString("TxtDownloadErrorPrefix", "Failed to download OptiScaler: {0}");
                     var title = GetResourceString("TxtError", "Error");
-                    await new ConfirmDialog(this, title, string.Format(msgFormat, ex.Message)).ShowDialog<object>(this);
+                    await new ConfirmDialog(this, title, string.Format(msgFormat, ex.Message)).ShowDialog<Object>(this);
                     return;
                 }
                 finally
@@ -734,7 +756,7 @@ namespace OptiscalerClient.Views
                 {
                     if (bdProgress != null) bdProgress.IsVisible = false;
                 });
-                await new ConfirmDialog(this, "Error", $"Installation failed: {ex.Message}").ShowDialog<object>(this);
+                await new ConfirmDialog(this, "Error", $"Installation failed: {ex.Message}"). ShowDialog<object>(this);
             }
         }
 
