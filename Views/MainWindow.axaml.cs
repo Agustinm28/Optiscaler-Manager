@@ -119,6 +119,10 @@ namespace OptiscalerClient.Views
             bool hadSavedGames = LoadSavedGames();
             _ = LoadGpuInfoAsync();
             _ = CheckUpdatesOnStartupAsync();
+
+            var linuxNotice = this.FindControl<Border>("LinuxNotice");
+            if (linuxNotice != null)
+                linuxNotice.IsVisible = OperatingSystem.IsLinux();
             
             UpdateAnimationsState(_componentService.Config.AnimationsEnabled);
 

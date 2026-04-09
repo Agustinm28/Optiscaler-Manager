@@ -3,6 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/Agustinm28/Optiscaler-Client?style=flat-square&color=8A2BE2)](https://github.com/Agustinm28/Optiscaler-Client/releases/tag/OptiscalerClient-1.0.3.1)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0--or--later-yellow.svg?style=flat-square)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square&logo=windows)](https://www.microsoft.com/windows)
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux%20(Steam)-E95420?style=flat-square&logo=linux)](https://www.linux.org)
 
 > **⚠️ Disclaimer:** This is **not** an official OptiScaler project. I am not affiliated with the OptiScaler team. This is a personal project developed without any commercial purpose. Anyone is free to try and use this software at their own risk.
 
@@ -28,7 +29,7 @@
 
 ## 🚀 Key Features
 
-*   **Auto-Scanner**: Deeply scans Steam, Epic Games, GOG, EA, Ubisoft, Battle.net, and Xbox libraries to find your games instantly.
+*   **Auto-Scanner**: Deeply scans Steam, Epic Games, GOG, EA, Ubisoft, Battle.net, and Xbox libraries to find your games instantly. On Linux, only Steam is scanned automatically.
 *   **One-Click Install**: Automatically downloads and configures the latest OptiScaler versions for specific titles.
 *   **Component Control**: Manage additional tools like **Fakenvapi** (for AMD/Intel GPUs), **Nukem's DLSSG-to-FSR3** mod, and **FSR 4 INT8** injection for non-RDNA 4 GPUs.
 *   **Cache Management**: Keep your storage clean by managing different downloaded mod versions.
@@ -52,7 +53,7 @@ Follow these simple steps to enhance your games:
 
 1.  Download the latest version from the [Releases](https://github.com/Agustinm28/Optiscaler-Client/releases) page.
 2.  Run `OptiscalerClient.exe`.
-3.  **Requirements**: Windows 10/11 is required. The app is self-contained, so no external .NET runtime installation is needed.
+3.  **Requirements**: Windows 10/11 is fully supported. Linux is supported with Steam-only game scanning. The app is self-contained, so no external .NET runtime installation is needed.
 
 ---
 

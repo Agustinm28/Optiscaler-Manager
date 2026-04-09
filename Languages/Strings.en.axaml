@@ -46,6 +46,8 @@
     <x:String x:Key="TxtRemoveGameTitle">Remove Game</x:String>
     <x:String x:Key="TxtRemoveGameConfirm">Are you sure you want to remove '{0}' from the list?</x:String>
 
+    <x:String x:Key="TxtLinuxSteamOnlyNotice">Running on Linux: only Steam games are detected automatically. Other platforms are not supported.</x:String>
+
     <!-- ManageCacheWindow -->
     <x:String x:Key="TxtManageCacheTitle">Manage Local Versions</x:String>
     <x:String x:Key="TxtLocalVersions">Local Versions</x:String>
