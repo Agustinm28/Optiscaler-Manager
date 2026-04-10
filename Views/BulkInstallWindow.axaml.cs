@@ -768,7 +768,7 @@ public partial class BulkInstallWindow : Window
                           (gpu.Name.Contains(" 9", StringComparison.OrdinalIgnoreCase) ||
                            gpu.Name.Contains("RX 9", StringComparison.OrdinalIgnoreCase));
             }
-            catch { /* silent */ }
+            catch (Exception ex) { DebugWindow.Log($"[BulkInstall] GPU detection failed: {ex.Message}"); }
         }
 
         // Determine target index

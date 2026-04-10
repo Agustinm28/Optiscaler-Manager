@@ -67,8 +67,9 @@ namespace OptiscalerClient.Services
 
                 return gpus.ToArray();
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[GPU] WMI detection failed: {ex.Message}");
                 return Array.Empty<GpuInfo>();
             }
         }
@@ -188,7 +189,7 @@ namespace OptiscalerClient.Services
         private ulong GetBestVideoMemoryBytes(ManagementObject gpuObject, string gpuName)
         {
             var adapterRamBytes = TryGetAdapterRam(gpuObject);
-            var registryBytes = TryGetVideoMemoryFromRegistry(gpuName);
+            var registryBytes = TryGetRegistryVram(gpuName);
 
             if (adapterRamBytes == 0)
                 return registryBytes;
@@ -209,13 +210,14 @@ namespace OptiscalerClient.Services
 
                 return Convert.ToUInt64(gpuObject["AdapterRAM"]);
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[GPU] WMI AdapterRAM read failed: {ex.Message}");
                 return 0;
             }
         }
 
-        private ulong TryGetVideoMemoryFromRegistry(string gpuName)
+        private ulong TryGetRegistryVram(string gpuName)
         {
             try
             {
@@ -251,9 +253,9 @@ namespace OptiscalerClient.Services
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore registry read errors and fallback to WMI value.
+                System.Diagnostics.Debug.WriteLine($"[GPU] Registry VRAM lookup failed: {ex.Message}");
             }
 
             return 0;
@@ -292,8 +294,9 @@ namespace OptiscalerClient.Services
                     _ => 0
                 };
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[GPU] Registry memory conversion failed: {ex.Message}");
                 return 0;
             }
         }

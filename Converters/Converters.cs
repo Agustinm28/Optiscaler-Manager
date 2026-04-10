@@ -52,8 +52,9 @@ public class BitmapValueConverter : IValueConverter
                     return new Bitmap(path);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[BitmapConverter] Failed to load image from '{path}': {ex.Message}");
                 return null;
             }
         }

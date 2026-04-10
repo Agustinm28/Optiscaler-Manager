@@ -78,7 +78,10 @@ public class OptiscalerManagementService
                 File.WriteAllText(_configFile, json);
             }
         }
-        catch { /* Ignore config load errors, use defaults */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[OptiscalerMgmt] Config load error, using defaults: {ex.Message}");
+        }
     }
 
     private void LoadLocalVersion()
@@ -94,7 +97,10 @@ public class OptiscalerManagementService
                     CurrentLocalVersion = v.GetString();
                 }
             }
-            catch { /* Corrupt config */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OptiscalerMgmt] Corrupt version file: {ex.Message}");
+            }
         }
     }
 

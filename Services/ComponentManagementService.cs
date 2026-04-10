@@ -164,7 +164,10 @@ namespace OptiscalerClient.Services
                                 var normalized = JsonSerializer.Serialize(_config, OptimizerContext.Default.AppConfiguration);
                                 File.WriteAllText(_configFile, normalized);
                             }
-                            catch { /* Ignore write errors */ }
+                            catch (Exception ex)
+                            {
+                                DebugWindow.Log($"[Config] Failed to save normalized config: {ex.Message}");
+                            }
                         }
                     }
                     // No AppData config exists yet — seed from the install-dir config.json.
@@ -182,13 +185,19 @@ namespace OptiscalerClient.Services
                             var normalized = JsonSerializer.Serialize(_config, OptimizerContext.Default.AppConfiguration);
                             File.WriteAllText(_configFile, normalized);
                         }
-                        catch { /* Ignore AppData write errors */ }
+                        catch (Exception ex)
+                        {
+                            DebugWindow.Log($"[Config] Failed to persist initial config: {ex.Message}");
+                        }
                     }
 
                     _sharedConfig = _config;
                 }
             }
-            catch { /* Use defaults */ }
+            catch (Exception ex)
+            {
+                DebugWindow.Log($"[Config] Failed to load configuration, using defaults: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -223,7 +232,10 @@ namespace OptiscalerClient.Services
                 if (target.ScanExclusions.Count == 0 && template.ScanExclusions.Count > 0)
                     target.ScanExclusions = template.ScanExclusions;
             }
-            catch { /* If template is missing or corrupt, continue with whatever we have */ }
+            catch (Exception ex)
+        {
+            DebugWindow.Log($"[Config] Failed to merge repos from template: {ex.Message}");
+        }
         }
 
         public void SaveConfiguration()
@@ -252,7 +264,7 @@ namespace OptiscalerClient.Services
                     var json = File.ReadAllText(_versionFile);
                     _localVersions = JsonSerializer.Deserialize(json, OptimizerContext.Default.ComponentVersions) ?? new();
                 }
-                catch { /* Corrupt file */ }
+                catch (Exception ex) { DebugWindow.Log($"[Config] Corrupt versions file: {ex.Message}"); }
             }
         }
 
@@ -263,7 +275,7 @@ namespace OptiscalerClient.Services
                 var json = JsonSerializer.Serialize(_localVersions, OptimizerContext.Default.ComponentVersions);
                 File.WriteAllText(_versionFile, json);
             }
-            catch { /* Ignore save errors */ }
+            catch (Exception ex) { DebugWindow.Log($"[Config] Failed to save local versions: {ex.Message}"); }
         }
 
         private void LoadReleasesCache()
@@ -779,7 +791,7 @@ namespace OptiscalerClient.Services
                             }
                         }
                     }
-                    catch { /* ignore, fallback to default behavior */ }
+                    catch (Exception ex) { DebugWindow.Log($"[FetchVersions] Failed to resolve latest tag: {ex.Message}"); }
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
@@ -1072,7 +1084,7 @@ namespace OptiscalerClient.Services
                         }
                         if (!string.IsNullOrEmpty(downloadUrl)) break;
                     }
-                    catch { /* try next */ }
+                    catch (Exception ex) { DebugWindow.Log($"[ExtrasDownload] API lookup attempt failed: {ex.Message}"); }
                 }
             }
 
@@ -1207,7 +1219,7 @@ namespace OptiscalerClient.Services
                         }
                     }
                 }
-                catch { /* ignore — fall back to first-in-list */ }
+                catch (Exception ex) { DebugWindow.Log($"[OptiPatcherVersions] Failed to resolve latest tag: {ex.Message}"); }
 
                 var url = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases?per_page=30";
                 var response = await GetWithRetryAsync(_httpClient, url);
@@ -1345,7 +1357,7 @@ namespace OptiscalerClient.Services
                         }
                         if (!string.IsNullOrEmpty(downloadUrl)) break;
                     }
-                    catch { /* try next */ }
+                    catch (Exception ex) { DebugWindow.Log($"[OptiPatcherDownload] API lookup attempt failed: {ex.Message}"); }
                 }
             }
 

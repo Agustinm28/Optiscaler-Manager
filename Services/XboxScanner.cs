@@ -40,13 +40,19 @@ public class XboxScanner : IGameScanner
                                     });
                                 }
                             }
-                            catch { /* Ignore inner permission issues */ }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[Xbox] Error scanning game folder '{dir}': {ex.Message}");
+                            }
                         }
                     }
                 }
             }
         }
-        catch { /* Ignore overall drive enumeration errors */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Xbox] Error enumerating drives: {ex.Message}");
+        }
 
         return games;
     }

@@ -182,60 +182,64 @@ namespace OptiscalerClient.Views
 
         private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
-            _gameListScrollViewer = this.FindControl<ScrollViewer>("GameListScrollViewer");
-            _gameGridScrollViewer = this.FindControl<ScrollViewer>("GameGridScrollViewer");
-            _lstGames = this.FindControl<ListBox>("LstGames");
-            _lstGamesGrid = this.FindControl<ListBox>("LstGamesGrid");
-            _txtStatus = this.FindControl<TextBlock>("TxtStatus");
-            _btnScan = this.FindControl<Button>("BtnScan");
-            _btnViewList = this.FindControl<Button>("BtnViewList");
-            _btnViewGrid = this.FindControl<Button>("BtnViewGrid");
-            _btnEditMode = this.FindControl<Button>("BtnEditMode");
-            _editModeBanner = this.FindControl<Border>("EditModeBanner");
-            _dragGhostCanvas = this.FindControl<Canvas>("DragGhostCanvas");
-            _overlayScanning = this.FindControl<Grid>("OverlayScanning");
-            _overlayLoading = this.FindControl<Grid>("OverlayLoading");
-            _txtSearch = this.FindControl<TextBox>("TxtSearch");
-            _txtSearchPlaceholder = this.FindControl<TextBlock>("TxtSearchPlaceholder");
-            _txtGpuInfo = this.FindControl<TextBlock>("TxtGpuInfo");
-
-            if (_lstGames != null) _lstGames.ItemsSource = _games;
-            if (_lstGamesGrid != null) _lstGamesGrid.ItemsSource = _games;
-
-            _isGridView = _componentService.Config.PreferGridView;
-            ApplyGameViewMode();
-
-            bool hadSavedGames = LoadSavedGames(_windowLifetimeCts.Token);
-            _ = LoadGpuInfoAsync();
-            _ = ScheduleStartupUpdatesAsync(_windowLifetimeCts.Token);
-
-            UpdateAnimationsState(_componentService.Config.AnimationsEnabled);
-
-            if (!hadSavedGames)
+            try
             {
-                if (_componentService.Config.HasCompletedInitialScan)
+                _gameListScrollViewer = this.FindControl<ScrollViewer>("GameListScrollViewer");
+                _gameGridScrollViewer = this.FindControl<ScrollViewer>("GameGridScrollViewer");
+                _lstGames = this.FindControl<ListBox>("LstGames");
+                _lstGamesGrid = this.FindControl<ListBox>("LstGamesGrid");
+                _txtStatus = this.FindControl<TextBlock>("TxtStatus");
+                _btnScan = this.FindControl<Button>("BtnScan");
+                _btnViewList = this.FindControl<Button>("BtnViewList");
+                _btnViewGrid = this.FindControl<Button>("BtnViewGrid");
+                _btnEditMode = this.FindControl<Button>("BtnEditMode");
+                _editModeBanner = this.FindControl<Border>("EditModeBanner");
+                _dragGhostCanvas = this.FindControl<Canvas>("DragGhostCanvas");
+                _overlayScanning = this.FindControl<Grid>("OverlayScanning");
+                _overlayLoading = this.FindControl<Grid>("OverlayLoading");
+                _txtSearch = this.FindControl<TextBox>("TxtSearch");
+                _txtSearchPlaceholder = this.FindControl<TextBlock>("TxtSearchPlaceholder");
+                _txtGpuInfo = this.FindControl<TextBlock>("TxtGpuInfo");
+
+                if (_lstGames != null) _lstGames.ItemsSource = _games;
+                if (_lstGamesGrid != null) _lstGamesGrid.ItemsSource = _games;
+
+                _isGridView = _componentService.Config.PreferGridView;
+                ApplyGameViewMode();
+
+                bool hadSavedGames = LoadSavedGames(_windowLifetimeCts.Token);
+                _ = LoadGpuInfoAsync();
+                _ = ScheduleStartupUpdatesAsync(_windowLifetimeCts.Token);
+
+                UpdateAnimationsState(_componentService.Config.AnimationsEnabled);
+
+                if (!hadSavedGames)
                 {
-                    _componentService.Config.HasCompletedInitialScan = false;
-                    _componentService.SaveConfiguration();
+                    if (_componentService.Config.HasCompletedInitialScan)
+                    {
+                        _componentService.Config.HasCompletedInitialScan = false;
+                        _componentService.SaveConfiguration();
+                    }
+
+                    var prompt = new InitialScanPromptWindow(this, _componentService, isFirstTime: true);
+                    var options = await prompt.ShowDialog<InitialScanOptions?>(this);
+                    if (options != null)
+                    {
+                        _componentService.Config.ScanSources = options.ScanSources;
+                        _componentService.Config.ScanDriveRoots = options.DriveRoots;
+                        _componentService.Config.HasCompletedInitialScan = true;
+                        _componentService.SaveConfiguration();
+                        await RunScanAsync();
+                    }
+
+                    // Never auto-scan on startup when there are no cached games.
+                    return;
                 }
 
-                var prompt = new InitialScanPromptWindow(this, _componentService, isFirstTime: true);
-                var options = await prompt.ShowDialog<InitialScanOptions?>(this);
-                if (options != null)
-                {
-                    _componentService.Config.ScanSources = options.ScanSources;
-                    _componentService.Config.ScanDriveRoots = options.DriveRoots;
-                    _componentService.Config.HasCompletedInitialScan = true;
-                    _componentService.SaveConfiguration();
-                    await RunScanAsync();
-                }
-
-                // Never auto-scan on startup when there are no cached games.
-                return;
+                // If there are cached games, do not auto-scan on startup.
+                // Scans should only run when the user explicitly clicks Scan Games.
             }
-
-            // If there are cached games, do not auto-scan on startup.
-            // Scans should only run when the user explicitly clicks Scan Games.
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Loaded handler failed: {ex.Message}"); }
         }
 
         private void MainWindow_SizeChanged(object? sender, SizeChangedEventArgs e)
@@ -736,55 +740,63 @@ namespace OptiscalerClient.Views
 
         private async void OnDragPointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-            // Unsubscribe and release capture
-            if (_dragCaptureControl != null)
+            try
             {
-                _dragCaptureControl.RemoveHandler(InputElement.PointerMovedEvent,   OnDragPointerMoved);
-                _dragCaptureControl.RemoveHandler(InputElement.PointerReleasedEvent, OnDragPointerReleased);
-                e.Pointer.Capture(null);
-            }
+                // Unsubscribe and release capture
+                if (_dragCaptureControl != null)
+                {
+                    _dragCaptureControl.RemoveHandler(InputElement.PointerMovedEvent,   OnDragPointerMoved);
+                    _dragCaptureControl.RemoveHandler(InputElement.PointerReleasedEvent, OnDragPointerReleased);
+                    e.Pointer.Capture(null);
+                }
 
-            if (!_isDragging || _draggedGame == null)
+                if (!_isDragging || _draggedGame == null)
+                {
+                    CleanupDragState();
+                    return;
+                }
+
+                int srcIndex = _allGames.IndexOf(_draggedGame);
+                int targetIndex = _currentDropIndex;
+                var dragged = _draggedGame;
+
+                // Fade out ghost
+                if (_dragGhost != null)
+                {
+                    _dragGhost.Transitions = new Avalonia.Animation.Transitions
+                    {
+                        new Avalonia.Animation.DoubleTransition
+                        {
+                            Property = Visual.OpacityProperty,
+                            Duration = TimeSpan.FromMilliseconds(140),
+                            Easing   = new Avalonia.Animation.Easings.CubicEaseIn()
+                        }
+                    };
+                    _dragGhost.Opacity = 0;
+                    await Task.Delay(140);
+                }
+
+                CleanupDragState();
+
+                // Execute reorder
+                bool noOp = targetIndex < 0 || srcIndex < 0
+                            || targetIndex == srcIndex || targetIndex == srcIndex + 1;
+                if (!noOp)
+                {
+                    _allGames.RemoveAt(srcIndex);
+                    int insertAt = Math.Clamp(targetIndex > srcIndex ? targetIndex - 1 : targetIndex,
+                                              0, _allGames.Count);
+                    _allGames.Insert(insertAt, dragged);
+                }
+
+                ApplyFilter(_txtSearch?.Text);
+                Dispatcher.UIThread.Post(() => ApplyEditModeToCards(true), DispatcherPriority.Loaded);
+            }
+            catch (Exception ex)
             {
                 CleanupDragState();
-                return;
+                DebugWindow.Log($"[MainWindow] Drag/drop failed: {ex.Message}");
             }
-
-            int srcIndex = _allGames.IndexOf(_draggedGame);
-            int targetIndex = _currentDropIndex;
-            var dragged = _draggedGame;
-
-            // Fade out ghost
-            if (_dragGhost != null)
-            {
-                _dragGhost.Transitions = new Avalonia.Animation.Transitions
-                {
-                    new Avalonia.Animation.DoubleTransition
-                    {
-                        Property = Visual.OpacityProperty,
-                        Duration = TimeSpan.FromMilliseconds(140),
-                        Easing   = new Avalonia.Animation.Easings.CubicEaseIn()
-                    }
-                };
-                _dragGhost.Opacity = 0;
-                await Task.Delay(140);
-            }
-
-            CleanupDragState();
-
-            // Execute reorder
-            bool noOp = targetIndex < 0 || srcIndex < 0
-                        || targetIndex == srcIndex || targetIndex == srcIndex + 1;
-            if (!noOp)
-            {
-                _allGames.RemoveAt(srcIndex);
-                int insertAt = Math.Clamp(targetIndex > srcIndex ? targetIndex - 1 : targetIndex,
-                                          0, _allGames.Count);
-                _allGames.Insert(insertAt, dragged);
-            }
-
-            ApplyFilter(_txtSearch?.Text);
-            Dispatcher.UIThread.Post(() => ApplyEditModeToCards(true), DispatcherPriority.Loaded);
         }
 
         private void StartDragVisuals()
@@ -1181,8 +1193,12 @@ namespace OptiscalerClient.Views
 
         private async void BtnGuide_Click2(object? sender, RoutedEventArgs e)
         {
-            var guide = new GuideWindow(this);
-            await guide.ShowDialog(this);
+            try
+            {
+                var guide = new GuideWindow(this);
+                await guide.ShowDialog(this);
+            }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Guide dialog failed: {ex.Message}"); }
         }
 
         private static readonly string[] _viewNames = { "ViewGames", "ViewProfiles", "ViewProfileEditor", "ViewSettings", "ViewHelp" };
@@ -1290,8 +1306,12 @@ namespace OptiscalerClient.Views
 
         private async void BtnManageCache_Click(object sender, RoutedEventArgs e)
         {
-            var cacheWindow = new CacheManagementWindow(this);
-            await cacheWindow.ShowDialog<object>(this);
+            try
+            {
+                var cacheWindow = new CacheManagementWindow(this);
+                await cacheWindow.ShowDialog<object>(this);
+            }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Cache management dialog failed: {ex.Message}"); }
         }
 
         private async void BtnClearAppCache_Click(object sender, RoutedEventArgs e)
@@ -1347,8 +1367,12 @@ namespace OptiscalerClient.Views
 
         private async void BtnManageScanSources_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new ManageScanSourcesWindow(this, _componentService);
-            await dialog.ShowDialog<bool?>(this);
+            try
+            {
+                var dialog = new ManageScanSourcesWindow(this, _componentService);
+                await dialog.ShowDialog<bool?>(this);
+            }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Scan sources dialog failed: {ex.Message}"); }
         }
 
         // ── Profiles View ─────────────────────────────────────────────────────────
@@ -2003,25 +2027,29 @@ namespace OptiscalerClient.Views
 
         private async void EditorNavButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is string sectionName && _editorSectionBorders.TryGetValue(sectionName, out var sectionBorder))
+            try
             {
-                var scrollViewer = this.FindControl<ScrollViewer>("SettingsScrollViewerEd");
-                if (scrollViewer != null && _editorSectionsWrap != null)
+                if (sender is Button button && button.Tag is string sectionName && _editorSectionBorders.TryGetValue(sectionName, out var sectionBorder))
                 {
-                    await Task.Delay(10);
-                    scrollViewer.InvalidateMeasure();
-                    scrollViewer.InvalidateArrange();
-                    _editorSectionsWrap.InvalidateMeasure();
-                    _editorSectionsWrap.InvalidateArrange();
-                    await Task.Delay(50);
-                    var transform = sectionBorder.TransformToVisual(_editorSectionsWrap);
-                    if (transform.HasValue)
+                    var scrollViewer = this.FindControl<ScrollViewer>("SettingsScrollViewerEd");
+                    if (scrollViewer != null && _editorSectionsWrap != null)
                     {
-                        var position = transform.Value.Transform(new Point(0, 0));
-                        scrollViewer.Offset = new Vector(0, Math.Max(0, position.Y - 20));
+                        await Task.Delay(10);
+                        scrollViewer.InvalidateMeasure();
+                        scrollViewer.InvalidateArrange();
+                        _editorSectionsWrap.InvalidateMeasure();
+                        _editorSectionsWrap.InvalidateArrange();
+                        await Task.Delay(50);
+                        var transform = sectionBorder.TransformToVisual(_editorSectionsWrap);
+                        if (transform.HasValue)
+                        {
+                            var position = transform.Value.Transform(new Point(0, 0));
+                            scrollViewer.Offset = new Vector(0, Math.Max(0, position.Y - 20));
+                        }
                     }
                 }
             }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Editor nav scroll failed: {ex.Message}"); }
         }
 
         private void TxtSettingsSearchEd_TextChanged(object? sender, TextChangedEventArgs e)
@@ -2154,7 +2182,7 @@ namespace OptiscalerClient.Views
                     }
                 }
             }
-            catch { /* ignore sync failures */ }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Profile sync failed: {ex.Message}"); }
         }
 
         private void UpdateEditorModeButtons()
@@ -2347,8 +2375,12 @@ namespace OptiscalerClient.Views
 
         private async void BtnManageDefaultVersions_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new ManageDefaultVersionsWindow(this, _componentService);
-            await dialog.ShowDialog<bool?>(this);
+            try
+            {
+                var dialog = new ManageDefaultVersionsWindow(this, _componentService);
+                await dialog.ShowDialog<bool?>(this);
+            }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Default versions dialog failed: {ex.Message}"); }
         }
 
         private void PopulateDefaultGpuComboBox()
@@ -2413,8 +2445,12 @@ namespace OptiscalerClient.Views
 
         private async void BtnSteamGridApiGuide_Click(object sender, RoutedEventArgs e)
         {
-            var guideWindow = new SteamGridApiGuideWindow(this);
-            await guideWindow.ShowDialog(this);
+            try
+            {
+                var guideWindow = new SteamGridApiGuideWindow(this);
+                await guideWindow.ShowDialog(this);
+            }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] SteamGrid guide dialog failed: {ex.Message}"); }
         }
 
         private void SettingsBackground_PointerPressed(object? sender, PointerPressedEventArgs e)
@@ -2533,7 +2569,7 @@ namespace OptiscalerClient.Views
                 if (_txtStatus != null) _txtStatus.Text = GetResourceString("TxtReady", "Ready");
                 throw; // bubble up to ScheduleStartupUpdatesAsync
             }
-            catch { }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] CheckForUpdatesAsync failed: {ex.Message}"); }
             finally
             {
                 ComponentStatusChanged();
@@ -3855,7 +3891,7 @@ namespace OptiscalerClient.Views
                         if (cancellationToken.IsCancellationRequested) return;
 
                         try { _analyzerService.AnalyzeGame(game); }
-                        catch { }
+                        catch (Exception ex) { DebugWindow.Log($"[MainWindow] AnalyzeGame failed for {game.Name}: {ex.Message}"); }
 
                         if (string.IsNullOrEmpty(game.CoverImageUrl) || game.CoverImageUrl.StartsWith("http"))
                         {
@@ -3912,23 +3948,27 @@ namespace OptiscalerClient.Views
 
         private async void BtnScan_Click(object sender, RoutedEventArgs e)
         {
-            var prompt = new InitialScanPromptWindow(this, _componentService, isFirstTime: false);
-            var options = await prompt.ShowDialog<InitialScanOptions?>(this);
-            if (options == null)
-                return;
-
-            if (options.RefreshCoversOnly)
+            try
             {
-                await RunRefreshCoversAsync();
-                return;
+                var prompt = new InitialScanPromptWindow(this, _componentService, isFirstTime: false);
+                var options = await prompt.ShowDialog<InitialScanOptions?>(this);
+                if (options == null)
+                    return;
+
+                if (options.RefreshCoversOnly)
+                {
+                    await RunRefreshCoversAsync();
+                    return;
+                }
+
+                _componentService.Config.ScanSources = options.ScanSources;
+                _componentService.Config.ScanDriveRoots = options.DriveRoots;
+                _componentService.Config.HasCompletedInitialScan = true;
+                _componentService.SaveConfiguration();
+
+                await RunScanAsync();
             }
-
-            _componentService.Config.ScanSources = options.ScanSources;
-            _componentService.Config.ScanDriveRoots = options.DriveRoots;
-            _componentService.Config.HasCompletedInitialScan = true;
-            _componentService.SaveConfiguration();
-
-            await RunScanAsync();
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Scan failed: {ex.Message}"); }
         }
 
         private async Task RunRefreshCoversAsync()
@@ -4065,22 +4105,22 @@ namespace OptiscalerClient.Views
 
         private async void BtnAddManual_Click(object sender, RoutedEventArgs e)
         {
-            var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            try
             {
-                Title = GetResourceString("TxtSelectExe", "Select Game Executable"),
-                AllowMultiple = false,
-                FileTypeFilter = new List<FilePickerFileType>
+                var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    new FilePickerFileType("Executable Files (*.exe)")
+                    Title = GetResourceString("TxtSelectExe", "Select Game Executable"),
+                    AllowMultiple = false,
+                    FileTypeFilter = new List<FilePickerFileType>
                     {
-                        Patterns = new List<string> { "*.exe" }
+                        new FilePickerFileType("Executable Files (*.exe)")
+                        {
+                            Patterns = new List<string> { "*.exe" }
+                        }
                     }
-                }
-            });
+                });
 
-            if (files != null && files.Count > 0)
-            {
-                try
+                if (files != null && files.Count > 0)
                 {
                     var filePath = files[0].Path.LocalPath;
                     var fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
@@ -4106,50 +4146,61 @@ namespace OptiscalerClient.Views
 
                     if (_txtStatus != null) _txtStatus.Text = string.Format(GetResourceString("TxtAddedRefFormat", "Added {0} manually."), newGame.Name);
                 }
-                catch (Exception ex)
-                {
-                    await new ConfirmDialog(this, GetResourceString("TxtError", "Error"), ex.Message, isAlert: true).ShowDialog<object>(this);
-                }
+            }
+            catch (Exception ex)
+            {
+                await new ConfirmDialog(this, GetResourceString("TxtError", "Error"), ex.Message, isAlert: true).ShowDialog<object>(this);
             }
         }
 
         private async void BtnBulkInstall_Click(object sender, RoutedEventArgs e)
         {
-            if (_games.Count == 0)
+            try
             {
-                await new ConfirmDialog(
-                    this,
-                    GetResourceString("TxtNoGames", "No Games"),
-                    GetResourceString("TxtNoGamesFound", "No games found. Please scan for games first."),
-                    isAlert: true
-                ).ShowDialog<bool>(this);
-                return;
+                if (_games.Count == 0)
+                {
+                    await new ConfirmDialog(
+                        this,
+                        GetResourceString("TxtNoGames", "No Games"),
+                        GetResourceString("TxtNoGamesFound", "No games found. Please scan for games first."),
+                        isAlert: true
+                    ).ShowDialog<bool>(this);
+                    return;
+                }
+
+                var installService = new GameInstallationService();
+                var bulkWindow = new BulkInstallWindow(_componentService, installService, _games.ToList(), owner: this);
+                await bulkWindow.ShowDialog<object>(this);
+
+                // Persist state and refresh game list after bulk install
+                _persistenceService.SaveGames(_games);
+                GameAnalyzerService.FlushCacheToDisk();
+                RefreshGameLists();
             }
-
-            var installService = new GameInstallationService();
-            var bulkWindow = new BulkInstallWindow(_componentService, installService, _games.ToList(), owner: this);
-            await bulkWindow.ShowDialog<object>(this);
-
-            // Refresh game list after bulk install
-            RefreshGameLists();
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Bulk install dialog failed: {ex.Message}"); }
         }
 
         private async void BtnManage_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is Game selectedGame)
+            try
             {
-                var manageWindow = new ManageGameWindow(this, selectedGame);
-                await manageWindow.ShowDialog<object>(this);
-
-                var index = _games.IndexOf(selectedGame);
-                if (index != -1)
+                if (sender is Button button && button.DataContext is Game selectedGame)
                 {
-                    _games[index] = selectedGame;
-                    _persistenceService.SaveGames(_games);
-                }
+                    var manageWindow = new ManageGameWindow(this, selectedGame);
+                    await manageWindow.ShowDialog<object>(this);
 
-                RefreshGameLists();
+                    var index = _games.IndexOf(selectedGame);
+                    if (index != -1)
+                    {
+                        _games[index] = selectedGame;
+                        _persistenceService.SaveGames(_games);
+                        GameAnalyzerService.FlushCacheToDisk();
+                    }
+
+                    RefreshGameLists();
+                }
             }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Manage game dialog failed: {ex.Message}"); }
         }
 
         private void BtnFastInstall_Loaded(object? sender, RoutedEventArgs e)
@@ -4318,6 +4369,7 @@ namespace OptiscalerClient.Views
                         RefreshGameLists();
 
                         _persistenceService.SaveGames(_games);
+                        GameAnalyzerService.FlushCacheToDisk();
                     }
                     else
                     {
@@ -4573,21 +4625,25 @@ namespace OptiscalerClient.Views
 
         private async void BtnRemoveGame_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is Game game)
+            try
             {
-                var title = GetResourceString("TxtRemoveGameTitle", "Remove Game");
-                var confirmFormat = GetResourceString("TxtRemoveGameConfirm", "Are you sure you want to remove '{0}' from the list?");
-                var message = string.Format(confirmFormat, game.Name);
-
-                var dialog = new ConfirmDialog(this, title, message, false);
-                var result = await dialog.ShowDialog<bool>(this); // true if confirmed
-
-                if (result)
+                if (sender is Button button && button.DataContext is Game game)
                 {
-                    _games.Remove(game);
-                    _persistenceService.SaveGames(_games);
+                    var title = GetResourceString("TxtRemoveGameTitle", "Remove Game");
+                    var confirmFormat = GetResourceString("TxtRemoveGameConfirm", "Are you sure you want to remove '{0}' from the list?");
+                    var message = string.Format(confirmFormat, game.Name);
+
+                    var dialog = new ConfirmDialog(this, title, message, false);
+                    var result = await dialog.ShowDialog<bool>(this); // true if confirmed
+
+                    if (result)
+                    {
+                        _games.Remove(game);
+                        _persistenceService.SaveGames(_games);
+                    }
                 }
             }
+            catch (Exception ex) { DebugWindow.Log($"[MainWindow] Remove game failed: {ex.Message}"); }
         }
 
         private async Task LoadGpuInfoAsync()
