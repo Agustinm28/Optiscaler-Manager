@@ -287,10 +287,12 @@ namespace OptiscalerClient.Services
                     Directory.Delete(innerDir, true);
                 }
 
-                // Create the batch script
-                var basePath = AppContext.BaseDirectory.TrimEnd('\\');
-                var batPath = Path.Combine(basePath, "update.bat");
-                var batContent = $@"@echo off
+                // Create the update script (platform-specific)
+                if (OperatingSystem.IsWindows())
+                {
+                    var basePath = AppContext.BaseDirectory.TrimEnd('\\');
+                    var batPath = Path.Combine(basePath, "update.bat");
+                    var batContent = $@"@echo off
 echo Updating Optiscaler Client...
 timeout /t 2 /nobreak > nul
 cd /d ""{basePath}""
@@ -299,7 +301,24 @@ rmdir /s /q ""{updateFolder}""
 start """" ""OptiscalerClient.exe""
 del ""%~f0""
 ";
-                File.WriteAllText(batPath, batContent);
+                    File.WriteAllText(batPath, batContent);
+                }
+                else
+                {
+                    var basePath = AppContext.BaseDirectory.TrimEnd('/');
+                    var shPath = Path.Combine(basePath, "update.sh");
+                    var shContent = $@"#!/bin/sh
+echo 'Updating Optiscaler Client...'
+sleep 2
+cp -rf ""{updateFolder}/""* ""{basePath}/""
+rm -rf ""{updateFolder}""
+""{basePath}/OptiscalerClient"" &
+rm -- ""$0""
+";
+                    File.WriteAllText(shPath, shContent);
+                    File.SetUnixFileMode(shPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+                        | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+                }
             }
             finally
             {
@@ -310,18 +329,35 @@ del ""%~f0""
 
         public void FinalizeAndRestart()
         {
-            var batPath = Path.Combine(AppContext.BaseDirectory, "update.bat");
-            if (File.Exists(batPath))
+            string scriptPath;
+            ProcessStartInfo psi;
+
+            if (OperatingSystem.IsWindows())
             {
-                var psi = new ProcessStartInfo
+                scriptPath = Path.Combine(AppContext.BaseDirectory, "update.bat");
+                if (!File.Exists(scriptPath)) return;
+                psi = new ProcessStartInfo
                 {
-                    FileName = batPath,
+                    FileName = scriptPath,
                     UseShellExecute = true,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
-                Process.Start(psi);
             }
+            else
+            {
+                scriptPath = Path.Combine(AppContext.BaseDirectory, "update.sh");
+                if (!File.Exists(scriptPath)) return;
+                psi = new ProcessStartInfo
+                {
+                    FileName = "/bin/sh",
+                    Arguments = scriptPath,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+            }
+
+            Process.Start(psi);
             // Avalonia UI TODO: System.Windows.Application.Current.Shutdown();
         }
     }

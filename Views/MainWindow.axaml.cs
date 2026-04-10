@@ -117,26 +117,17 @@ namespace OptiscalerClient.Views
         public MainWindow()
         {
             InitializeComponent();
-            if (OperatingSystem.IsWindows())
-            {
-                _scannerService = new GameScannerService();
-            }
-            else
-            {
-                _scannerService = null!; // TODO: Implement Linux game scanner
-            }
+            _scannerService = new GameScannerService();
             _persistenceService = new GamePersistenceService();
             _componentService = new ComponentManagementService();
             _metadataService = new GameMetadataService(_componentService);
             App.ChangeLanguage(_componentService.Config.Language);
             if (OperatingSystem.IsWindows())
-            {
                 _gpuService = new WindowsGpuDetectionService();
-            }
+            else if (OperatingSystem.IsLinux())
+                _gpuService = new LinuxGpuDetectionService();
             else
-            {
-                _gpuService = null!; // TODO: Implement Linux GPU detection
-            }
+                _gpuService = null!;
             _games = new ObservableCollection<Game>();
 
             // Debug Window check
@@ -210,6 +201,10 @@ namespace OptiscalerClient.Views
                 bool hadSavedGames = LoadSavedGames(_windowLifetimeCts.Token);
                 _ = LoadGpuInfoAsync();
                 _ = ScheduleStartupUpdatesAsync(_windowLifetimeCts.Token);
+
+                var linuxNotice = this.FindControl<Border>("LinuxNotice");
+                if (linuxNotice != null)
+                    linuxNotice.IsVisible = OperatingSystem.IsLinux();
 
                 UpdateAnimationsState(_componentService.Config.AnimationsEnabled);
 
@@ -2394,7 +2389,7 @@ namespace OptiscalerClient.Views
             var autoItem = new ComboBoxItem { Content = "Auto (Recommended)", Tag = "auto" };
             cmb.Items.Add(autoItem);
 
-            if (OperatingSystem.IsWindows() && _gpuService != null)
+            if (_gpuService != null)
             {
                 var gpus = _gpuService.DetectGPUs();
                 foreach (var gpu in gpus)
@@ -4037,7 +4032,7 @@ namespace OptiscalerClient.Views
             try
             {
                 List<Game> scanResults;
-                if (OperatingSystem.IsWindows() && _scannerService != null)
+                if (_scannerService != null)
                 {
                     var allowedDrives = _componentService.Config.ScanDriveRoots;
                     scanResults = await _scannerService.ScanAllGamesAsync(
@@ -4717,7 +4712,7 @@ namespace OptiscalerClient.Views
                     _txtGpuInfo!.Text = GetResourceString("TxtDefaultGpu", "Detecting GPU...");
                     gpu = await Task.Run(() =>
                     {
-                        if (OperatingSystem.IsWindows() && _gpuService != null)
+                        if (_gpuService != null)
                         {
                             try
                             {

@@ -192,6 +192,7 @@
                  <Grid.RowDefinitions>
                      <RowDefinition Height="Auto"/>
                      <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
                      <RowDefinition Height="*"/>
                      <RowDefinition Height="Auto"/>
                  </Grid.RowDefinitions>
@@ -396,9 +397,31 @@
                      </Grid>
                  </Border>
 
+                 <!-- Linux Steam-only notice -->
+                 <Border Name="LinuxNotice"
+                         Grid.Row="2"
+                         IsVisible="False"
+                         Background="#1A3B6B"
+                         BorderBrush="#2E5FA3"
+                         BorderThickness="0,0,0,1"
+                         Padding="24,10">
+                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                         <TextBlock Text="&#xE783;"
+                                    FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"
+                                    FontSize="16"
+                                    Foreground="#90B8F8"
+                                    VerticalAlignment="Center"/>
+                         <TextBlock Text="{DynamicResource TxtLinuxSteamOnlyNotice}"
+                                    Foreground="#C8DEFF"
+                                    FontSize="13"
+                                    VerticalAlignment="Center"
+                                    TextWrapping="Wrap"/>
+                     </StackPanel>
+                 </Border>
+
                  <!-- Game List -->
                  <ScrollViewer Name="GameListScrollViewer"
-                               Grid.Row="2"
+                               Grid.Row="3"
                                VerticalScrollBarVisibility="Auto"
                                HorizontalScrollBarVisibility="Disabled"
                                PointerWheelChanged="GameListScrollViewer_PointerWheelChanged">
@@ -707,7 +730,7 @@
 
                  <!-- Game Grid -->
                  <ScrollViewer Name="GameGridScrollViewer"
-                               Grid.Row="2"
+                               Grid.Row="3"
                                VerticalScrollBarVisibility="Auto"
                                HorizontalScrollBarVisibility="Disabled"
                                PointerWheelChanged="GameListScrollViewer_PointerWheelChanged"
@@ -994,7 +1017,7 @@
                  </ScrollViewer>
 
                  <!-- Status Bar -->
-                 <Border Grid.Row="3"
+                 <Border Grid.Row="4"
                          Background="{StaticResource BrBgDeep}"
                          BorderBrush="{StaticResource BrBorderSubtle}"
                          BorderThickness="0,1,0,0"
@@ -1007,7 +1030,7 @@
 
                  <!-- Ghost canvas: floating drag visuals sit here, above all content -->
                  <Canvas Name="DragGhostCanvas"
-                         Grid.Row="0" Grid.RowSpan="4"
+                         Grid.Row="0" Grid.RowSpan="5"
                          IsHitTestVisible="False"
                          ZIndex="100"/>
 

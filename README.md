@@ -3,6 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/Agustinm28/Optiscaler-Client?style=flat-square&color=8A2BE2)](https://github.com/Agustinm28/Optiscaler-Client/releases/tag/OptiscalerClient-1.0.4)
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0--or--later-yellow.svg?style=flat-square)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square&logo=windows)](https://www.microsoft.com/windows)
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux%20(Steam)-E95420?style=flat-square&logo=linux)](https://www.linux.org)
 
 > **⚠️ Disclaimer:** This is **not** an official OptiScaler project. I am not affiliated with the OptiScaler team. This is a personal project developed without any commercial purpose. Anyone is free to try and use this software at their own risk.
 
@@ -30,7 +31,7 @@
 
 ### Game Discovery
 
-- **Multi-Platform Auto-Scanner** — Scans **Steam, Epic Games, GOG, EA, Ubisoft, Battle.net, and Xbox/Microsoft Store** libraries in parallel.
+- **Multi-Platform Auto-Scanner** — Scans **Steam, Epic Games, GOG, EA, Ubisoft, Battle.net, and Xbox/Microsoft Store** libraries in parallel. On Linux, only Steam is scanned automatically.
 - **Custom Folder Scanning** — Add any folder as a scan source for DRM-free or standalone games.
 - **Manual Game Addition** — Add games by selecting the executable directly.
 - **Drive Root Filtering** — Limit scanning to specific drives.
@@ -131,7 +132,7 @@ Full interface translation in **14 languages**:
 
 1. Download the latest version from the [Releases](https://github.com/Agustinm28/Optiscaler-Client/releases) page.
 2. Run `OptiscalerClient.exe`.
-3. **Requirements**: Windows 10/11 is required. The app is self-contained, so no external .NET runtime installation is needed.
+3. **Requirements**: Windows 10/11 is required. Linux is supported with Steam-only game scanning. The app is self-contained, so no external .NET runtime installation is needed.
 
 ---
 

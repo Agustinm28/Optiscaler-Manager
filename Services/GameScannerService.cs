@@ -18,31 +18,33 @@ using OptiscalerClient.Models;
 using OptiscalerClient.Views;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Runtime.Versioning;
 
 namespace OptiscalerClient.Services;
 
-[SupportedOSPlatform("windows")]
 public class GameScannerService
 {
     private readonly IGameScanner _steamScanner;
-    private readonly IGameScanner _epicScanner;
-    private readonly IGameScanner _gogScanner;
-    private readonly IGameScanner _xboxScanner;
-    private readonly IGameScanner _eaScanner;
-    private readonly IGameScanner _battleNetScanner;
-    private readonly IGameScanner _ubisoftScanner;
+    private readonly IGameScanner? _epicScanner;
+    private readonly IGameScanner? _gogScanner;
+    private readonly IGameScanner? _xboxScanner;
+    private readonly IGameScanner? _eaScanner;
+    private readonly IGameScanner? _battleNetScanner;
+    private readonly IGameScanner? _ubisoftScanner;
     private readonly ExclusionService _exclusions;
 
     public GameScannerService()
     {
         _steamScanner = new SteamScanner();
-        _epicScanner = new EpicScanner();
-        _gogScanner = new GogScanner();
-        _xboxScanner = new XboxScanner();
-        _eaScanner = new EaScanner();
-        _battleNetScanner = new BattleNetScanner();
-        _ubisoftScanner = new UbisoftScanner();
+
+        if (OperatingSystem.IsWindows())
+        {
+            _epicScanner = new EpicScanner();
+            _gogScanner = new GogScanner();
+            _xboxScanner = new XboxScanner();
+            _eaScanner = new EaScanner();
+            _battleNetScanner = new BattleNetScanner();
+            _ubisoftScanner = new UbisoftScanner();
+        }
 
         // config.json lives next to the executable (copied by the build)
         var configPath = Path.Combine(AppContext.BaseDirectory, "config.json");
@@ -77,16 +79,17 @@ public class GameScannerService
 
             if (scanConfig.ScanSteam)
                 platformTasks.Add(Task.Run(() => { try { DebugWindow.Log("[Scanner] Scanning Steam library..."); return _steamScanner.Scan(); } catch (Exception ex) { DebugWindow.Log($"[Scanner] Steam scan error: {ex.Message}"); return new List<Game>(); } }));
-            if (scanConfig.ScanEpic)
+            if (scanConfig.ScanEpic && _epicScanner != null)
                 platformTasks.Add(Task.Run(() => { try { DebugWindow.Log("[Scanner] Scanning Epic Games library..."); return _epicScanner.Scan(); } catch (Exception ex) { DebugWindow.Log($"[Scanner] Epic scan error: {ex.Message}"); return new List<Game>(); } }));
-            if (scanConfig.ScanGOG)
+            if (scanConfig.ScanGOG && _gogScanner != null)
                 platformTasks.Add(Task.Run(() => { try { DebugWindow.Log("[Scanner] Scanning GOG library..."); return _gogScanner.Scan(); } catch (Exception ex) { DebugWindow.Log($"[Scanner] GOG scan error: {ex.Message}"); return new List<Game>(); } }));
-            if (scanConfig.ScanXbox)
+            if (scanConfig.ScanXbox && _xboxScanner != null)
                 platformTasks.Add(Task.Run(() => { try { DebugWindow.Log("[Scanner] Scanning Xbox library (MS Store)..."); return _xboxScanner.Scan(); } catch (Exception ex) { DebugWindow.Log($"[Scanner] Xbox scan error: {ex.Message}"); return new List<Game>(); } }));
-            if (scanConfig.ScanEA)
+            if (scanConfig.ScanEA && _eaScanner != null)
                 platformTasks.Add(Task.Run(() => { try { DebugWindow.Log("[Scanner] Scanning EA App library..."); return _eaScanner.Scan(); } catch (Exception ex) { DebugWindow.Log($"[Scanner] EA scan error: {ex.Message}"); return new List<Game>(); } }));
-            platformTasks.Add(Task.Run(() => { try { DebugWindow.Log("[Scanner] Scanning Battle.net library..."); return _battleNetScanner.Scan(); } catch (Exception ex) { DebugWindow.Log($"[Scanner] Battle.net scan error: {ex.Message}"); return new List<Game>(); } }));
-            if (scanConfig.ScanUbisoft)
+            if (_battleNetScanner != null)
+                platformTasks.Add(Task.Run(() => { try { DebugWindow.Log("[Scanner] Scanning Battle.net library..."); return _battleNetScanner.Scan(); } catch (Exception ex) { DebugWindow.Log($"[Scanner] Battle.net scan error: {ex.Message}"); return new List<Game>(); } }));
+            if (scanConfig.ScanUbisoft && _ubisoftScanner != null)
                 platformTasks.Add(Task.Run(() => { try { DebugWindow.Log("[Scanner] Scanning Ubisoft Connect library..."); return _ubisoftScanner.Scan(); } catch (Exception ex) { DebugWindow.Log($"[Scanner] Ubisoft scan error: {ex.Message}"); return new List<Game>(); } }));
 
             var platformResults = await Task.WhenAll(platformTasks);

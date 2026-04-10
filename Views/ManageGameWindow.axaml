@@ -196,8 +196,8 @@
                                         Classes="IconBtn"
                                         VerticalAlignment="Top"
                                         Click="BtnClose_Click">
-                                    <TextBlock Text="&#xE711;"
-                                               FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"
+                                    <TextBlock Text="{OnPlatform '&#xE711;', Linux='✕'}"
+                                               FontFamily="{OnPlatform 'Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI', Linux='sans-serif'}"
                                                FontSize="12"/>
                                 </Button>
                             </Grid>

@@ -430,22 +430,114 @@ public class GameAnalyzerService
 
             // ProductVersion is usually more accurate for libraries like DLSS (e.g. "3.7.10.0")
             // FileVersion might be "1.0.0.0" wrapper.
+            string? version = null;
             if (!string.IsNullOrEmpty(info.ProductVersion) && info.ProductVersion != "1.0.0.0" && !info.ProductVersion.StartsWith("1.0."))
-            {
-                return info.ProductVersion.Replace(',', '.').Split(' ')[0];
-            }
+                version = info.ProductVersion.Replace(',', '.').Split(' ')[0];
+            else if (!string.IsNullOrEmpty(info.FileVersion))
+                version = info.FileVersion.Replace(',', '.').Split(' ')[0];
+            else
+                version = $"{info.FileMajorPart}.{info.FileMinorPart}.{info.FileBuildPart}.{info.FilePrivatePart}";
 
-            if (!string.IsNullOrEmpty(info.FileVersion))
-            {
-                return info.FileVersion.Replace(',', '.').Split(' ')[0];
-            }
+            // On Linux, FileVersionInfo cannot read Windows PE version resources — fall back to manual PE parsing
+            if (version == "0.0.0.0" && !OperatingSystem.IsWindows())
+                version = ReadPeFileVersion(filePath);
 
-            return $"{info.FileMajorPart}.{info.FileMinorPart}.{info.FileBuildPart}.{info.FilePrivatePart}";
+            return version;
         }
         catch
         {
-            return "0.0.0.0";
+            return OperatingSystem.IsWindows() ? "0.0.0.0" : ReadPeFileVersion(filePath);
         }
+    }
+
+    /// <summary>
+    /// Reads the file version from a Windows PE binary by parsing the resource section directly.
+    /// Used on Linux where FileVersionInfo cannot parse PE version resources.
+    /// </summary>
+    private static string ReadPeFileVersion(string filePath)
+    {
+        try
+        {
+            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = new BinaryReader(fs);
+
+            // DOS header: MZ signature + e_lfanew at offset 0x3C
+            if (reader.ReadUInt16() != 0x5A4D) return "0.0.0.0";
+            fs.Seek(0x3C, SeekOrigin.Begin);
+            var peOffset = reader.ReadUInt32();
+
+            // PE signature
+            fs.Seek(peOffset, SeekOrigin.Begin);
+            if (reader.ReadUInt32() != 0x00004550) return "0.0.0.0";
+
+            // COFF header
+            reader.ReadUInt16(); // Machine
+            var numSections = reader.ReadUInt16();
+            reader.ReadBytes(12); // TimeDateStamp, PointerToSymbolTable, NumberOfSymbols
+            var optHeaderSize = reader.ReadUInt16();
+            reader.ReadUInt16(); // Characteristics
+
+            // Optional header
+            var optHeaderStart = fs.Position;
+            var magic = reader.ReadUInt16();
+            bool is64 = magic == 0x20B; // PE32+ vs PE32
+
+            // DataDirectory[2] = Resource Table
+            // PE32:  DataDirectory starts at offset 96 → resource at 96 + 2*8 = 112
+            // PE32+: DataDirectory starts at offset 112 → resource at 112 + 2*8 = 128
+            var resourceDirOffset = (is64 ? 112 : 96) + 16;
+            fs.Seek(optHeaderStart + resourceDirOffset, SeekOrigin.Begin);
+            var rsrcRVA = reader.ReadUInt32();
+            var rsrcSize = reader.ReadUInt32();
+
+            if (rsrcRVA == 0 || rsrcSize == 0) return "0.0.0.0";
+
+            // Section headers: find the section containing the resource RVA
+            fs.Seek(optHeaderStart + optHeaderSize, SeekOrigin.Begin);
+            uint rsrcFileOffset = 0;
+            for (int i = 0; i < numSections; i++)
+            {
+                reader.ReadBytes(8); // Name
+                reader.ReadUInt32(); // VirtualSize
+                var va = reader.ReadUInt32(); // VirtualAddress
+                var rawSize = reader.ReadUInt32();
+                var rawOffset = reader.ReadUInt32();
+                reader.ReadBytes(16); // Rest of section header
+
+                if (va <= rsrcRVA && rsrcRVA < va + rawSize)
+                {
+                    rsrcFileOffset = rawOffset + (rsrcRVA - va);
+                    break;
+                }
+            }
+
+            if (rsrcFileOffset == 0) return "0.0.0.0";
+
+            // Read resource section (cap at 4 MB — version resources are tiny)
+            fs.Seek(rsrcFileOffset, SeekOrigin.Begin);
+            var rsrcData = reader.ReadBytes((int)Math.Min(rsrcSize, 4 * 1024 * 1024));
+
+            // Search for VS_FIXEDFILEINFO magic: FEEF04BD
+            for (int i = 0; i <= rsrcData.Length - 20; i++)
+            {
+                if (rsrcData[i] != 0xBD || rsrcData[i + 1] != 0x04 ||
+                    rsrcData[i + 2] != 0xEF || rsrcData[i + 3] != 0xFE) continue;
+
+                // Offset +4: dwStrucVersion must be 0x00010000 (version 1.0)
+                var structVer = BitConverter.ToUInt32(rsrcData, i + 4);
+                if (structVer != 0x00010000) continue;
+
+                var ms = BitConverter.ToUInt32(rsrcData, i + 8);  // dwFileVersionMS
+                var ls = BitConverter.ToUInt32(rsrcData, i + 12); // dwFileVersionLS
+
+                if (ms == 0 && ls == 0) continue;
+
+                return $"{ms >> 16}.{ms & 0xFFFF}.{ls >> 16}.{ls & 0xFFFF}";
+            }
+        }
+        catch { }
+
+        return "0.0.0.0";
     }
 
     private sealed class AnalysisCacheEntry
