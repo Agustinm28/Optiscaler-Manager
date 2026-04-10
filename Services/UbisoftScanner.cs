@@ -51,7 +51,10 @@ public class UbisoftScanner : IGameScanner
                 }
             }
         }
-        catch { /* Ignore */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Ubisoft] Error scanning registry: {ex.Message}");
+        }
 
         return games;
     }

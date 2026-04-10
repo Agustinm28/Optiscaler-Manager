@@ -23,7 +23,7 @@ public class SteamScanner : IGameScanner
             return games;
 
         var libraryFolders = GetLibraryFolders(installPath);
-        
+
         foreach (var libraryPath in libraryFolders)
         {
             try
@@ -46,7 +46,10 @@ public class SteamScanner : IGameScanner
                     }
                 }
             }
-            catch { /* Ignore errors accessing folders */ }
+            catch (Exception ex)
+            {
+                DebugWindow.Log($"[Steam] Error scanning library '{libraryPath}': {ex.Message}");
+            }
         }
 
         return games;
@@ -61,9 +64,10 @@ public class SteamScanner : IGameScanner
             using var key = baseKey.OpenSubKey(REGISTRY_PATH);
             return key?.GetValue("InstallPath") as string;
         }
-        catch 
+        catch (Exception ex)
         {
-            return null; 
+            DebugWindow.Log($"[Steam] Error reading registry: {ex.Message}");
+            return null;
         }
     }
 
@@ -94,7 +98,10 @@ public class SteamScanner : IGameScanner
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            DebugWindow.Log($"[Steam] Error reading libraryfolders.vdf: {ex.Message}");
+        }
 
         return folders;
     }
@@ -104,7 +111,7 @@ public class SteamScanner : IGameScanner
         try
         {
             var content = File.ReadAllText(manifestPath);
-            
+
             // Extract AppID
             var appIdMatch = Regex.Match(content, "\"appid\"\\s+\"(\\d+)\"");
             var appId = appIdMatch.Success ? appIdMatch.Groups[1].Value : Path.GetFileName(manifestPath).Replace("appmanifest_", "").Replace(".acf", "");
@@ -120,11 +127,11 @@ public class SteamScanner : IGameScanner
             var installDirName = installDirMatch.Groups[1].Value;
             var libraryPath = Path.GetDirectoryName(Path.GetDirectoryName(manifestPath)); // Go up from steamapps/appmanifest_... to library root?
             // Actually manifest is in steamapps, game is in steamapps/common/
-            
+
             // The libraryPath in GetLibraryFolders returns the root (e.g. C:\Steam).
             // manifestPath is C:\Steam\steamapps\appmanifest_123.acf
             // Game path is C:\Steam\steamapps\common\GameName
-            
+
             var steamappsPath = Path.GetDirectoryName(manifestPath); // ...\steamapps
             if (steamappsPath == null) return null;
 
@@ -139,8 +146,9 @@ public class SteamScanner : IGameScanner
                 Platform = GamePlatform.Steam
             };
         }
-        catch
+        catch (Exception ex)
         {
+            DebugWindow.Log($"[Steam] Error parsing manifest '{manifestPath}': {ex.Message}");
             return null;
         }
     }

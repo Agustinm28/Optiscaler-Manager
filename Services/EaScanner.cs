@@ -51,7 +51,10 @@ public class EaScanner : IGameScanner
                 }
             }
         }
-        catch { /* Ignore registry or parsing errors */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[EA] Error scanning registry: {ex.Message}");
+        }
 
         return games;
     }

@@ -200,7 +200,10 @@ public class GameAnalyzerService
                             }
                         }
                     }
-                    catch { /* Corrupt manifest — fall through to next priority */ }
+                    catch (Exception ex)
+                    {
+                        DebugWindow.Log($"[Analyzer] Corrupt manifest in '{game.InstallPath}': {ex.Message}");
+                    }
                 }
 
                 // ── Priority 2: runtime log (overrides if it has richer version info) ──
@@ -234,7 +237,10 @@ public class GameAnalyzerService
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        DebugWindow.Log($"[Analyzer] Error reading OptiScaler log for '{game.Name}': {ex.Message}");
+                    }
                 }
 
                 // ── Priority 3: OptiScaler.ini presence (no version — last resort) ──
@@ -245,7 +251,10 @@ public class GameAnalyzerService
                         game.IsOptiscalerInstalled = true;
                 }
             }
-            catch { /* Ignore OptiScaler detection errors */ }
+            catch (Exception ex)
+            {
+                DebugWindow.Log($"[Analyzer] OptiScaler detection error for '{game.Name}': {ex.Message}");
+            }
 
             // DLSS
             FindBestVersionFromCollected(game, collectedFiles, _dlssNames, ignoredFiles, (g, path, ver) =>
@@ -264,7 +273,10 @@ public class GameAnalyzerService
             FindBestVersionFromCollected(game, collectedFiles, _xessNames, ignoredFiles, (g, path, ver) => { g.XessPath = path; g.XessVersion = ver; });
 
         }
-        catch { /* General error */ }
+        catch (Exception ex)
+        {
+            DebugWindow.Log($"[Analyzer] General analysis error for '{game.Name}': {ex.Message}");
+        }
 
         SaveAnalysisCache(game, normalizedInstallPath, directoryWriteStamp);
     }
@@ -355,7 +367,10 @@ public class GameAnalyzerService
                 }
             }
         }
-        catch { /* Ignore inaccessible directories */ }
+        catch (Exception ex)
+        {
+            DebugWindow.Log($"[Analyzer] Error enumerating files in '{path}': {ex.Message}");
+        }
 
         return result;
     }
@@ -366,23 +381,24 @@ public class GameAnalyzerService
         {
             if (_diskCacheLoaded) return;
             _diskCacheLoaded = true;
-        }
 
-        try
-        {
-            if (!File.Exists(_diskCachePath)) return;
-            var json = File.ReadAllText(_diskCachePath);
-            var loaded = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, AnalysisCacheEntry>>(json);
-            if (loaded == null) return;
-
-            lock (_cacheLock)
+            try
             {
+                if (!File.Exists(_diskCachePath)) return;
+                var json = File.ReadAllText(_diskCachePath);
+                var loaded = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, AnalysisCacheEntry>>(json);
+                if (loaded == null) return;
+
                 foreach (var kv in loaded)
                     _analysisCache[kv.Key] = kv.Value;
+
+                DebugWindow.Log($"[Analyzer] Loaded {loaded.Count} cached entries from disk.");
             }
-            DebugWindow.Log($"[Analyzer] Loaded {loaded.Count} cached entries from disk.");
+            catch (Exception ex)
+            {
+                DebugWindow.Log($"[Analyzer] Failed to load disk cache: {ex.Message}");
+            }
         }
-        catch { /* Ignore corrupt or missing cache */ }
     }
 
     public static void FlushCacheToDisk()
@@ -400,7 +416,10 @@ public class GameAnalyzerService
             File.WriteAllText(_diskCachePath, json);
             DebugWindow.Log($"[Analyzer] Flushed {snapshot.Count} cache entries to disk.");
         }
-        catch { /* Ignore write errors */ }
+        catch (Exception ex)
+        {
+            DebugWindow.Log($"[Analyzer] Failed to flush cache to disk: {ex.Message}");
+        }
     }
 
     private static string GetFileVersion(string filePath)

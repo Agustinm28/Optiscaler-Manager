@@ -66,7 +66,10 @@ public class EpicScanner : IGameScanner
                     });
                 }
             }
-            catch { /* Ignore invalid manifests */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Epic] Error parsing manifest '{file}': {ex.Message}");
+            }
         }
 
         return games;

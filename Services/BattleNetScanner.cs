@@ -59,7 +59,10 @@ public class BattleNetScanner : IGameScanner
                 }
             }
         }
-        catch { /* Ignore */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[BattleNet] Error scanning registry: {ex.Message}");
+        }
 
         return games;
     }
