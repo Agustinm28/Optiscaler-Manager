@@ -153,6 +153,8 @@
     <x:String x:Key="TxtLoadedGamesFormat">{0} oyun yüklendi.</x:String>
     <x:String x:Key="TxtScanningShort">Oyunlar taranıyor...</x:String>
     <x:String x:Key="TxtScanCompleteFormat">Tarama tamamlandı. Toplam oyun: {0}</x:String>
+    <x:String x:Key="TxtFetchingCoversFormat">Kapaklar yükleniyor: {0}/{1}...</x:String>
+    <x:String x:Key="TxtCoversCompleteFmt">Kapaklar yüklendi. Toplam oyun: {0}</x:String>
     <x:String x:Key="TxtErrorFormat">Hata: {0}</x:String>
     <x:String x:Key="TxtSelectExe">Oyun Yürütülebilir Dosyasını Seç</x:String>
     <x:String x:Key="TxtGameDuplicate">Bu oyun zaten listede.</x:String>

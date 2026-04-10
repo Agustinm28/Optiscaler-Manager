@@ -153,6 +153,8 @@
     <x:String x:Key="TxtLoadedGamesFormat">{0}개 게임이 로드되었습니다.</x:String>
     <x:String x:Key="TxtScanningShort">게임 스캔 중...</x:String>
     <x:String x:Key="TxtScanCompleteFormat">스캔 완료. 총 게임: {0}</x:String>
+    <x:String x:Key="TxtFetchingCoversFormat">커버 이미지 불러오는 중: {0}/{1}...</x:String>
+    <x:String x:Key="TxtCoversCompleteFmt">커버 이미지 로드 완료. 전체 게임 수: {0}</x:String>
     <x:String x:Key="TxtErrorFormat">오류: {0}</x:String>
     <x:String x:Key="TxtSelectExe">게임 실행 파일 선택</x:String>
     <x:String x:Key="TxtGameDuplicate">이 게임은 이미 목록에 있습니다.</x:String>

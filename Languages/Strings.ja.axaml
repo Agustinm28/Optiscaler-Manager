@@ -153,6 +153,8 @@
     <x:String x:Key="TxtLoadedGamesFormat">{0}ゲームが読み込まれました。</x:String>
     <x:String x:Key="TxtScanningShort">ゲームをスキャン中...</x:String>
     <x:String x:Key="TxtScanCompleteFormat">スキャン完了。合計ゲーム：{0}</x:String>
+    <x:String x:Key="TxtFetchingCoversFormat">カバー画像を取得中: {0}/{1}...</x:String>
+    <x:String x:Key="TxtCoversCompleteFmt">カバー画像の読み込み完了。ゲーム総数: {0}</x:String>
     <x:String x:Key="TxtErrorFormat">エラー：{0}</x:String>
     <x:String x:Key="TxtSelectExe">ゲーム実行可能ファイルを選択</x:String>
     <x:String x:Key="TxtGameDuplicate">このゲームはすでにリストにあります。</x:String>

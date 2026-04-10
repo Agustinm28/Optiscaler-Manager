@@ -160,6 +160,8 @@ Esta versión no está disponible para descarga. Verificá tu conexión a intern
     <x:String x:Key="TxtLoadedGamesFormat">Cargados {0} juegos.</x:String>
     <x:String x:Key="TxtScanningShort">Escaneando juegos...</x:String>
     <x:String x:Key="TxtScanCompleteFormat">Escaneo completo. Total de juegos: {0}</x:String>
+    <x:String x:Key="TxtFetchingCoversFormat">Cargando carátulas: {0}/{1}...</x:String>
+    <x:String x:Key="TxtCoversCompleteFmt">Carátulas cargadas. Juegos totales: {0}</x:String>
     <x:String x:Key="TxtErrorFormat">Error: {0}</x:String>
     <x:String x:Key="TxtSelectExe">Seleccionar Ejecutable del Juego</x:String>
     <x:String x:Key="TxtGameDuplicate">Este juego ya está en la lista.</x:String>

@@ -174,6 +174,8 @@ This version is unavailable for download. Check your internet connection and try
     <x:String x:Key="TxtLoadedGamesFormat">Loaded {0} games.</x:String>
     <x:String x:Key="TxtScanningShort">Scanning for games...</x:String>
     <x:String x:Key="TxtScanCompleteFormat">Scan complete. Total games: {0}</x:String>
+    <x:String x:Key="TxtFetchingCoversFormat">Fetching covers: {0}/{1}...</x:String>
+    <x:String x:Key="TxtCoversCompleteFmt">Covers loaded. Total games: {0}</x:String>
     <x:String x:Key="TxtErrorFormat">Error: {0}</x:String>
     <x:String x:Key="TxtSelectExe">Select Game Executable</x:String>
     <x:String x:Key="TxtGameDuplicate">This game is already in the list.</x:String>

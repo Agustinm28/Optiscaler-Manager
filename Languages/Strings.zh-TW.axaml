@@ -153,6 +153,8 @@
     <x:String x:Key="TxtLoadedGamesFormat">已載入{0}個遊戲。</x:String>
     <x:String x:Key="TxtScanningShort">掃描遊戲中...</x:String>
     <x:String x:Key="TxtScanCompleteFormat">掃描完成。遊戲總數：{0}</x:String>
+    <x:String x:Key="TxtFetchingCoversFormat">正在取得封面: {0}/{1}...</x:String>
+    <x:String x:Key="TxtCoversCompleteFmt">封面載入完成。遊戲總數: {0}</x:String>
     <x:String x:Key="TxtErrorFormat">錯誤：{0}</x:String>
     <x:String x:Key="TxtSelectExe">選擇遊戲可執行檔</x:String>
     <x:String x:Key="TxtGameDuplicate">此遊戲已在清單中。</x:String>

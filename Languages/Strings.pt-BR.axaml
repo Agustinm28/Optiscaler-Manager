@@ -151,6 +151,8 @@
     <x:String x:Key="TxtLoadedGamesFormat">{0} jogos carregados.</x:String>
     <x:String x:Key="TxtScanningShort">Procurando jogos...</x:String>
     <x:String x:Key="TxtScanCompleteFormat">Busca concluída. Total de jogos: {0}</x:String>
+    <x:String x:Key="TxtFetchingCoversFormat">Carregando capas: {0}/{1}...</x:String>
+    <x:String x:Key="TxtCoversCompleteFmt">Capas carregadas. Total de jogos: {0}</x:String>
     <x:String x:Key="TxtErrorFormat">Erro: {0}</x:String>
     <x:String x:Key="TxtSelectExe">Selecione o executável do jogo</x:String>
     <x:String x:Key="TxtGameDuplicate">Este jogo já está na lista.</x:String>

@@ -153,6 +153,8 @@
     <x:String x:Key="TxtLoadedGamesFormat">{0} games geladen.</x:String>
     <x:String x:Key="TxtScanningShort">Games scannen...</x:String>
     <x:String x:Key="TxtScanCompleteFormat">Scan voltooid. Totaal games: {0}</x:String>
+    <x:String x:Key="TxtFetchingCoversFormat">Omslagen laden: {0}/{1}...</x:String>
+    <x:String x:Key="TxtCoversCompleteFmt">Omslagen geladen. Totaal spellen: {0}</x:String>
     <x:String x:Key="TxtErrorFormat">Fout: {0}</x:String>
     <x:String x:Key="TxtSelectExe">Selecteer Game Uitvoerbaar</x:String>
     <x:String x:Key="TxtGameDuplicate">Deze game is al in de lijst.</x:String>

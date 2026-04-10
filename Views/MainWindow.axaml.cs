@@ -4048,7 +4048,13 @@ namespace OptiscalerClient.Views
                 {
                     scanResults = new List<Game>();
                 }
+
                 var manualGames = _games.Where(g => g.Platform == GamePlatform.Manual).ToList();
+
+                var existingGames = _games.ToDictionary(
+                    g => g.InstallPath,
+                    g => g,
+                    StringComparer.OrdinalIgnoreCase);
 
                 _games.Clear();
 
@@ -4061,39 +4067,88 @@ namespace OptiscalerClient.Views
                 foreach (var scannedGame in scanResults)
                 {
                     if (!_games.Any(g => g.InstallPath.Equals(scannedGame.InstallPath, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        if (existingGames.TryGetValue(scannedGame.InstallPath, out var existing) &&
+                            !string.IsNullOrEmpty(existing.CoverImageUrl) &&
+                            !existing.CoverImageUrl.StartsWith("http"))
+                        {
+                            scannedGame.CoverImageUrl = existing.CoverImageUrl;
+                        }
+
                         _games.Add(scannedGame);
+                    }
                 }
 
                 _allGames = _games.ToList();
+                ApplyFilter(_txtSearch?.Text);
 
-                // Fetch covers in parallel (up to 6 concurrent downloads)
-                using var coverSemaphore = new SemaphoreSlim(6, 6);
-                var coverTasks = _games
+                var scanCompleteFormat = GetResourceString("TxtScanCompleteFormat", "Scan complete. Total games: {0}");
+                if (_txtStatus != null) _txtStatus.Text = string.Format(scanCompleteFormat, _games.Count);
+
+                if (_overlayScanning != null) _overlayScanning.IsVisible = false;
+                if (_btnScan != null) _btnScan.IsEnabled = true;
+
+                var gamesNeedingCovers = _games
                     .Where(g => string.IsNullOrEmpty(g.CoverImageUrl) || g.CoverImageUrl.StartsWith("http"))
-                    .Select(game =>
+                    .ToList();
+
+                if (gamesNeedingCovers.Count > 0)
+                {
+                    var fetchingCoversFormat = GetResourceString("TxtFetchingCoversFormat", "Fetching covers: {0}/{1}...");
+                    ShowToast(string.Format(fetchingCoversFormat, 0, gamesNeedingCovers.Count),
+                              showProgress: true, progressPercent: 0);
+                    if (_txtStatus != null) _txtStatus.Text = string.Format(fetchingCoversFormat, 0, gamesNeedingCovers.Count);
+
+                    var completed = 0;
+                    var total = gamesNeedingCovers.Count;
+                    using var coverSemaphore = new SemaphoreSlim(6, 6);
+                    var coverTasks = gamesNeedingCovers.Select(game =>
                     {
                         var appIdKey = !string.IsNullOrEmpty(game.AppId) ? game.AppId : game.Name;
                         return Task.Run(async () =>
                         {
                             await coverSemaphore.WaitAsync();
-                            try { game.CoverImageUrl = await _metadataService.FetchAndCacheCoverImageAsync(game.Name, appIdKey); }
-                            finally { coverSemaphore.Release(); }
+                            try
+                            {
+                                game.CoverImageUrl = await _metadataService.FetchAndCacheCoverImageAsync(game.Name, appIdKey);
+                            }
+                            finally
+                            {
+                                coverSemaphore.Release();
+                                var done = System.Threading.Interlocked.Increment(ref completed);
+                                var pct = (double)done / total * 100.0;
+                                var msg = string.Format(fetchingCoversFormat, done, total);
+                                Dispatcher.UIThread.Post(() =>
+                                {
+                                    UpdateToastProgress(msg, pct);
+                                    if (_txtStatus != null) _txtStatus.Text = msg;
+                                });
+                            }
                         });
-                    })
-                    .ToList();
+                    }).ToList();
 
-                await Task.WhenAll(coverTasks);
-                _persistenceService.SaveGames(_games);
+                    await Task.WhenAll(coverTasks);
 
-                ApplyFilter(_txtSearch?.Text);
+                    _persistenceService.SaveGames(_games);
 
-                var scanCompleteFormat = GetResourceString("TxtScanCompleteFormat", "Scan complete. Total games: {0}");
-                if (_txtStatus != null) _txtStatus.Text = string.Format(scanCompleteFormat, _games.Count);
+                    var coversCompleteFormat = GetResourceString("TxtCoversCompleteFmt", "Covers loaded. Total games: {0}");
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        HideToast();
+                        if (_txtStatus != null) _txtStatus.Text = string.Format(coversCompleteFormat, _games.Count);
+                        RefreshGameLists();
+                    });
+                }
+                else
+                {
+                    _persistenceService.SaveGames(_games);
+                }
             }
             catch (Exception ex)
             {
                 var errorFormat = GetResourceString("TxtErrorFormat", "Error: {0}");
                 if (_txtStatus != null) _txtStatus.Text = string.Format(errorFormat, ex.Message);
+                HideToast();
                 await new ConfirmDialog(this, "Error", ex.Message).ShowDialog<object>(this);
             }
             finally

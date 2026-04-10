@@ -153,6 +153,8 @@
     <x:String x:Key="TxtLoadedGamesFormat">Загружено {0} игр.</x:String>
     <x:String x:Key="TxtScanningShort">Сканирование игр...</x:String>
     <x:String x:Key="TxtScanCompleteFormat">Сканирование завершено. Всего игр: {0}</x:String>
+    <x:String x:Key="TxtFetchingCoversFormat">Загрузка обложек: {0}/{1}...</x:String>
+    <x:String x:Key="TxtCoversCompleteFmt">Обложки загружены. Всего игр: {0}</x:String>
     <x:String x:Key="TxtErrorFormat">Ошибка: {0}</x:String>
     <x:String x:Key="TxtSelectExe">Выбрать исполняемый файл игры</x:String>
     <x:String x:Key="TxtGameDuplicate">Эта игра уже в списке.</x:String>
