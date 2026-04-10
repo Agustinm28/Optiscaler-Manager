@@ -164,7 +164,7 @@ namespace OptiscalerClient.Views
             {
                 var scaling = owner.DesktopScaling;
                 double dialogW = 960 * scaling;
-                double dialogH = 540 * scaling;
+                double dialogH = 660 * scaling; // estimate — window uses SizeToContent="Height"
 
                 var x = owner.Position.X + (owner.Bounds.Width * scaling - dialogW) / 2;
                 var y = owner.Position.Y + (owner.Bounds.Height * scaling - dialogH) / 2;
@@ -240,11 +240,7 @@ namespace OptiscalerClient.Views
         {
             var componentService = new ComponentManagementService();
 
-            // Always call CheckForUpdatesAsync to ensure extras and latest versions are fetched.
-            // Internal rate limiter in the service (15m) handles efficiency.
-            await componentService.CheckForUpdatesAsync();
-
-            // Load profiles
+            // Load profiles (purely local/disk — always fast)
             var profileService = new ProfileManagementService();
             var profiles = profileService.GetAllProfiles();
             var defaultProfileName = componentService.Config.DefaultProfileName;
@@ -253,116 +249,141 @@ namespace OptiscalerClient.Views
                     ? defaultProfileName
                     : profileService.GetDefaultProfile().Name;
 
-            Dispatcher.UIThread.Post(() =>
+            // Immediately populate ALL selectors from disk cache (no API wait).
+            // This eliminates the ~1s "popup" delay when versions are already cached.
+            PopulateProfileSelector(profileService, profiles, _lastSelectedProfileName ?? _defaultProfileName);
+            PopulateVersionSelectors(componentService);
+
+            // Refresh from GitHub API in background
+            await componentService.CheckForUpdatesAsync();
+
+            // Re-populate version selectors with updated data from API
+            PopulateVersionSelectors(componentService);
+        }
+
+        /// <summary>
+        /// Populates the OptiScaler version, Extras, and OptiPatcher combo boxes
+        /// from whatever is currently in the ComponentManagementService's static cache.
+        /// Safe to call multiple times — properly unregisters/re-registers event handlers.
+        /// </summary>
+        private void PopulateVersionSelectors(ComponentManagementService componentService)
+        {
+            var allVersions = componentService.OptiScalerAvailableVersions;
+            var betaVersions = componentService.BetaVersions;
+            var latestBeta = componentService.LatestBetaVersion;
+            var showBetaVersions = componentService.Config.ShowBetaVersions;
+
+            var cmbOptiVersion = this.FindControl<ComboBox>("CmbOptiVersion");
+            if (cmbOptiVersion == null) return;
+
+            // Unregister before modifying to avoid spurious events
+            cmbOptiVersion.SelectionChanged -= CmbOptiVersion_SelectionChanged;
+            cmbOptiVersion.Items.Clear();
+
+            if (allVersions.Count == 0)
             {
-                PopulateProfileSelector(profileService, profiles, _lastSelectedProfileName ?? _defaultProfileName);
-
-                var allVersions = componentService.OptiScalerAvailableVersions;
-                var betaVersions = componentService.BetaVersions;
-                var latestBeta = componentService.LatestBetaVersion;
-                var showBetaVersions = componentService.Config.ShowBetaVersions;
-
-                var cmbOptiVersion = this.FindControl<ComboBox>("CmbOptiVersion");
-                if (cmbOptiVersion == null) return;
-
-                cmbOptiVersion.Items.Clear();
-
-                if (allVersions.Count == 0)
-                {
-                    cmbOptiVersion.Items.Add(GetResourceString("TxtNoOptiDetected", "No version detected"));
-                    cmbOptiVersion.SelectedIndex = 0;
-                    cmbOptiVersion.IsEnabled = false;
-                    return;
-                }
-
-                _betaVersions = betaVersions;
-
-                var stableVersions = allVersions.Where(v => !betaVersions.Contains(v)).ToList();
-                var otherBetas = allVersions.Where(v => betaVersions.Contains(v) && v != latestBeta).ToList();
-
-                int selectedIndex = 0;
-                int currentIndex = 0;
-
-                // Determine what is truly "latest" - only stable versions get LATEST badge
-                bool hasBeta = !string.IsNullOrEmpty(latestBeta);
-
-                // 1. Latest beta at top (if present) - NO LATEST badge for beta
-                if (hasBeta && latestBeta != null)
-                {
-                    cmbOptiVersion.Items.Add(BuildVersionItem(latestBeta, isBeta: true, isLatest: false));
-                    currentIndex++;
-                }
-
-                var latestStable = componentService.LatestStableVersion;
-
-                // 2. Stable versions — mark latest stable based on GitHub's API
-                bool isLatestStableMarked = false;
-                foreach (var ver in stableVersions)
-                {
-                    bool shouldMarkAsLatest = false;
-                    
-                    if (!string.IsNullOrEmpty(latestStable))
-                    {
-                        shouldMarkAsLatest = ver.Equals(latestStable, StringComparison.OrdinalIgnoreCase);
-                    }
-                    else
-                    {
-                        shouldMarkAsLatest = !isLatestStableMarked && !ver.Contains("nightly", StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    if (shouldMarkAsLatest)
-                    {
-                        isLatestStableMarked = true;
-                    }
-
-                    // Select default version based on user preference
-                    if (showBetaVersions && hasBeta)
-                    {
-                        // User prefers latest beta - select the latest beta (index 0)
-                        selectedIndex = 0;
-                    }
-                    else if (shouldMarkAsLatest)
-                    {
-                        // User prefers stable - select the latest stable version
-                        selectedIndex = currentIndex;
-                    }
-
-                    cmbOptiVersion.Items.Add(BuildVersionItem(ver, isBeta: false, isLatest: shouldMarkAsLatest));
-                    currentIndex++;
-                }
-
-                // 3. Remaining betas at end
-                foreach (var ver in otherBetas)
-                {
-                    cmbOptiVersion.Items.Add(BuildVersionItem(ver, isBeta: true, isLatest: false));
-                    currentIndex++;
-                }
-
-                // Override with user-configured default version if set
-                var configDefault = componentService.Config.DefaultOptiScalerVersion;
-                if (!string.IsNullOrEmpty(configDefault))
-                {
-                    for (int i = 0; i < cmbOptiVersion.Items.Count; i++)
-                    {
-                        if (cmbOptiVersion.Items[i] is ComboBoxItem ci && string.Equals(ci.Tag?.ToString(), configDefault, StringComparison.OrdinalIgnoreCase))
-                        {
-                            selectedIndex = i;
-                            break;
-                        }
-                    }
-                }
-
-                cmbOptiVersion.SelectedIndex = selectedIndex;
-
-                // Update checkbox states based on initial selection
-                UpdateCheckboxStatesForVersion(cmbOptiVersion);
-
-                // Wire SelectionChanged here so it only fires on user interaction, not during init
+                cmbOptiVersion.Items.Add(GetResourceString("TxtNoOptiDetected", "No version detected"));
+                cmbOptiVersion.SelectedIndex = 0;
+                cmbOptiVersion.IsEnabled = false;
                 cmbOptiVersion.SelectionChanged += CmbOptiVersion_SelectionChanged;
 
-                // ── Populate FSR4 INT8 Extras selector ────────────────────────────
+                // Still populate extras/patcher (they have their own "no versions" fallback)
                 PopulateExtrasComboBox(componentService);
-            });
+                PopulateOptiPatcherComboBox(componentService);
+                return;
+            }
+
+            cmbOptiVersion.IsEnabled = true;
+            _betaVersions = betaVersions;
+
+            var stableVersions = allVersions.Where(v => !betaVersions.Contains(v)).ToList();
+            var otherBetas = allVersions.Where(v => betaVersions.Contains(v) && v != latestBeta).ToList();
+
+            int selectedIndex = 0;
+            int currentIndex = 0;
+
+            // Determine what is truly "latest" - only stable versions get LATEST badge
+            bool hasBeta = !string.IsNullOrEmpty(latestBeta);
+
+            // 1. Latest beta at top (if present) - NO LATEST badge for beta
+            if (hasBeta && latestBeta != null)
+            {
+                cmbOptiVersion.Items.Add(BuildVersionItem(latestBeta, isBeta: true, isLatest: false));
+                currentIndex++;
+            }
+
+            var latestStable = componentService.LatestStableVersion;
+
+            // 2. Stable versions — mark latest stable based on GitHub's API
+            bool isLatestStableMarked = false;
+            foreach (var ver in stableVersions)
+            {
+                bool shouldMarkAsLatest = false;
+
+                if (!string.IsNullOrEmpty(latestStable))
+                {
+                    shouldMarkAsLatest = ver.Equals(latestStable, StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    shouldMarkAsLatest = !isLatestStableMarked && !ver.Contains("nightly", StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (shouldMarkAsLatest)
+                {
+                    isLatestStableMarked = true;
+                }
+
+                // Select default version based on user preference
+                if (showBetaVersions && hasBeta)
+                {
+                    // User prefers latest beta - select the latest beta (index 0)
+                    selectedIndex = 0;
+                }
+                else if (shouldMarkAsLatest)
+                {
+                    // User prefers stable - select the latest stable version
+                    selectedIndex = currentIndex;
+                }
+
+                cmbOptiVersion.Items.Add(BuildVersionItem(ver, isBeta: false, isLatest: shouldMarkAsLatest));
+                currentIndex++;
+            }
+
+            // 3. Remaining betas at end
+            foreach (var ver in otherBetas)
+            {
+                cmbOptiVersion.Items.Add(BuildVersionItem(ver, isBeta: true, isLatest: false));
+                currentIndex++;
+            }
+
+            // Override with user-configured default version if set
+            var configDefault = componentService.Config.DefaultOptiScalerVersion;
+            if (!string.IsNullOrEmpty(configDefault))
+            {
+                for (int i = 0; i < cmbOptiVersion.Items.Count; i++)
+                {
+                    if (cmbOptiVersion.Items[i] is ComboBoxItem ci && string.Equals(ci.Tag?.ToString(), configDefault, StringComparison.OrdinalIgnoreCase))
+                    {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            cmbOptiVersion.SelectedIndex = selectedIndex;
+
+            // Update checkbox states based on initial selection
+            UpdateCheckboxStatesForVersion(cmbOptiVersion);
+
+            // Wire SelectionChanged here so it only fires on user interaction, not during init
+            cmbOptiVersion.SelectionChanged += CmbOptiVersion_SelectionChanged;
+
+            // ── Populate FSR4 INT8 Extras selector ────────────────────────────
+            PopulateExtrasComboBox(componentService);
+
+            // ── Populate OptiPatcher selector ─────────────────────────────────
+            PopulateOptiPatcherComboBox(componentService);
         }
 
         /// <summary>
@@ -472,6 +493,46 @@ namespace OptiscalerClient.Views
 
             cmb.SelectedIndex = targetIndex;
         }  // end PopulateExtrasComboBox
+
+        /// <summary>
+        /// Populates CmbOptiPatcherVersion with available OptiPatcher versions + a "None" option.
+        /// Respects the configured DefaultOptiPatcherVersion from settings.
+        /// </summary>
+        private void PopulateOptiPatcherComboBox(ComponentManagementService componentService)
+        {
+            var cmb = this.FindControl<ComboBox>("CmbOptiPatcherVersion");
+            if (cmb == null) return;
+
+            cmb.Items.Clear();
+
+            // Option 0: None (default — opt-in)
+            cmb.Items.Add(new ComboBoxItem { Content = "None", Tag = "none" });
+
+            var versions = componentService.OptiPatcherAvailableVersions;
+            foreach (var ver in versions)
+            {
+                var isLatest = ver == componentService.LatestOptiPatcherVersion;
+                cmb.Items.Add(BuildVersionItem(ver, isBeta: false, isLatest: isLatest));
+            }
+
+            // Respect configured default
+            int targetIndex = 0;
+            var savedDefault = componentService.Config.DefaultOptiPatcherVersion;
+            if (!string.IsNullOrEmpty(savedDefault) && !savedDefault.Equals("none", StringComparison.OrdinalIgnoreCase))
+            {
+                for (int i = 1; i < cmb.Items.Count; i++)
+                {
+                    if (cmb.Items[i] is ComboBoxItem ci &&
+                        string.Equals(ci.Tag?.ToString(), savedDefault, StringComparison.OrdinalIgnoreCase))
+                    {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            cmb.SelectedIndex = targetIndex;
+        }
 
         private void UpdateCheckboxStatesForVersion(ComboBox? cmb)
         {
@@ -840,6 +901,13 @@ namespace OptiscalerClient.Views
             bool injectExtras = !string.IsNullOrEmpty(selectedExtrasVersion) &&
                                 !selectedExtrasVersion.Equals("none", StringComparison.OrdinalIgnoreCase);
 
+            // Read selected OptiPatcher version before any async work
+            var cmbOptiPatcherVersion = this.FindControl<ComboBox>("CmbOptiPatcherVersion");
+            var selectedOptiPatcherItem = cmbOptiPatcherVersion?.SelectedItem as ComboBoxItem;
+            var selectedOptiPatcherVersion = selectedOptiPatcherItem?.Tag?.ToString();
+            bool installOptiPatcher = !string.IsNullOrEmpty(selectedOptiPatcherVersion) &&
+                                      !selectedOptiPatcherVersion.Equals("none", StringComparison.OrdinalIgnoreCase);
+
             try
             {
                 var componentService = new ComponentManagementService();
@@ -1054,7 +1122,7 @@ namespace OptiscalerClient.Views
                 {
                     retryDone = true;
                     DebugWindow.Log($"[Install] Detected corrupt cache. Missing files. Triggering auto-retry...");
-                    
+
                     if (instEx.Message.Contains("Fakenvapi", StringComparison.OrdinalIgnoreCase))
                     {
                         if (Directory.Exists(fakeCacheDir)) try { Directory.Delete(fakeCacheDir, true); } catch { }
@@ -1063,7 +1131,7 @@ namespace OptiscalerClient.Views
                     {
                         if (Directory.Exists(nukemCacheDir)) try { Directory.Delete(nukemCacheDir, true); } catch { }
                     }
-                    else 
+                    else
                     {
                         if (Directory.Exists(optiCacheDir)) try { Directory.Delete(optiCacheDir, true); } catch { }
                     }
@@ -1109,7 +1177,7 @@ namespace OptiscalerClient.Views
                         if (prgDownload != null) { prgDownload.IsIndeterminate = true; }
                     });
 
-                    try 
+                    try
                     {
                         await Task.Run(() =>
                         {
@@ -1145,6 +1213,87 @@ namespace OptiscalerClient.Views
                     _game.Fsr4ExtraVersion = null;
                 }
             SkipExtras:
+
+                // ── OptiPatcher install ───────────────────────────────────────────
+                if (installOptiPatcher && !string.IsNullOrEmpty(selectedOptiPatcherVersion))
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (bdProgress != null) bdProgress.IsVisible = true;
+                        if (txtProgressState != null) txtProgressState.Text = GetResourceString("TxtDownloadingOptiPatcher", "Downloading OptiPatcher...");
+                        if (prgDownload != null) { prgDownload.IsIndeterminate = false; prgDownload.Value = 0; }
+                    });
+
+                    try
+                    {
+                        var optiPatcherProgress = new Progress<double>(p =>
+                            Dispatcher.UIThread.Post(() => { if (prgDownload != null) prgDownload.Value = p; }));
+
+                        var optiPatcherAsiPath = await componentService.DownloadOptiPatcherAsync(selectedOptiPatcherVersion, optiPatcherProgress);
+
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            if (txtProgressState != null) txtProgressState.Text = GetResourceString("TxtInstallingOptiPatcher", "Installing OptiPatcher...");
+                            if (prgDownload != null) prgDownload.IsIndeterminate = true;
+                        });
+
+                        await Task.Run(() =>
+                        {
+                            var installSvc = new GameInstallationService();
+                            var gameDir = overrideGameDir ?? installSvc.DetermineInstallDirectory(_game) ?? _game.InstallPath;
+
+                            // Create plugins folder and copy the .asi file
+                            var pluginsDir = System.IO.Path.Combine(gameDir, "plugins");
+                            Directory.CreateDirectory(pluginsDir);
+                            var destAsi = System.IO.Path.Combine(pluginsDir, "OptiPatcher.asi");
+                            System.IO.File.Copy(optiPatcherAsiPath, destAsi, overwrite: true);
+                            DebugWindow.Log($"[OptiPatcher] Installed to {destAsi}");
+
+                            // Patch OptiScaler.ini: ensure LoadAsiPlugins=true
+                            var iniPath = System.IO.Path.Combine(gameDir, "OptiScaler.ini");
+                            if (System.IO.File.Exists(iniPath))
+                            {
+                                var lines = System.IO.File.ReadAllLines(iniPath).ToList();
+                                bool found = false;
+                                for (int idx = 0; idx < lines.Count; idx++)
+                                {
+                                    var trimmed = lines[idx].Trim();
+                                    if (trimmed.StartsWith("LoadAsiPlugins", StringComparison.OrdinalIgnoreCase) &&
+                                        (trimmed.Length == "LoadAsiPlugins".Length || trimmed["LoadAsiPlugins".Length] == '='))
+                                    {
+                                        lines[idx] = "LoadAsiPlugins=true";
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if (!found)
+                                    lines.Add("LoadAsiPlugins=true");
+                                System.IO.File.WriteAllLines(iniPath, lines);
+                                DebugWindow.Log("[OptiPatcher] Patched OptiScaler.ini: LoadAsiPlugins=true");
+                            }
+                            else
+                            {
+                                DebugWindow.Log($"[OptiPatcher] OptiScaler.ini not found at {iniPath}, skipping patch");
+                            }
+                        });
+
+                        installedComponents += " + OptiPatcher";
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.UIThread.Post(() => { if (bdProgress != null) bdProgress.IsVisible = false; });
+                        await new ConfirmDialog(this, "Warning",
+                            $"OptiPatcher installation failed (OptiScaler was still installed):\n{ex.Message}").ShowDialog<object>(this);
+                    }
+                    finally
+                    {
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            if (prgDownload != null) prgDownload.IsIndeterminate = false;
+                            if (bdProgress != null) bdProgress.IsVisible = false;
+                        });
+                    }
+                }
 
                 NeedsScan = true;
                 UpdateStatus();

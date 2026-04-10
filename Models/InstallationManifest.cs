@@ -60,6 +60,7 @@ namespace OptiscalerClient.Models
         public bool IncludesFakenvapi { get; set; }
         public bool IncludesNukemFG { get; set; }
         public bool IncludesExtras { get; set; }
+        public bool IncludesOptiPatcher { get; set; }
 
         /// <summary>
         /// Name of the OptiScaler profile that was applied during installation

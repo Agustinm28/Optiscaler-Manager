@@ -1,0 +1,173 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="OptiscalerClient.Views.ManageDefaultVersionsWindow"
+        Title="Manage Default Versions"
+        Width="560"
+        Height="720"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        CanResize="False"
+        ShowInTaskbar="False">
+
+    <Panel Margin="16" Name="RootPanel" Opacity="0">
+        <Border CornerRadius="12"
+                Background="{StaticResource BrBgBase}"
+                BoxShadow="0 10 30 0 #A0000000">
+            
+            <Grid>
+                <Border CornerRadius="12"
+                        BorderBrush="{StaticResource BrBorderSubtle}"
+                        BorderThickness="1"
+                        ZIndex="10"
+                        IsHitTestVisible="False"/>
+
+                <Border CornerRadius="12"
+                        Background="Transparent"
+                        ClipToBounds="True">
+                    
+                    <Grid RowDefinitions="Auto, *, Auto">
+                        
+                        <!-- Title Bar -->
+                        <Border Grid.Row="0"
+                                Name="TitleBar"
+                                Background="{StaticResource BrBgDeep}"
+                                Padding="24,18"
+                                BorderBrush="{StaticResource BrBorderSubtle}"
+                                BorderThickness="0,0,0,1">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource TxtManageDefaultVersions}"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource BrTextPrimary}"/>
+                                <TextBlock Text="{DynamicResource TxtManageDefaultVersionsDesc}"
+                                           FontSize="{StaticResource FontSizeCaption}"
+                                           Foreground="{StaticResource BrTextSecondary}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Content -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="24,20" Spacing="20">
+                                
+                                <!-- Default OptiScaler Version -->
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{DynamicResource TxtDefaultOptiVersionTitle}"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="{StaticResource BrTextPrimary}"/>
+                                    <TextBlock Text="{DynamicResource TxtDefaultOptiVersionDesc}"
+                                               Foreground="{StaticResource BrTextSecondary}"
+                                               TextWrapping="Wrap"
+                                               FontSize="{StaticResource FontSizeCaption}"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                        <Grid ColumnDefinitions="*,*" Width="150">
+                                            <Button Name="BtnOptiDefaultStable"
+                                                    Grid.Column="0"
+                                                    Content="Stable"
+                                                    Classes="BtnPrimary"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center"
+                                                    FontSize="11"
+                                                    Padding="8,5"
+                                                    Margin="0,0,2,0"
+                                                    Click="BtnOptiDefaultStable_Click"/>
+                                            <Button Name="BtnOptiDefaultBeta"
+                                                    Grid.Column="1"
+                                                    Content="Beta"
+                                                    Classes="BtnSecondary"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center"
+                                                    FontSize="11"
+                                                    Padding="8,5"
+                                                    Margin="2,0,0,0"
+                                                    Click="BtnOptiDefaultBeta_Click"/>
+                                        </Grid>
+                                        <ComboBox Name="CmbDefaultOptiScalerVersion"
+                                                  Width="260"
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Default FSR4 INT8 Version -->
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{DynamicResource TxtFsr4Int8DefaultTitle}"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="{StaticResource BrTextPrimary}"/>
+                                    <TextBlock Text="{DynamicResource TxtFsr4Int8DefaultDesc}"
+                                               Foreground="{StaticResource BrTextSecondary}"
+                                               TextWrapping="Wrap"
+                                               FontSize="{StaticResource FontSizeCaption}"/>
+                                    <ComboBox Name="CmbDefaultExtrasVersion"
+                                              Width="260"
+                                              Margin="0,4,0,0"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Default OptiPatcher Version -->
+                                <StackPanel Spacing="6">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{DynamicResource TxtOptiPatcherDefaultTitle}"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource BrTextPrimary}"
+                                                   VerticalAlignment="Center"/>
+                                        <Border Background="{StaticResource BrBgElevated}"
+                                                BorderBrush="{StaticResource BrBorderSubtle}"
+                                                BorderThickness="1" CornerRadius="8"
+                                                Width="16" Height="16"
+                                                ToolTip.ShowDelay="100" Cursor="Help"
+                                                ToolTip.Tip="{DynamicResource TxtOptiPatcherTooltip}">
+                                            <TextBlock Text="?" Foreground="{StaticResource BrTextSecondary}"
+                                                       FontSize="10" FontWeight="Bold"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       Margin="0,-1,0,0"/>
+                                        </Border>
+                                    </StackPanel>
+                                        <TextBlock Text="{DynamicResource TxtOptiPatcherDefaultDesc}"
+                                               Foreground="{StaticResource BrTextSecondary}"
+                                               TextWrapping="Wrap"
+                                               FontSize="{StaticResource FontSizeCaption}"/>
+                                        <Button Name="BtnOptiPatcherSupportLink"
+                                            Content="{DynamicResource TxtOptiPatcherSupportLinkText}"
+                                            Classes="Link"
+                                            Margin="0,6,0,0"
+                                            HorizontalAlignment="Left"
+                                            Click="BtnOptiPatcherSupportLink_Click"/>
+                                        <ComboBox Name="CmbDefaultOptiPatcherVersion"
+                                              Width="260"
+                                              Margin="0,6,0,0"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Footer Buttons -->
+                        <Border Grid.Row="2"
+                                Background="{StaticResource BrBgDeep}"
+                                BorderBrush="{StaticResource BrBorderSubtle}"
+                                BorderThickness="0,1,0,0"
+                                Padding="24,16">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                                <Button Content="{DynamicResource TxtCancel}"
+                                        Classes="BtnSecondary"
+                                        Padding="20,10"
+                                        Click="BtnCancel_Click"/>
+                                <Button Content="{DynamicResource TxtSave}"
+                                        Classes="BtnPrimary"
+                                        Padding="20,10"
+                                        Click="BtnSave_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Panel>
+</Window>

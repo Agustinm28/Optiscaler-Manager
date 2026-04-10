@@ -258,6 +258,13 @@
     <x:String x:Key="TxtDefaultGpuDesc">기본값 및 GPU별 안내에 사용됩니다.</x:String>
     <x:String x:Key="TxtDefaultOptiVersionTitle">기본 OptiScaler 버전</x:String>
     <x:String x:Key="TxtDefaultOptiVersionDesc">관리 열기 또는 빠른 설치 시 미리 선택되는 버전입니다. '자동'은 최신 권장 버전을 선택합니다.</x:String>
+    <x:String x:Key="TxtDefaultVersionsTitle">기본 버전</x:String>
+    <x:String x:Key="TxtDefaultVersionsDesc">게임 관리 및 빠른 설치를 위한 기본 구성 요소 버전 관리</x:String>
+    <x:String x:Key="TxtManageDefaultVersions">기본 버전 관리</x:String>
+    <x:String x:Key="TxtManageDefaultVersionsDesc">게임 관리 창을 열거나 빠른 설치를 사용할 때 미리 선택되는 구성 요소 버전을 설정합니다.</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultTitle">기본 OptiPatcher 버전</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultDesc">관리 열기 또는 빠른 설치 시 미리 선택되는 OptiPatcher 버전입니다. 설치를 건너뛰려면 없음을 선택하세요.</x:String>
+    <x:String x:Key="TxtOptiPatcherSupportLinkText">호환 게임 목록 보기</x:String>
     <x:String x:Key="TxtClearAppCacheTitle">앱 캐시 지우기</x:String>
     <x:String x:Key="TxtClearAppCacheDesc">스캔된 게임, 커버 이미지 및 캐시된 버전 데이터를 제거합니다. 앱은 다음 시작 시 다시 스캔합니다.</x:String>
     <x:String x:Key="TxtClearCacheBtn">캐시 지우기</x:String>
@@ -482,7 +489,12 @@
     <x:String x:Key="TxtRefreshingCovers">누락된 커버 새로 고침 중...</x:String>
     <x:String x:Key="TxtCoverRefreshDoneFmt">커버 새로 고침 완료. {0}/{1}개의 누락된 커버를 찾았습니다.</x:String>
     <x:String x:Key="TxtCoverRefreshToastFmt">커버 새로 고침 완료 — {0}/{1}개의 커버를 찾았습니다.</x:String>
-</ResourceDictionary>
+
+    <!-- OptiPatcher -->
+    <x:String x:Key="TxtOptiPatcherLbl">OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherTooltip">지원 게임에서 스푸핑 없이 DLSS/DLSS-FG 입력을 노출하는 OptiScaler용 ASI 플러그인입니다. Intel Arc 사용자의 D3D12 오류와 Dxgi 스푸핑으로 인한 성능 저하 또는 크래시를 방지합니다.</x:String>
+    <x:String x:Key="TxtDownloadingOptiPatcher">OptiPatcher 다운로드 중...</x:String>
+    <x:String x:Key="TxtInstallingOptiPatcher">OptiPatcher 설치 중...</x:String></ResourceDictionary>
 
 
 

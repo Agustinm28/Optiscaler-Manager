@@ -53,6 +53,7 @@ namespace OptiscalerClient.Models
         public RepositoryConfig OptiScalerExtras { get; set; } = new();
         public RepositoryConfig Fakenvapi { get; set; } = new();
         public RepositoryConfig NukemFG { get; set; } = new();
+        public RepositoryConfig OptiPatcher { get; set; } = new();
         public string Language { get; set; } = "en";
         public bool Debug { get; set; } = false;
         public string DefaultProfileName { get; set; } = OptiScalerProfile.BuiltInDefaultName;
@@ -81,6 +82,11 @@ namespace OptiscalerClient.Models
         /// Null or "auto" means let the app choose the recommended/latest version automatically.
         /// </summary>
         public string? DefaultOptiScalerVersion { get; set; } = null;
+        /// <summary>
+        /// The default OptiPatcher version to pre-select in ManageGameWindow / Quick Install.
+        /// Null or "none" means "do not install".
+        /// </summary>
+        public string? DefaultOptiPatcherVersion { get; set; } = null;
         public ScanSourcesConfig ScanSources { get; set; } = new();
         public string SteamGridDBApiKey { get; set; } = string.Empty;
         public List<ScanExclusion> ScanExclusions { get; set; } = new();
@@ -136,5 +142,24 @@ namespace OptiscalerClient.Models
     {
         public DateTime LastUpdated { get; set; } = DateTime.MinValue;
         public List<ExtrasReleaseEntry> Releases { get; set; } = new();
+    }
+
+    /// <summary>
+    /// A single OptiPatcher release entry stored in the local cache.
+    /// </summary>
+    public class OptiPatcherReleaseEntry
+    {
+        public string Version { get; set; } = string.Empty;
+        public string? DownloadUrl { get; set; }
+        public bool IsLatest { get; set; }
+    }
+
+    /// <summary>
+    /// Local cache of OptiPatcher release metadata.
+    /// </summary>
+    public class OptiPatcherReleasesCache
+    {
+        public DateTime LastUpdated { get; set; } = DateTime.MinValue;
+        public List<OptiPatcherReleaseEntry> Releases { get; set; } = new();
     }
 }

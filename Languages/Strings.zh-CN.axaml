@@ -258,6 +258,13 @@
     <x:String x:Key="TxtDefaultGpuDesc">用于默认值和 GPU 特定建议。</x:String>
     <x:String x:Key="TxtDefaultOptiVersionTitle">默认 OptiScaler 版本</x:String>
     <x:String x:Key="TxtDefaultOptiVersionDesc">打开"管理"窗口或使用快速安装时预选的版本。"自动"将选择最新推荐版本。</x:String>
+    <x:String x:Key="TxtDefaultVersionsTitle">默认版本</x:String>
+    <x:String x:Key="TxtDefaultVersionsDesc">管理游戏管理和快速安装的默认组件版本</x:String>
+    <x:String x:Key="TxtManageDefaultVersions">管理默认版本</x:String>
+    <x:String x:Key="TxtManageDefaultVersionsDesc">配置打开游戏管理窗口或使用快速安装时预选的组件版本。</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultTitle">默认 OptiPatcher 版本</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultDesc">打开"管理"窗口或使用快速安装时预选的 OptiPatcher 版本。选择"无"跳过安装。</x:String>
+    <x:String x:Key="TxtOptiPatcherSupportLinkText">查看兼容游戏列表</x:String>
     <x:String x:Key="TxtClearAppCacheTitle">清除应用缓存</x:String>
     <x:String x:Key="TxtClearAppCacheDesc">删除已扫描的游戏、封面图片和缓存的版本数据。应用将在下次启动时重新扫描。</x:String>
     <x:String x:Key="TxtClearCacheBtn">清除缓存</x:String>
@@ -482,7 +489,12 @@
     <x:String x:Key="TxtRefreshingCovers">正在刷新缺失封面...</x:String>
     <x:String x:Key="TxtCoverRefreshDoneFmt">封面刷新完成。找到 {0}/{1} 张缺失封面。</x:String>
     <x:String x:Key="TxtCoverRefreshToastFmt">封面刷新完成 — 找到 {0}/{1} 张封面。</x:String>
-</ResourceDictionary>
+
+    <!-- OptiPatcher -->
+    <x:String x:Key="TxtOptiPatcherLbl">OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherTooltip">OptiScaler 的 ASI 插件，在受支持的游戏中无需欺骗即可暴露 DLSS/DLSS-FG 输入。帮助 Intel Arc 用户避免 D3D12 错误，并防止 Dxgi 欺骗导致的性能开销或崩溃。</x:String>
+    <x:String x:Key="TxtDownloadingOptiPatcher">正在下载 OptiPatcher...</x:String>
+    <x:String x:Key="TxtInstallingOptiPatcher">正在安装 OptiPatcher...</x:String></ResourceDictionary>
 
 
 

@@ -196,6 +196,13 @@ This version is unavailable for download. Check your internet connection and try
     <x:String x:Key="TxtDefaultGpuDesc">Used for defaults and GPU-specific guidance.</x:String>
     <x:String x:Key="TxtDefaultOptiVersionTitle">Default OptiScaler Version</x:String>
     <x:String x:Key="TxtDefaultOptiVersionDesc">Pre-selected version when opening Manage or using Quick Install. 'Auto' picks the latest recommended release.</x:String>
+    <x:String x:Key="TxtDefaultVersionsTitle">Default Versions</x:String>
+    <x:String x:Key="TxtDefaultVersionsDesc">Manage default component versions for game management and Quick Install</x:String>
+    <x:String x:Key="TxtManageDefaultVersions">Manage Default Versions</x:String>
+    <x:String x:Key="TxtManageDefaultVersionsDesc">Configure which component versions are pre-selected when opening the game management window or using Quick Install.</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultTitle">Default OptiPatcher Version</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultDesc">Pre-selected OptiPatcher version when opening Manage or using Quick Install. Select None to skip OptiPatcher installation.</x:String>
+    <x:String x:Key="TxtOptiPatcherSupportLinkText">View supported games list</x:String>
     <x:String x:Key="TxtClearAppCacheTitle">Clear Application Cache</x:String>
     <x:String x:Key="TxtClearAppCacheDesc">Remove scanned games, cover art and cached version data. The app will re-scan and re-download on next launch.</x:String>
     <x:String x:Key="TxtClearCacheBtn">Clear Cache</x:String>
@@ -277,7 +284,7 @@ This version is unavailable for download. Check your internet connection and try
     <x:String x:Key="TxtHelpPageSettings">Settings &amp; Configuration</x:String>
     <x:String x:Key="TxtHelpPageBulkOperations">Bulk Operations</x:String>
     <x:String x:Key="TxtHelpPageTroubleshooting">FAQ &amp; Troubleshooting</x:String>
-    <x:String x:Key="TxtHelpDisclaimerTitle">Disclaimer \u26a0\ufe0f</x:String>
+    <x:String x:Key="TxtHelpDisclaimerTitle">Disclaimer ⚠️</x:String>
     <x:String x:Key="TxtHelpDisclaimerContent">This is not an official OptiScaler project. I am not affiliated with the OptiScaler team. This is a personal project developed without any commercial purpose. Anyone is free to try and use this software at their own risk.&#x0a;&#x0a;Credits: A special thanks to the OptiScaler team; this tool is only possible thanks to their incredible work on the original mod.</x:String>
     <x:String x:Key="TxtHelpSystemTitle">System</x:String>
     <x:String x:Key="TxtHelpLicenseTitle">License &amp; Copyright</x:String>
@@ -483,7 +490,12 @@ This version is unavailable for download. Check your internet connection and try
     <x:String x:Key="TxtRefreshingCovers">Refreshing missing covers...</x:String>
     <x:String x:Key="TxtCoverRefreshDoneFmt">Cover refresh complete. Found {0}/{1} missing covers.</x:String>
     <x:String x:Key="TxtCoverRefreshToastFmt">Cover refresh complete — {0}/{1} covers found.</x:String>
-</ResourceDictionary>
+
+    <!-- OptiPatcher -->
+    <x:String x:Key="TxtOptiPatcherLbl">OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherTooltip">An ASI Plugin for OptiScaler that exposes DLSS/DLSS-FG inputs without spoofing in supported games. Helps AMD and Intel users avoid D3D12 errors and prevents performance overhead or crashes caused by Dxgi spoofing.</x:String>
+    <x:String x:Key="TxtDownloadingOptiPatcher">Downloading OptiPatcher...</x:String>
+    <x:String x:Key="TxtInstallingOptiPatcher">Installing OptiPatcher...</x:String></ResourceDictionary>
 
 
 

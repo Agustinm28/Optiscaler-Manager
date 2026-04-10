@@ -258,7 +258,14 @@ Bu sürüm indirilemez. İnternet bağlantınızı kontrol edip daha sonra tekra
     <x:String x:Key="TxtDefaultGpuDesc">Varsayılan değerler ve GPU'ya özgü kılavuz için kullanılır.</x:String>
     <x:String x:Key="TxtDefaultOptiVersionTitle">Varsayılan OptiScaler Sürümü</x:String>
     <x:String x:Key="TxtDefaultOptiVersionDesc">Yönet penceresi açılırken veya Hızlı Yükleme kullanılırken önceden seçilen sürüm. 'Otomatik' en son önerilen sürümü seçer.</x:String>
-    <x:String x:Key="TxtClearAppCacheTitle">Uygulama Önbelleğini Temizle</x:String>
+    <x:String x:Key="TxtDefaultVersionsTitle">Varsayılan Sürümler</x:String>
+    <x:String x:Key="TxtDefaultVersionsDesc">Oyun yönetimi ve Hızlı Yükleme için varsayılan bileşen sürümlerini yönetin</x:String>
+    <x:String x:Key="TxtManageDefaultVersions">Varsayılan Sürümleri Yönet</x:String>
+    <x:String x:Key="TxtManageDefaultVersionsDesc">Oyun yönetim penceresi açılırken veya Hızlı Yükleme kullanılırken önceden seçilen bileşen sürümlerini yapılandırın.</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultTitle">Varsayılan OptiPatcher Sürümü</x:String>
+        <x:String x:Key="TxtOptiPatcherDefaultDesc">Yönetim penceresi açılırken veya Hızlı Yükleme kullanılırken önceden seçilen OptiPatcher sürümü. Yüklemeyi atlamak için 'Yok' seçin.</x:String>
+        <x:String x:Key="TxtOptiPatcherSupportLinkText">Uyumlu oyunlar listesini görüntüle</x:String>
+        <x:String x:Key="TxtClearAppCacheTitle">Uygulama Önbelleğini Temizle</x:String>
     <x:String x:Key="TxtClearAppCacheDesc">Taranan oyunları, kapak resimleri ve önbelleğe alınmış sürüm verilerini kaldırır. Uygulama bir sonraki başlatılmada yeniden tarar.</x:String>
     <x:String x:Key="TxtClearCacheBtn">Önbelleği Temizle</x:String>
     <x:String x:Key="TxtClearAppCacheDialogMsg">Uyarı: Bu işlem taranan tüm oyunları, kapak resimlerini ve önbelleğe alınmış OptiScaler sürüm verilerini kalıcı olarak siler.&#x0a;&#x0a;Temizleme sonrası uygulama kapanacaktır. Bir sonraki başlatılmada kütüphane yeniden taranacak ve sürüm bilgileri yeniden indirilecektir.</x:String>
@@ -482,7 +489,12 @@ Bu sürüm indirilemez. İnternet bağlantınızı kontrol edip daha sonra tekra
     <x:String x:Key="TxtRefreshingCovers">Eksik kapaklar yenileniyor...</x:String>
     <x:String x:Key="TxtCoverRefreshDoneFmt">Kapak yenileme tamamlandi. {0}/{1} eksik kapak bulundu.</x:String>
     <x:String x:Key="TxtCoverRefreshToastFmt">Kapak yenileme tamamlandi — {0}/{1} kapak bulundu.</x:String>
-</ResourceDictionary>
+
+    <!-- OptiPatcher -->
+    <x:String x:Key="TxtOptiPatcherLbl">OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherTooltip">Desteklenen oyunlarda spoofing olmadan DLSS/DLSS-FG girişlerini açığa çıkaran OptiScaler için bir ASI Eklentisi. Intel Arc kullanıcılarının D3D12 hatalarından kaçınmasına yardımcı olur ve Dxgi spoofing'in neden olduğu performans düşüşlerini veya çökmeleri önler.</x:String>
+    <x:String x:Key="TxtDownloadingOptiPatcher">OptiPatcher indiriliyor...</x:String>
+    <x:String x:Key="TxtInstallingOptiPatcher">OptiPatcher yükleniyor...</x:String></ResourceDictionary>
 
 
 

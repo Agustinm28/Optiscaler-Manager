@@ -236,6 +236,33 @@
                                               VerticalContentAlignment="Center"/>
                                 </StackPanel>
 
+                                <!-- OptiPatcher -->
+                                <StackPanel Spacing="5">
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <TextBlock Text="{DynamicResource TxtOptiPatcherLbl}"
+                                                   Foreground="{StaticResource BrTextSecondary}"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center"/>
+                                        <Border Background="{StaticResource BrBgElevated}"
+                                                BorderBrush="{StaticResource BrBorderSubtle}"
+                                                BorderThickness="1" CornerRadius="8"
+                                                Width="14" Height="14"
+                                                ToolTip.ShowDelay="100" Cursor="Help"
+                                                ToolTip.Tip="{DynamicResource TxtOptiPatcherTooltip}">
+                                            <TextBlock Text="?" Foreground="{StaticResource BrTextSecondary}"
+                                                       FontSize="9" FontWeight="Bold"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       Margin="0,-1,0,0"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <ComboBox Name="CmbOptiPatcherVersion"
+                                              HorizontalAlignment="Stretch"
+                                              Classes="BtnSelector"
+                                              HorizontalContentAlignment="Left"
+                                              Background="{StaticResource BrBgBase}"
+                                              VerticalContentAlignment="Center"/>
+                                </StackPanel>
+
                                 <!-- Profile -->
                                 <StackPanel Spacing="5">
                                     <TextBlock Text="Profile"

@@ -7,6 +7,10 @@
         "RepoOwner": "optiscaler",
         "RepoName": "OptiScaler"
     },
+    "OptiPatcher": {
+        "RepoOwner": "optiscaler",
+        "RepoName": "OptiPatcher"
+    },
     "OptiScalerBetas": {
         "RepoOwner": "Agustinm28",
         "RepoName": "OptiScaler-Betas"

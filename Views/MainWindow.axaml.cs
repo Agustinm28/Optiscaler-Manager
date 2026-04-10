@@ -1268,53 +1268,8 @@ namespace OptiscalerClient.Views
 
         private void RepopulateVersionCombos()
         {
-            // Populate FSR4 INT8 default version selector
-            var cmbDefaultExtras = this.FindControl<ComboBox>("CmbDefaultExtrasVersion");
-            if (cmbDefaultExtras != null)
-            {
-                _isInitializingLanguage = true;
-                cmbDefaultExtras.Items.Clear();
-
-                if (_componentService.ExtrasAvailableVersions.Count == 0)
-                {
-                    cmbDefaultExtras.Items.Add(new ComboBoxItem { Content = GetResourceString("TxtNoVersions", "No Versions Available"), Tag = "none" });
-                    cmbDefaultExtras.SelectedIndex = 0;
-                    cmbDefaultExtras.IsEnabled = false;
-                }
-                else
-                {
-                    cmbDefaultExtras.IsEnabled = true;
-                    cmbDefaultExtras.Items.Add(new ComboBoxItem { Content = "None", Tag = "none" });
-                    foreach (var ver in _componentService.ExtrasAvailableVersions)
-                    {
-                        cmbDefaultExtras.Items.Add(new ComboBoxItem { Content = ver, Tag = ver });
-                    }
-
-                    var savedDefault = _componentService.Config.DefaultExtrasVersion;
-                    cmbDefaultExtras.SelectedIndex = 0;
-                    if (!string.IsNullOrEmpty(savedDefault) &&
-                        !savedDefault.Equals("none", StringComparison.OrdinalIgnoreCase))
-                    {
-                        for (int i = 1; i < cmbDefaultExtras.Items.Count; i++)
-                        {
-                            if ((cmbDefaultExtras.Items[i] as ComboBoxItem)?.Tag?.ToString() == savedDefault)
-                            {
-                                cmbDefaultExtras.SelectedIndex = i;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                _isInitializingLanguage = false;
-            }
-
-            // Populate OptiScaler default version selector
-            var savedOptiDefault = _componentService.Config.DefaultOptiScalerVersion;
-            bool savedIsBeta = !string.IsNullOrEmpty(savedOptiDefault) && _componentService.BetaVersions.Contains(savedOptiDefault);
-            _optiDefaultShowingBeta = savedIsBeta;
-            UpdateOptiDefaultChannelButtons();
-            PopulateDefaultOptiScalerVersionCombo(showBeta: savedIsBeta, restoreSaved: true);
+            // Version selectors are now managed via ManageDefaultVersionsWindow.
+            // Nothing to repopulate in the config tab.
         }
 
         private void CmbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -2390,155 +2345,10 @@ namespace OptiscalerClient.Views
             }
         }
 
-        private void CmbDefaultOptiScalerVersion_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void BtnManageDefaultVersions_Click(object sender, RoutedEventArgs e)
         {
-            if (_isInitializingLanguage) return;
-            if (sender is ComboBox cmb && cmb.SelectedItem is ComboBoxItem item)
-            {
-                var ver = item.Tag?.ToString();
-                _componentService.Config.DefaultOptiScalerVersion = string.IsNullOrEmpty(ver) ? null : ver;
-                _componentService.SaveConfiguration();
-            }
-        }
-
-        private bool _optiDefaultShowingBeta = false;
-
-        private void BtnOptiDefaultStable_Click(object? sender, RoutedEventArgs e)
-        {
-            if (!_optiDefaultShowingBeta) return;
-            _optiDefaultShowingBeta = false;
-            UpdateOptiDefaultChannelButtons();
-            PopulateDefaultOptiScalerVersionCombo(showBeta: false, restoreSaved: false);
-        }
-
-        private void BtnOptiDefaultBeta_Click(object? sender, RoutedEventArgs e)
-        {
-            if (_optiDefaultShowingBeta) return;
-            _optiDefaultShowingBeta = true;
-            UpdateOptiDefaultChannelButtons();
-            PopulateDefaultOptiScalerVersionCombo(showBeta: true, restoreSaved: false);
-        }
-
-        private void UpdateOptiDefaultChannelButtons()
-        {
-            var btnStable = this.FindControl<Button>("BtnOptiDefaultStable");
-            var btnBeta   = this.FindControl<Button>("BtnOptiDefaultBeta");
-            if (btnStable == null || btnBeta == null) return;
-            if (_optiDefaultShowingBeta)
-            {
-                btnStable.Classes.Remove("BtnPrimary");   btnStable.Classes.Add("BtnSecondary");
-                btnBeta.Classes.Remove("BtnSecondary");   btnBeta.Classes.Add("BtnPrimary");
-            }
-            else
-            {
-                btnStable.Classes.Remove("BtnSecondary"); btnStable.Classes.Add("BtnPrimary");
-                btnBeta.Classes.Remove("BtnPrimary");     btnBeta.Classes.Add("BtnSecondary");
-            }
-        }
-
-        private void PopulateDefaultOptiScalerVersionCombo(bool showBeta, bool restoreSaved)
-        {
-            var cmb = this.FindControl<ComboBox>("CmbDefaultOptiScalerVersion");
-            if (cmb == null) return;
-
-            _isInitializingLanguage = true;
-            cmb.Items.Clear();
-
-            var allVersions = _componentService.OptiScalerAvailableVersions;
-            var betaSet      = _componentService.BetaVersions;
-            var latestStable = _componentService.LatestStableVersion;
-            var latestBeta   = _componentService.LatestBetaVersion;
-
-            foreach (var ver in allVersions)
-            {
-                bool isBeta = betaSet.Contains(ver);
-                if (isBeta != showBeta) continue;
-
-                bool isLatestInChannel = showBeta
-                    ? ver == latestBeta
-                    : ver == latestStable;
-
-                ComboBoxItem cbi;
-                if (isLatestInChannel)
-                {
-                    var stack = new StackPanel
-                    {
-                        Orientation = Avalonia.Layout.Orientation.Horizontal,
-                        Spacing = 6,
-                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-                    };
-                    stack.Children.Add(new TextBlock { Text = ver, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center });
-                    stack.Children.Add(new Border
-                    {
-                        CornerRadius = new Avalonia.CornerRadius(4),
-                        Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#7C3AED")),
-                        Padding = new Avalonia.Thickness(5, 1),
-                        Child = new TextBlock
-                        {
-                            Text = "LATEST",
-                            FontSize = 10,
-                            Foreground = Avalonia.Media.Brushes.White,
-                            FontWeight = Avalonia.Media.FontWeight.Bold,
-                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-                        }
-                    });
-                    cbi = new ComboBoxItem { Content = stack, Tag = ver };
-                }
-                else
-                {
-                    cbi = new ComboBoxItem { Content = ver, Tag = ver };
-                }
-                cmb.Items.Add(cbi);
-            }
-
-            // Default to the first item (latest in channel); restore saved if requested
-            if (cmb.Items.Count == 0)
-            {
-                cmb.Items.Add(new ComboBoxItem { Content = GetResourceString("TxtNoVersions", "No Versions Available"), Tag = "auto" });
-                cmb.SelectedIndex = 0;
-                cmb.IsEnabled = false;
-                _isInitializingLanguage = false;
-                return;
-            }
-            cmb.IsEnabled = true;
-            cmb.SelectedIndex = 0;
-            if (restoreSaved)
-            {
-                var saved = _componentService.Config.DefaultOptiScalerVersion;
-                if (!string.IsNullOrEmpty(saved) && !saved.Equals("auto", StringComparison.OrdinalIgnoreCase))
-                {
-                    for (int i = 0; i < cmb.Items.Count; i++)
-                    {
-                        if ((cmb.Items[i] as ComboBoxItem)?.Tag?.ToString() == saved)
-                        {
-                            cmb.SelectedIndex = i;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            _isInitializingLanguage = false;
-
-            // If this was a channel switch (not a restore), persist the implicit selection
-            // so that ManageGameWindow and BulkInstallWindow can read it.
-            if (!restoreSaved && cmb.SelectedItem is ComboBoxItem implicitItem)
-            {
-                var implicitVer = implicitItem.Tag?.ToString();
-                _componentService.Config.DefaultOptiScalerVersion = string.IsNullOrEmpty(implicitVer) ? null : implicitVer;
-                _componentService.SaveConfiguration();
-            }
-        }
-
-        private void CmbDefaultExtrasVersion_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_isInitializingLanguage) return;
-            if (sender is ComboBox cmb && cmb.SelectedItem is ComboBoxItem item)
-            {
-                var ver = item.Tag?.ToString() ?? "none";
-                _componentService.Config.DefaultExtrasVersion = ver.Equals("none", StringComparison.OrdinalIgnoreCase) ? null : ver;
-                _componentService.SaveConfiguration();
-            }
+            var dialog = new ManageDefaultVersionsWindow(this, _componentService);
+            await dialog.ShowDialog<bool?>(this);
         }
 
         private void PopulateDefaultGpuComboBox()
@@ -2866,7 +2676,7 @@ namespace OptiscalerClient.Views
                     var categoryTitle = new TextBlock
                     {
                         Text = (categoryPages.Count > 0 && !string.IsNullOrEmpty(categoryPages[0].CategoryKey))
-                            ? GetResourceString(categoryPages[0].CategoryKey, category)
+                            ? GetResourceString(categoryPages[0].CategoryKey!, category)
                             : category,
                         FontSize = 14,
                         FontWeight = FontWeight.SemiBold,
@@ -4657,6 +4467,66 @@ namespace OptiscalerClient.Views
                             }
                         }
 
+                        // ── OptiPatcher install (respect configured default)
+                        var configuredPatcher = _componentService.Config.DefaultOptiPatcherVersion;
+                        if (!string.IsNullOrEmpty(configuredPatcher) && !configuredPatcher.Equals("none", StringComparison.OrdinalIgnoreCase))
+                        {
+                            try
+                            {
+                                ShowToast($"Downloading OptiPatcher v{configuredPatcher}...", showProgress: true, progressPercent: 0);
+                                var patcherProgress = new Progress<double>(p =>
+                                    UpdateToastProgress($"Downloading OptiPatcher v{configuredPatcher}... {(int)p}%", p));
+
+                                var optiPatcherAsiPath = await _componentService.DownloadOptiPatcherAsync(configuredPatcher, patcherProgress);
+
+                                ShowToast("Installing OptiPatcher...", showProgress: true, progressPercent: null);
+
+                                await Task.Run(() =>
+                                {
+                                    var installSvc = new GameInstallationService();
+                                    var gameDir = installSvc.DetermineInstallDirectory(selectedGame) ?? selectedGame.InstallPath;
+
+                                    var pluginsDir = System.IO.Path.Combine(gameDir, "plugins");
+                                    Directory.CreateDirectory(pluginsDir);
+                                    var destAsi = System.IO.Path.Combine(pluginsDir, "OptiPatcher.asi");
+                                    System.IO.File.Copy(optiPatcherAsiPath, destAsi, overwrite: true);
+                                    DebugWindow.Log($"[QuickInstall][OptiPatcher] Installed to {destAsi}");
+
+                                    var iniPath = System.IO.Path.Combine(gameDir, "OptiScaler.ini");
+                                    if (System.IO.File.Exists(iniPath))
+                                    {
+                                        var lines = System.IO.File.ReadAllLines(iniPath).ToList();
+                                        bool found = false;
+                                        for (int idx = 0; idx < lines.Count; idx++)
+                                        {
+                                            var trimmed = lines[idx].Trim();
+                                            if (trimmed.StartsWith("LoadAsiPlugins", StringComparison.OrdinalIgnoreCase) &&
+                                                (trimmed.Length == "LoadAsiPlugins".Length || trimmed["LoadAsiPlugins".Length] == '='))
+                                            {
+                                                lines[idx] = "LoadAsiPlugins=true";
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!found)
+                                            lines.Add("LoadAsiPlugins=true");
+                                        System.IO.File.WriteAllLines(iniPath, lines);
+                                        DebugWindow.Log("[QuickInstall][OptiPatcher] Patched OptiScaler.ini: LoadAsiPlugins=true");
+                                    }
+                                });
+                            }
+                            catch (Exception ex)
+                            {
+                                HideToast();
+                                await new ConfirmDialog(
+                                    this,
+                                    GetResourceString("TxtWarning", "Warning"),
+                                    $"OptiPatcher download/inject failed (OptiScaler was still installed):\n{ex.Message}",
+                                    isAlert: true
+                                ).ShowDialog<bool>(this);
+                            }
+                        }
+
                         // Update game status
                         selectedGame.IsOptiscalerInstalled = true;
                         selectedGame.OptiscalerVersion = versionToInstall;
@@ -4666,26 +4536,21 @@ namespace OptiscalerClient.Views
 
                         _persistenceService.SaveGames(_games);
 
-                        // Final toast: report OptiScaler and optional FSR4 INT8 installed
+                        // Final toast: report what was installed
+                        var parts = new System.Collections.Generic.List<string> { $"OptiScaler {versionToInstall}" };
                         var configuredExtrasFinal = _componentService.Config.DefaultExtrasVersion;
                         if (!string.IsNullOrEmpty(configuredExtrasFinal) && !configuredExtrasFinal.Equals("none", StringComparison.OrdinalIgnoreCase))
+                            parts.Add($"FSR4 INT8 {configuredExtrasFinal}");
+                        var configuredPatcherFinal = _componentService.Config.DefaultOptiPatcherVersion;
+                        if (!string.IsNullOrEmpty(configuredPatcherFinal) && !configuredPatcherFinal.Equals("none", StringComparison.OrdinalIgnoreCase))
+                            parts.Add($"OptiPatcher {configuredPatcherFinal}");
+
+                        ShowToast($"Installed {string.Join(" + ", parts)}", showProgress: false, progressPercent: null);
+                        Dispatcher.UIThread.Post(() =>
                         {
-                            ShowToast($"Installed OptiScaler {versionToInstall} + FSR4 INT8 {configuredExtrasFinal}", showProgress: false, progressPercent: null);
-                            Dispatcher.UIThread.Post(() =>
-                            {
-                                var icon = this.FindControl<TextBlock>("TxtToastIcon");
-                                if (icon != null) icon.Text = string.Empty;
-                            });
-                        }
-                        else
-                        {
-                            ShowToast($"Installed OptiScaler {versionToInstall}", showProgress: false, progressPercent: null);
-                            Dispatcher.UIThread.Post(() =>
-                            {
-                                var icon = this.FindControl<TextBlock>("TxtToastIcon");
-                                if (icon != null) icon.Text = string.Empty;
-                            });
-                        }
+                            var icon = this.FindControl<TextBlock>("TxtToastIcon");
+                            if (icon != null) icon.Text = string.Empty;
+                        });
 
                         await HideToastAfterAsync(1500);
                     }

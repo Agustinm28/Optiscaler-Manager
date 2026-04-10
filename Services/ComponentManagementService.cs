@@ -63,6 +63,10 @@ namespace OptiscalerClient.Services
         private static ExtrasReleasesCache _extrasCache = new();
         private static System.Collections.Generic.List<string>? _cachedExtrasVersions = null;
         private static string? _cachedLatestExtrasVersion = null;
+        // Persistent local cache of OptiPatcher release metadata
+        private static OptiPatcherReleasesCache _optiPatcherCache = new();
+        private static System.Collections.Generic.List<string>? _cachedOptiPatcherVersions = null;
+        private static string? _cachedLatestOptiPatcherVersion = null;
 
         public System.Collections.Generic.List<string> OptiScalerAvailableVersions
             => _cachedOptiScalerVersions ?? GetDownloadedOptiScalerVersions();
@@ -78,6 +82,12 @@ namespace OptiscalerClient.Services
 
         public System.Collections.Generic.List<string> ExtrasDownloadedVersions
             => GetDownloadedExtrasVersions();
+
+        /// <summary>All available OptiPatcher versions from the remote cache.</summary>
+        public System.Collections.Generic.List<string> OptiPatcherAvailableVersions
+            => _cachedOptiPatcherVersions ?? new System.Collections.Generic.List<string>();
+        /// <summary>The latest OptiPatcher version tag, or null if none fetched yet.</summary>
+        public string? LatestOptiPatcherVersion => _cachedLatestOptiPatcherVersion;
 
         public string? OptiScalerVersion => _localVersions.OptiScalerVersion;
         public string? FakenvapiVersion => _localVersions.FakenvapiVersion;
@@ -112,6 +122,7 @@ namespace OptiscalerClient.Services
             LoadLocalVersions();
             LoadReleasesCache();
             LoadExtrasCache();
+            LoadOptiPatcherCache();
         }
 
         private static HttpClient CreateHttpClient()
@@ -142,7 +153,10 @@ namespace OptiscalerClient.Services
 
                         // If core repos are empty (e.g. config was generated with blank defaults),
                         // merge them from the install-dir template so the app stays functional.
-                        if (string.IsNullOrEmpty(_config.OptiScaler.RepoOwner))
+                        // Also re-merge if any individual repo is missing (e.g. OptiPatcher added in a later version).
+                        bool needsMerge = string.IsNullOrEmpty(_config.OptiScaler.RepoOwner)
+                                       || string.IsNullOrEmpty(_config.OptiPatcher.RepoOwner);
+                        if (needsMerge)
                         {
                             MergeReposFromTemplate(_config);
                             try
@@ -204,6 +218,7 @@ namespace OptiscalerClient.Services
                 if (!string.IsNullOrEmpty(template.OptiScalerExtras.RepoOwner))target.OptiScalerExtras = template.OptiScalerExtras;
                 if (!string.IsNullOrEmpty(template.Fakenvapi.RepoOwner))      target.Fakenvapi      = template.Fakenvapi;
                 if (!string.IsNullOrEmpty(template.NukemFG.RepoOwner))        target.NukemFG        = template.NukemFG;
+                if (!string.IsNullOrEmpty(template.OptiPatcher.RepoOwner))    target.OptiPatcher    = template.OptiPatcher;
 
                 if (target.ScanExclusions.Count == 0 && template.ScanExclusions.Count > 0)
                     target.ScanExclusions = template.ScanExclusions;
@@ -562,7 +577,7 @@ namespace OptiscalerClient.Services
             {
                 // To avoid spamming GitHub API (rate limits), only check every 15 minutes max per session.
                 // Also re-fetch if extras versions were never loaded yet.
-                if (_cachedOptiScalerVersions == null || _cachedExtrasVersions == null ||
+                if (_cachedOptiScalerVersions == null || _cachedExtrasVersions == null || _cachedOptiPatcherVersions == null ||
                     (DateTime.Now - _lastApiCheckTime).TotalMinutes > 15)
                 {
                     DebugWindow.Log($"[ComponentCheck] Fetching updates from GitHub API (Rates: {(DateTime.Now - _lastApiCheckTime).ToString(@"hh\:mm\:ss")} since last check)");
@@ -574,8 +589,9 @@ namespace OptiscalerClient.Services
                         var fakeTask = CheckComponentUpdateAsync("Fakenvapi", _config.Fakenvapi);
                         var nukemTask = CheckComponentUpdateAsync("NukemFG", _config.NukemFG);
                         var extrasTask = FetchExtrasReleasesAsync();
+                        var optiPatcherTask = FetchOptiPatcherReleasesAsync();
 
-                        await Task.WhenAll(optiVersionsTask, optiBetasTask, fakeTask, nukemTask, extrasTask);
+                        await Task.WhenAll(optiVersionsTask, optiBetasTask, fakeTask, nukemTask, extrasTask, optiPatcherTask);
 
                         var stableEntries = await optiVersionsTask;
                         var betaEntries = await optiBetasTask;
@@ -618,6 +634,33 @@ namespace OptiscalerClient.Services
 
                         _cachedFakenvapiVersion = await fakeTask ?? _cachedFakenvapiVersion;
                         _cachedNukemFGVersion = await nukemTask ?? _cachedNukemFGVersion;
+
+                        var newOptiPatcher = await optiPatcherTask;
+                        if (newOptiPatcher.Count > 0)
+                        {
+                            var existingOp = new System.Collections.Generic.HashSet<string>(
+                                _optiPatcherCache.Releases.Select(r => r.Version), StringComparer.OrdinalIgnoreCase);
+                            foreach (var e in _optiPatcherCache.Releases) e.IsLatest = false;
+                            foreach (var entry in newOptiPatcher)
+                            {
+                                if (!existingOp.Contains(entry.Version))
+                                    _optiPatcherCache.Releases.Add(entry);
+                                else
+                                {
+                                    var ex = _optiPatcherCache.Releases.FirstOrDefault(
+                                        r => string.Equals(r.Version, entry.Version, StringComparison.OrdinalIgnoreCase));
+                                    if (ex != null)
+                                    {
+                                        if (string.IsNullOrEmpty(ex.DownloadUrl)) ex.DownloadUrl = entry.DownloadUrl;
+                                        ex.IsLatest = entry.IsLatest;
+                                    }
+                                }
+                            }
+                            _optiPatcherCache.LastUpdated = DateTime.Now;
+                            SaveOptiPatcherCache();
+                            RebuildInMemoryOptiPatcherCache();
+                        }
+
                         _lastApiCheckTime = DateTime.Now;
                     }
                     catch (Exception apiEx)
@@ -628,6 +671,7 @@ namespace OptiscalerClient.Services
                         // Still rebuild from cache in case it was just loaded
                         RebuildInMemoryCacheFromReleases();
                         RebuildInMemoryExtrasCache();
+                        RebuildInMemoryOptiPatcherCache();
                         // Rate limit must propagate so the UI can show a warning dialog
                         if (apiEx is GitHubRateLimitException) throw;
                     }
@@ -1074,6 +1118,249 @@ namespace OptiscalerClient.Services
                 throw new Exception("amd_fidelityfx_upscaler_dx12.dll not found inside the downloaded archive.");
 
             return dllPath;
+        }
+
+        // ── OptiPatcher cache ─────────────────────────────────────────────────────
+
+        private void LoadOptiPatcherCache()
+        {
+            if (_optiPatcherCache.Releases.Count > 0) return;
+            var file = Path.Combine(_baseDir, "optipatcher_cache.json");
+            if (!File.Exists(file)) return;
+            try
+            {
+                var json = File.ReadAllText(file);
+                var loaded = JsonSerializer.Deserialize(json, OptimizerContext.Default.OptiPatcherReleasesCache);
+                if (loaded != null)
+                {
+                    _optiPatcherCache = loaded;
+                    RebuildInMemoryOptiPatcherCache();
+                    DebugWindow.Log($"[OptiPatcherCache] Loaded {_optiPatcherCache.Releases.Count} entries from local cache.");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugWindow.Log($"[OptiPatcherCache] Failed to load: {ex.Message}");
+            }
+        }
+
+        private void SaveOptiPatcherCache()
+        {
+            try
+            {
+                var file = Path.Combine(_baseDir, "optipatcher_cache.json");
+                var json = JsonSerializer.Serialize(_optiPatcherCache, OptimizerContext.Default.OptiPatcherReleasesCache);
+                File.WriteAllText(file, json);
+                DebugWindow.Log($"[OptiPatcherCache] Saved {_optiPatcherCache.Releases.Count} entries.");
+            }
+            catch (Exception ex)
+            {
+                DebugWindow.Log($"[OptiPatcherCache] Failed to save: {ex.Message}");
+            }
+        }
+
+        private void RebuildInMemoryOptiPatcherCache()
+        {
+            if (_optiPatcherCache.Releases == null || _optiPatcherCache.Releases.Count == 0)
+            {
+                _cachedOptiPatcherVersions = new System.Collections.Generic.List<string>();
+                return;
+            }
+            _cachedLatestOptiPatcherVersion = _optiPatcherCache.Releases.FirstOrDefault(r => r.IsLatest)?.Version
+                ?? _optiPatcherCache.Releases.FirstOrDefault()?.Version;
+            _cachedOptiPatcherVersions = _optiPatcherCache.Releases.Select(r => r.Version).Distinct().ToList();
+            DebugWindow.Log($"[OptiPatcherCache] Rebuilt in-memory: {_cachedOptiPatcherVersions.Count} version(s), latest={_cachedLatestOptiPatcherVersion}");
+        }
+
+        /// <summary>
+        /// Fetches all releases from the OptiPatcher repo. Looks for the OptiPatcher.asi asset.
+        /// </summary>
+        private async Task<System.Collections.Generic.List<OptiPatcherReleaseEntry>> FetchOptiPatcherReleasesAsync()
+        {
+            var entries = new System.Collections.Generic.List<OptiPatcherReleaseEntry>();
+            var config = _config.OptiPatcher;
+            var repoLabel = $"{config.RepoOwner}/{config.RepoName}";
+
+            try
+            {
+                if (string.IsNullOrEmpty(config.RepoOwner) || string.IsNullOrEmpty(config.RepoName))
+                {
+                    DebugWindow.Log($"[OptiPatcherVersions] Skipping {repoLabel}: empty config");
+                    return entries;
+                }
+
+                // First, resolve the actual latest tag from GitHub
+                string? actualLatestTag = null;
+                try
+                {
+                    var latestUrl = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases/latest";
+                    var latestResp = await GetWithRetryAsync(_httpClient, latestUrl, maxRetries: 2, timeoutSeconds: 15);
+                    if (latestResp.IsSuccessStatusCode)
+                    {
+                        var latestJson = await latestResp.Content.ReadAsStringAsync();
+                        using var latestDoc = JsonDocument.Parse(latestJson);
+                        if (latestDoc.RootElement.TryGetProperty("tag_name", out var tag))
+                        {
+                            actualLatestTag = tag.GetString();
+                            if (actualLatestTag != null && actualLatestTag.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+                                actualLatestTag = actualLatestTag.Substring(1);
+                        }
+                    }
+                }
+                catch { /* ignore — fall back to first-in-list */ }
+
+                var url = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases?per_page=30";
+                var response = await GetWithRetryAsync(_httpClient, url);
+                DebugWindow.Log($"[OptiPatcherVersions] GET {url} → HTTP {(int)response.StatusCode}");
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                bool latestMarked = false;
+
+                if (doc.RootElement.ValueKind != JsonValueKind.Array)
+                {
+                    DebugWindow.Log($"[OptiPatcherVersions] ERROR: Expected JSON array, got {doc.RootElement.ValueKind}");
+                    return entries;
+                }
+
+                foreach (var element in doc.RootElement.EnumerateArray())
+                {
+                    if (!element.TryGetProperty("tag_name", out var tagName)) continue;
+                    var version = tagName.GetString();
+                    if (string.IsNullOrEmpty(version)) continue;
+
+                    if (version.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+                        version = version.Substring(1);
+
+                    // Look for OptiPatcher.asi asset
+                    string? downloadUrl = null;
+                    if (element.TryGetProperty("assets", out var assets))
+                    {
+                        foreach (var asset in assets.EnumerateArray())
+                        {
+                            if (asset.TryGetProperty("browser_download_url", out var urlProp) &&
+                                asset.TryGetProperty("name", out var nameProp))
+                            {
+                                var assetName = nameProp.GetString() ?? "";
+                                var assetUrl  = urlProp.GetString();
+                                if (assetUrl != null &&
+                                    assetName.EndsWith(".asi", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    downloadUrl = assetUrl;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Mark as latest: use actualLatestTag if available, otherwise first in list
+                    bool isLatest;
+                    if (!string.IsNullOrEmpty(actualLatestTag))
+                        isLatest = string.Equals(version, actualLatestTag, StringComparison.OrdinalIgnoreCase);
+                    else
+                        isLatest = !latestMarked;
+
+                    entries.Add(new OptiPatcherReleaseEntry
+                    {
+                        Version = version,
+                        DownloadUrl = downloadUrl,
+                        IsLatest = isLatest,
+                    });
+                    latestMarked = true;
+                }
+
+                DebugWindow.Log($"[OptiPatcherVersions] {repoLabel} → {entries.Count} release(s)");
+            }
+            catch (Exception ex)
+            {
+                DebugWindow.Log($"[OptiPatcherVersions] {repoLabel} → ERROR: {ex.Message}");
+                // Do NOT rethrow — return empty list so CheckForUpdatesAsync continues
+            }
+
+            return entries;
+        }
+
+        /// <summary>
+        /// Returns the cache directory for a specific OptiPatcher version.
+        /// </summary>
+        public string GetOptiPatcherCachePath(string version)
+            => Path.Combine(_cacheDir, "OptiPatcher", version);
+
+        /// <summary>
+        /// Returns true if OptiPatcher.asi for the given version is already cached.
+        /// </summary>
+        public bool IsOptiPatcherCached(string version)
+            => File.Exists(Path.Combine(GetOptiPatcherCachePath(version), "OptiPatcher.asi"));
+
+        /// <summary>
+        /// Downloads OptiPatcher.asi for the given version into the per-version cache folder.
+        /// Returns the full path to the cached OptiPatcher.asi file.
+        /// </summary>
+        public async Task<string> DownloadOptiPatcherAsync(string version, IProgress<double>? progress = null)
+        {
+            var cacheDir = GetOptiPatcherCachePath(version);
+            var asiPath  = Path.Combine(cacheDir, "OptiPatcher.asi");
+
+            if (File.Exists(asiPath))
+            {
+                DebugWindow.Log($"[OptiPatcherDownload] OptiPatcher v{version} already cached at {asiPath}");
+                return asiPath;
+            }
+
+            // Resolve download URL (cache first, then API)
+            string? downloadUrl = _optiPatcherCache.Releases
+                .FirstOrDefault(r => string.Equals(r.Version, version, StringComparison.OrdinalIgnoreCase))
+                ?.DownloadUrl;
+
+            if (string.IsNullOrEmpty(downloadUrl))
+            {
+                var config = _config.OptiPatcher;
+                foreach (var prefix in new[] { "v", "" })
+                {
+                    try
+                    {
+                        var apiUrl = $"https://api.github.com/repos/{config.RepoOwner}/{config.RepoName}/releases/tags/{prefix}{version}";
+                        var response = await GetWithRetryAsync(_httpClient, apiUrl, maxRetries: 2, timeoutSeconds: 15);
+                        if (!response.IsSuccessStatusCode) continue;
+
+                        var json = await response.Content.ReadAsStringAsync();
+                        using var doc = JsonDocument.Parse(json);
+                        if (doc.RootElement.TryGetProperty("assets", out var assets))
+                        {
+                            foreach (var asset in assets.EnumerateArray())
+                            {
+                                if (asset.TryGetProperty("browser_download_url", out var urlProp) &&
+                                    asset.TryGetProperty("name", out var nameProp))
+                                {
+                                    var assetName = nameProp.GetString() ?? "";
+                                    var assetUrl  = urlProp.GetString();
+                                    if (assetUrl != null && assetName.EndsWith(".asi", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        downloadUrl = assetUrl;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(downloadUrl)) break;
+                    }
+                    catch { /* try next */ }
+                }
+            }
+
+            if (string.IsNullOrEmpty(downloadUrl))
+                throw new VersionUnavailableException(version, "No OptiPatcher.asi asset found for this version.");
+
+            Directory.CreateDirectory(cacheDir);
+
+            DebugWindow.Log($"[OptiPatcherDownload] Downloading {downloadUrl}");
+            await StreamToFileAsync(_httpClient, downloadUrl, asiPath, progress, 5 * 1024 * 1024);
+
+            if (!File.Exists(asiPath))
+                throw new Exception("OptiPatcher.asi was not downloaded correctly.");
+
+            return asiPath;
         }
 
         private bool IsUpdateAvailable(string? localVersion, string? remoteVersion)

@@ -258,6 +258,13 @@ Diese Version steht nicht zum Herunterladen zur Verfügung. Überprüfen Sie Ihr
     <x:String x:Key="TxtDefaultGpuDesc">Wird für Standardwerte und GPU-spezifische Empfehlungen verwendet.</x:String>
     <x:String x:Key="TxtDefaultOptiVersionTitle">Standard-OptiScaler-Version</x:String>
     <x:String x:Key="TxtDefaultOptiVersionDesc">Vorausgewählte Version beim Öffnen von Verwalten oder der Schnellinstallation. 'Auto' wählt die neueste empfohlene Version.</x:String>
+    <x:String x:Key="TxtDefaultVersionsTitle">Standardversionen</x:String>
+    <x:String x:Key="TxtDefaultVersionsDesc">Standard-Komponentenversionen für Spielverwaltung und Schnellinstallation verwalten</x:String>
+    <x:String x:Key="TxtManageDefaultVersions">Standardversionen verwalten</x:String>
+    <x:String x:Key="TxtManageDefaultVersionsDesc">Konfigurieren Sie, welche Komponentenversionen beim Öffnen der Spielverwaltung oder bei der Schnellinstallation vorausgewählt werden.</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultTitle">Standard-OptiPatcher-Version</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultDesc">Vorausgewählte OptiPatcher-Version beim Öffnen von Verwalten oder der Schnellinstallation. Wählen Sie Keine, um die Installation zu überspringen.</x:String>
+    <x:String x:Key="TxtOptiPatcherSupportLinkText">Siehe Liste kompatibler Spiele</x:String>
     <x:String x:Key="TxtClearAppCacheTitle">Anwendungscache leeren</x:String>
     <x:String x:Key="TxtClearAppCacheDesc">Entfernt gescannte Spiele, Coverbilder und gecachte Versionsdaten. Die App scannt beim nächsten Start erneut.</x:String>
     <x:String x:Key="TxtClearCacheBtn">Cache leeren</x:String>
@@ -482,7 +489,12 @@ Diese Version steht nicht zum Herunterladen zur Verfügung. Überprüfen Sie Ihr
     <x:String x:Key="TxtRefreshingCovers">Fehlende Cover werden aktualisiert...</x:String>
     <x:String x:Key="TxtCoverRefreshDoneFmt">Cover-Aktualisierung abgeschlossen. {0}/{1} fehlende Cover gefunden.</x:String>
     <x:String x:Key="TxtCoverRefreshToastFmt">Cover-Aktualisierung abgeschlossen — {0}/{1} Cover gefunden.</x:String>
-</ResourceDictionary>
+
+    <!-- OptiPatcher -->
+    <x:String x:Key="TxtOptiPatcherLbl">OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherTooltip">Ein ASI-Plugin für OptiScaler, das DLSS/DLSS-FG-Eingaben ohne Spoofing in unterstützten Spielen freilegt. Hilft Intel Arc-Nutzern, D3D12-Fehler zu vermeiden, und verhindert Leistungseinbußen oder Abstürze durch Dxgi-Spoofing.</x:String>
+    <x:String x:Key="TxtDownloadingOptiPatcher">OptiPatcher wird heruntergeladen...</x:String>
+    <x:String x:Key="TxtInstallingOptiPatcher">OptiPatcher wird installiert...</x:String></ResourceDictionary>
 
 
 

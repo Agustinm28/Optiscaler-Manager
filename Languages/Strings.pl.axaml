@@ -258,6 +258,13 @@ Ta wersja nie jest dostępna do pobrania. Sprawdź połączenie internetowe i sp
     <x:String x:Key="TxtDefaultGpuDesc">Używany do wartości domyślnych i wskazówek specyficznych dla GPU.</x:String>
     <x:String x:Key="TxtDefaultOptiVersionTitle">Domyślna wersja OptiScaler</x:String>
     <x:String x:Key="TxtDefaultOptiVersionDesc">Wstępnie wybrana wersja przy otwieraniu Zarządzaj lub podczas szybkiej instalacji. 'Auto' wybiera najnowszą zalecaną wersję.</x:String>
+    <x:String x:Key="TxtDefaultVersionsTitle">Domyślne wersje</x:String>
+    <x:String x:Key="TxtDefaultVersionsDesc">Zarządzaj domyślnymi wersjami komponentów do zarządzania grami i szybkiej instalacji</x:String>
+    <x:String x:Key="TxtManageDefaultVersions">Zarządzaj domyślnymi wersjami</x:String>
+    <x:String x:Key="TxtManageDefaultVersionsDesc">Skonfiguruj, które wersje komponentów będą wstępnie wybrane przy otwieraniu okna zarządzania grą lub podczas szybkiej instalacji.</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultTitle">Domyślna wersja OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultDesc">Wstępnie wybrana wersja OptiPatcher przy otwieraniu Zarządzaj lub podczas szybkiej instalacji. Wybierz Brak, aby pominąć instalację.</x:String>
+    <x:String x:Key="TxtOptiPatcherSupportLinkText">Zobacz listę obsługiwanych gier</x:String>
     <x:String x:Key="TxtClearAppCacheTitle">Wyczyść pamięć podręczną aplikacji</x:String>
     <x:String x:Key="TxtClearAppCacheDesc">Usuwa zeskanowane gry, okładki i dane wersji z pamięci podręcznej. Aplikacja ponownie przeskanuje przy następnym uruchomieniu.</x:String>
     <x:String x:Key="TxtClearCacheBtn">Wyczyść pamięć</x:String>
@@ -482,7 +489,12 @@ Ta wersja nie jest dostępna do pobrania. Sprawdź połączenie internetowe i sp
     <x:String x:Key="TxtRefreshingCovers">Odswierzanie brakujacych okladek...</x:String>
     <x:String x:Key="TxtCoverRefreshDoneFmt">Odswierzanie okladek zakonczone. Znaleziono {0}/{1} brakujacych okladek.</x:String>
     <x:String x:Key="TxtCoverRefreshToastFmt">Odswierzanie okladek zakonczone — znaleziono {0}/{1} okladek.</x:String>
-</ResourceDictionary>
+
+    <!-- OptiPatcher -->
+    <x:String x:Key="TxtOptiPatcherLbl">OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherTooltip">Wtyczka ASI dla OptiScaler, która ujawnia wejścia DLSS/DLSS-FG bez spoofingu w obsługiwanych grach. Pomaga użytkownikom Intel Arc unikać błędów D3D12 i zapobiega spadkom wydajności lub awariom spowodowanym przez spoofing Dxgi.</x:String>
+    <x:String x:Key="TxtDownloadingOptiPatcher">Pobieranie OptiPatcher...</x:String>
+    <x:String x:Key="TxtInstallingOptiPatcher">Instalowanie OptiPatcher...</x:String></ResourceDictionary>
 
 
 

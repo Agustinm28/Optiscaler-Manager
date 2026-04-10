@@ -175,6 +175,13 @@
     <x:String x:Key="TxtDefaultGpuDesc">Gebruikt voor standaardwaarden en GPU-specifieke begeleiding.</x:String>
     <x:String x:Key="TxtDefaultOptiVersionTitle">Standaard OptiScaler-versie</x:String>
     <x:String x:Key="TxtDefaultOptiVersionDesc">Vooraf geselecteerde versie bij het openen van Beheren of Snel installeren. 'Auto' kiest de nieuwste aanbevolen versie.</x:String>
+    <x:String x:Key="TxtDefaultVersionsTitle">Standaardversies</x:String>
+    <x:String x:Key="TxtDefaultVersionsDesc">Standaard componentversies beheren voor spelbeheer en Snel installeren</x:String>
+    <x:String x:Key="TxtManageDefaultVersions">Standaardversies beheren</x:String>
+    <x:String x:Key="TxtManageDefaultVersionsDesc">Configureer welke componentversies vooraf geselecteerd worden bij het openen van het spelbeheervenster of bij Snel installeren.</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultTitle">Standaard OptiPatcher-versie</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultDesc">Vooraf geselecteerde OptiPatcher-versie bij het openen van Beheren of Snel installeren. Selecteer Geen om installatie over te slaan.</x:String>
+    <x:String x:Key="TxtOptiPatcherSupportLinkText">Zie lijst van ondersteunde spellen</x:String>
     <x:String x:Key="TxtClearAppCacheTitle">Applicatiecache wissen</x:String>
     <x:String x:Key="TxtClearAppCacheDesc">Verwijdert gescande spellen, omslagafbeeldingen en gecachte versiegegevens. De app scant opnieuw bij de volgende start.</x:String>
     <x:String x:Key="TxtClearCacheBtn">Cache wissen</x:String>
@@ -482,7 +489,12 @@ Deze versie is niet beschikbaar om te downloaden. Controleer uw internetverbindi
     <x:String x:Key="TxtRefreshingCovers">Ontbrekende omslagen vernieuwen...</x:String>
     <x:String x:Key="TxtCoverRefreshDoneFmt">Omslagvernieuwing voltooid. {0}/{1} ontbrekende omslagen gevonden.</x:String>
     <x:String x:Key="TxtCoverRefreshToastFmt">Omslagvernieuwing voltooid — {0}/{1} omslagen gevonden.</x:String>
-</ResourceDictionary>
+
+    <!-- OptiPatcher -->
+    <x:String x:Key="TxtOptiPatcherLbl">OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherTooltip">Een ASI-plugin voor OptiScaler die DLSS/DLSS-FG-invoer blootlegt zonder spoofing in ondersteunde spellen. Helpt Intel Arc-gebruikers D3D12-fouten te vermijden en voorkomt prestatieproblemen of crashes door Dxgi-spoofing.</x:String>
+    <x:String x:Key="TxtDownloadingOptiPatcher">OptiPatcher downloaden...</x:String>
+    <x:String x:Key="TxtInstallingOptiPatcher">OptiPatcher installeren...</x:String></ResourceDictionary>
 
 
 

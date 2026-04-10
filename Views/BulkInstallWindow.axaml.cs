@@ -126,6 +126,9 @@ public partial class BulkInstallWindow : Window
         // Populate FSR4 INT8 versions
         PopulateExtrasComboBox();
 
+        // Populate OptiPatcher versions
+        PopulateOptiPatcherComboBox();
+
         // Populate profile selector
         PopulateProfileSelector();
 
@@ -249,6 +252,9 @@ public partial class BulkInstallWindow : Window
             }
 
             cmbOptiVersion.SelectedIndex = selectedIndex;
+
+            // Refresh OptiPatcher list after versions are loaded
+            PopulateOptiPatcherComboBox();
         });
     }
 
@@ -360,6 +366,7 @@ public partial class BulkInstallWindow : Window
         var cmbOptiVersion = this.FindControl<ComboBox>("CmbOptiVersion");
         var cmbInjectionMethod = this.FindControl<ComboBox>("CmbInjectionMethod");
         var cmbExtrasVersion = this.FindControl<ComboBox>("CmbExtrasVersion");
+        var cmbOptiPatcher = this.FindControl<ComboBox>("CmbOptiPatcherVersion");
         var chkFakenvapi = this.FindControl<CheckBox>("ChkFakenvapi");
         var chkNukemFG = this.FindControl<CheckBox>("ChkNukemFG");
         var cmbProfile = this.FindControl<ComboBox>("CmbProfile");
@@ -379,6 +386,12 @@ public partial class BulkInstallWindow : Window
         var selectedExtrasVersion = selectedExtrasItem?.Tag?.ToString();
         bool injectExtras = !string.IsNullOrEmpty(selectedExtrasVersion) &&
                             !selectedExtrasVersion.Equals("none", StringComparison.OrdinalIgnoreCase);
+
+        // Get selected OptiPatcher version
+        var selectedOptiPatcherItem = cmbOptiPatcher?.SelectedItem as ComboBoxItem;
+        var selectedOptiPatcherVersion = selectedOptiPatcherItem?.Tag?.ToString();
+        bool installOptiPatcher = !string.IsNullOrEmpty(selectedOptiPatcherVersion) &&
+                                  !selectedOptiPatcherVersion.Equals("none", StringComparison.OrdinalIgnoreCase);
 
         // Get selected profile
         OptiScalerProfile? selectedProfile = null;
@@ -468,6 +481,65 @@ public partial class BulkInstallWindow : Window
                         gameItem.Game.Fsr4ExtraVersion = selectedExtrasVersion;
                         DebugWindow.Log($"[BulkInstall] Copied FSR4 INT8 DLL to {destPath} for {gameItem.Name}");
                     });
+                }
+
+                // ── OptiPatcher ────────────────────────────────────────────────────
+                if (installOptiPatcher && !string.IsNullOrEmpty(selectedOptiPatcherVersion))
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (txtProgressStatus != null) txtProgressStatus.Text = $"Downloading OptiPatcher {selectedOptiPatcherVersion} for {gameItem.Name}...";
+                        if (progressBar != null) progressBar.IsIndeterminate = true;
+                    });
+
+                    try
+                    {
+                        var optiPatcherProgress = new Progress<double>(p =>
+                            Dispatcher.UIThread.Post(() => { if (progressBar != null) { progressBar.IsIndeterminate = false; progressBar.Value = p; } }));
+
+                        var optiPatcherAsiPath = await _componentService.DownloadOptiPatcherAsync(selectedOptiPatcherVersion, optiPatcherProgress);
+
+                        await Task.Run(() =>
+                        {
+                            var gameDir = _installService.DetermineInstallDirectory(gameItem.Game) ?? gameItem.Game.InstallPath;
+
+                            // Create plugins folder and copy the .asi
+                            var pluginsDir = System.IO.Path.Combine(gameDir, "plugins");
+                            System.IO.Directory.CreateDirectory(pluginsDir);
+                            var destAsi = System.IO.Path.Combine(pluginsDir, "OptiPatcher.asi");
+                            System.IO.File.Copy(optiPatcherAsiPath, destAsi, overwrite: true);
+                            DebugWindow.Log($"[BulkInstall][OptiPatcher] Installed to {destAsi}");
+
+                            // Patch OptiScaler.ini: ensure LoadAsiPlugins=true
+                            var iniPath = System.IO.Path.Combine(gameDir, "OptiScaler.ini");
+                            if (System.IO.File.Exists(iniPath))
+                            {
+                                var lines = System.IO.File.ReadAllLines(iniPath).ToList();
+                                bool found = false;
+                                for (int idx = 0; idx < lines.Count; idx++)
+                                {
+                                    var trimmed = lines[idx].Trim();
+                                    if (trimmed.StartsWith("LoadAsiPlugins", StringComparison.OrdinalIgnoreCase) &&
+                                        (trimmed.Length == "LoadAsiPlugins".Length || trimmed["LoadAsiPlugins".Length] == '='))
+                                    {
+                                        lines[idx] = "LoadAsiPlugins=true";
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if (!found) lines.Add("LoadAsiPlugins=true");
+                                System.IO.File.WriteAllLines(iniPath, lines);
+                                DebugWindow.Log($"[BulkInstall][OptiPatcher] Patched OptiScaler.ini for {gameItem.Name}");
+                            }
+                        });
+
+                        Dispatcher.UIThread.Post(() => { if (progressBar != null) progressBar.IsIndeterminate = false; });
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.UIThread.Post(() => { if (progressBar != null) progressBar.IsIndeterminate = false; });
+                        DebugWindow.Log($"[BulkInstall][OptiPatcher] Failed for {gameItem.Name}: {ex.Message}");
+                    }
                 }
 
                 gameItem.IsInstalled = true;
@@ -744,6 +816,40 @@ public partial class BulkInstallWindow : Window
             else
             {
                 targetIndex = 0; // None
+            }
+        }
+
+        cmb.SelectedIndex = targetIndex;
+    }
+
+    private void PopulateOptiPatcherComboBox()
+    {
+        var cmb = this.FindControl<ComboBox>("CmbOptiPatcherVersion");
+        if (cmb == null) return;
+
+        cmb.Items.Clear();
+        cmb.Items.Add(new ComboBoxItem { Content = "None", Tag = "none" });
+
+        var versions = _componentService.OptiPatcherAvailableVersions;
+        foreach (var ver in versions)
+        {
+            bool isLatest = ver == _componentService.LatestOptiPatcherVersion;
+            cmb.Items.Add(BuildVersionItem(ver, isBeta: false, isLatest: isLatest));
+        }
+
+        // Respect configured default
+        int targetIndex = 0;
+        var savedDefault = _componentService.Config.DefaultOptiPatcherVersion;
+        if (!string.IsNullOrEmpty(savedDefault) && !savedDefault.Equals("none", StringComparison.OrdinalIgnoreCase))
+        {
+            for (int i = 1; i < cmb.Items.Count; i++)
+            {
+                if (cmb.Items[i] is ComboBoxItem ci &&
+                    string.Equals(ci.Tag?.ToString(), savedDefault, StringComparison.OrdinalIgnoreCase))
+                {
+                    targetIndex = i;
+                    break;
+                }
             }
         }
 

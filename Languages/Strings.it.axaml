@@ -258,6 +258,13 @@ Questa versione non è disponibile per il download. Controlla la tua connessione
     <x:String x:Key="TxtDefaultGpuDesc">Usata per i valori predefiniti e la guida specifica della GPU.</x:String>
     <x:String x:Key="TxtDefaultOptiVersionTitle">Versione OptiScaler predefinita</x:String>
     <x:String x:Key="TxtDefaultOptiVersionDesc">Versione pre-selezionata all'apertura di Gestisci o con Installazione rapida. 'Auto' sceglie l'ultima versione consigliata.</x:String>
+    <x:String x:Key="TxtDefaultVersionsTitle">Versioni predefinite</x:String>
+    <x:String x:Key="TxtDefaultVersionsDesc">Gestisci le versioni predefinite dei componenti per la gestione dei giochi e l'installazione rapida</x:String>
+    <x:String x:Key="TxtManageDefaultVersions">Gestisci versioni predefinite</x:String>
+    <x:String x:Key="TxtManageDefaultVersionsDesc">Configura quali versioni dei componenti vengono pre-selezionate all'apertura della finestra di gestione del gioco o durante l'installazione rapida.</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultTitle">Versione OptiPatcher predefinita</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultDesc">Versione OptiPatcher pre-selezionata all'apertura di Gestisci o con Installazione rapida. Seleziona Nessuno per saltare l'installazione.</x:String>
+    <x:String x:Key="TxtOptiPatcherSupportLinkText">Vedi l'elenco dei giochi compatibili</x:String>
     <x:String x:Key="TxtClearAppCacheTitle">Svuota cache applicazione</x:String>
     <x:String x:Key="TxtClearAppCacheDesc">Rimuove giochi scansionati, copertine e dati versione in cache. L'app eseguirà una nuova scansione al prossimo avvio.</x:String>
     <x:String x:Key="TxtClearCacheBtn">Svuota cache</x:String>
@@ -482,7 +489,12 @@ Questa versione non è disponibile per il download. Controlla la tua connessione
     <x:String x:Key="TxtRefreshingCovers">Aggiornamento copertine mancanti...</x:String>
     <x:String x:Key="TxtCoverRefreshDoneFmt">Aggiornamento copertine completato. Trovate {0}/{1} copertine mancanti.</x:String>
     <x:String x:Key="TxtCoverRefreshToastFmt">Aggiornamento copertine completato — {0}/{1} copertine trovate.</x:String>
-</ResourceDictionary>
+
+    <!-- OptiPatcher -->
+    <x:String x:Key="TxtOptiPatcherLbl">OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherTooltip">Plugin ASI per OptiScaler che espone gli input DLSS/DLSS-FG senza spoofing nei giochi supportati. Aiuta gli utenti Intel Arc a evitare errori D3D12 e previene cali di prestazioni o crash causati dallo spoofing Dxgi.</x:String>
+    <x:String x:Key="TxtDownloadingOptiPatcher">Download di OptiPatcher...</x:String>
+    <x:String x:Key="TxtInstallingOptiPatcher">Installazione di OptiPatcher...</x:String></ResourceDictionary>
 
 
 

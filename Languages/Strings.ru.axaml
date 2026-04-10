@@ -258,6 +258,13 @@
     <x:String x:Key="TxtDefaultGpuDesc">Используется для значений по умолчанию и рекомендаций для конкретной ГПУ.</x:String>
     <x:String x:Key="TxtDefaultOptiVersionTitle">Версия OptiScaler по умолчанию</x:String>
     <x:String x:Key="TxtDefaultOptiVersionDesc">Предвыбранная версия при открытии «Управления» или быстрой установке. «Авто» выбирает последнюю рекомендуемую версию.</x:String>
+    <x:String x:Key="TxtDefaultVersionsTitle">Версии по умолчанию</x:String>
+    <x:String x:Key="TxtDefaultVersionsDesc">Управление версиями компонентов по умолчанию для управления играми и быстрой установки</x:String>
+    <x:String x:Key="TxtManageDefaultVersions">Управление версиями по умолчанию</x:String>
+    <x:String x:Key="TxtManageDefaultVersionsDesc">Настройте, какие версии компонентов предварительно выбираются при открытии окна управления игрой или при быстрой установке.</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultTitle">Версия OptiPatcher по умолчанию</x:String>
+    <x:String x:Key="TxtOptiPatcherDefaultDesc">Предвыбранная версия OptiPatcher при открытии «Управления» или быстрой установке. Выберите «Нет» чтобы пропустить установку.</x:String>
+    <x:String x:Key="TxtOptiPatcherSupportLinkText">Просмотреть список поддерживаемых игр</x:String>
     <x:String x:Key="TxtClearAppCacheTitle">Очистить кэш приложения</x:String>
     <x:String x:Key="TxtClearAppCacheDesc">Удаляет отсканированные игры, обложки и кэшированные данные версий. Приложение снова выполнит сканирование при следующем запуске.</x:String>
     <x:String x:Key="TxtClearCacheBtn">Очистить кэш</x:String>
@@ -482,7 +489,12 @@
     <x:String x:Key="TxtRefreshingCovers">Обновление отсутствующих обложек...</x:String>
     <x:String x:Key="TxtCoverRefreshDoneFmt">Обновление обложек завершено. Найдено {0}/{1} отсутствующих обложек.</x:String>
     <x:String x:Key="TxtCoverRefreshToastFmt">Обновление обложек завершено — найдено {0}/{1} обложек.</x:String>
-</ResourceDictionary>
+
+    <!-- OptiPatcher -->
+    <x:String x:Key="TxtOptiPatcherLbl">OptiPatcher</x:String>
+    <x:String x:Key="TxtOptiPatcherTooltip">ASI-плагин для OptiScaler, открывающий входы DLSS/DLSS-FG без спуфинга в поддерживаемых играх. Помогает пользователям Intel Arc избежать ошибок D3D12 и предотвращает потерю производительности или краши из-за спуфинга Dxgi.</x:String>
+    <x:String x:Key="TxtDownloadingOptiPatcher">Загрузка OptiPatcher...</x:String>
+    <x:String x:Key="TxtInstallingOptiPatcher">Установка OptiPatcher...</x:String></ResourceDictionary>
 
 
 

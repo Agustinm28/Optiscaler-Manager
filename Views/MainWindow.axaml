@@ -1453,7 +1453,7 @@
                                 </Grid>
                             </Border>
 
-                            <!-- FSR4 INT8 -->
+                            <!-- Default Versions -->
                             <Border Background="{StaticResource BrBgCard}"
                                     BorderBrush="{StaticResource BrBorderSubtle}"
                                     BorderThickness="1"
@@ -1467,20 +1467,22 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                        <TextBlock Text="{DynamicResource TxtFsr4Int8DefaultTitle}"
+                                        <TextBlock Text="{DynamicResource TxtDefaultVersionsTitle}"
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource BrTextPrimary}"/>
-                                        <TextBlock Text="{DynamicResource TxtFsr4Int8DefaultDesc}"
+                                        <TextBlock Text="{DynamicResource TxtDefaultVersionsDesc}"
                                                    Foreground="{StaticResource BrTextSecondary}"
                                                    TextWrapping="Wrap"
                                                    Margin="0,4,16,0"
                                                    FontSize="{StaticResource FontSizeCaption}"/>
                                     </StackPanel>
-                                    <ComboBox Name="CmbDefaultExtrasVersion"
-                                              Grid.Column="1"
-                                              Width="200"
-                                              VerticalAlignment="Center"
-                                              SelectionChanged="CmbDefaultExtrasVersion_SelectionChanged"/>
+                                    <Button Name="BtnManageDefaultVersions"
+                                            Grid.Column="1"
+                                            Content="{DynamicResource TxtManage}"
+                                            Classes="BtnBase"
+                                            Padding="16,8"
+                                            VerticalAlignment="Center"
+                                            Click="BtnManageDefaultVersions_Click"/>
                                 </Grid>
                             </Border>
 
@@ -1544,55 +1546,6 @@
                                                   OnContent="" OffContent=""
                                                   IsChecked="True"
                                                   IsCheckedChanged="TglAutoScan_IsCheckedChanged"/>
-                                </Grid>
-                            </Border>
-
-                            <!-- Default OptiScaler Version -->
-                            <Border Background="{StaticResource BrBgCard}"
-                                    BorderBrush="{StaticResource BrBorderSubtle}"
-                                    BorderThickness="1"
-                                    CornerRadius="{StaticResource RadiusLarge}"
-                                    Padding="20,16"
-                                    Margin="0,0,16,16"
-                                    HorizontalAlignment="Left">
-                                <Grid ColumnDefinitions="*, Auto">
-                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                        <TextBlock Text="{DynamicResource TxtDefaultOptiVersionTitle}"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource BrTextPrimary}"/>
-                                        <TextBlock Text="{DynamicResource TxtDefaultOptiVersionDesc}"
-                                                   Foreground="{StaticResource BrTextSecondary}"
-                                                   TextWrapping="Wrap"
-                                                   Margin="0,4,16,0"
-                                                   FontSize="{StaticResource FontSizeCaption}"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
-                                        <Grid ColumnDefinitions="*,*">
-                                            <Button Name="BtnOptiDefaultStable"
-                                                    Grid.Column="0"
-                                                    Content="Stable"
-                                                    Classes="BtnPrimary"
-                                                    HorizontalAlignment="Stretch"
-                                                    HorizontalContentAlignment="Center"
-                                                    FontSize="11"
-                                                    Padding="8,5"
-                                                    Margin="0,0,2,0"
-                                                    Click="BtnOptiDefaultStable_Click"/>
-                                            <Button Name="BtnOptiDefaultBeta"
-                                                    Grid.Column="1"
-                                                    Content="Beta"
-                                                    Classes="BtnSecondary"
-                                                    HorizontalAlignment="Stretch"
-                                                    HorizontalContentAlignment="Center"
-                                                    FontSize="11"
-                                                    Padding="8,5"
-                                                    Margin="2,0,0,0"
-                                                    Click="BtnOptiDefaultBeta_Click"/>
-                                        </Grid>
-                                        <ComboBox Name="CmbDefaultOptiScalerVersion"
-                                                  Width="220"
-                                                  SelectionChanged="CmbDefaultOptiScalerVersion_SelectionChanged"/>
-                                    </StackPanel>
                                 </Grid>
                             </Border>
 

@@ -7,7 +7,8 @@
         mc:Ignorable="d"
         x:Class="OptiscalerClient.Views.ManageGameWindow"
         Title="{DynamicResource TxtManageGameWindow}"
-        Height="600" Width="1140"
+        MinHeight="600" Width="1140"
+        SizeToContent="Height"
         SystemDecorations="None"
         TransparencyLevelHint="Transparent"
         Background="Transparent"
@@ -204,7 +205,7 @@
                         <!-- PROGRESS BAR (Oculto por defecto, dentro del Status Card) -->
                         <Border Name="BdProgress" Margin="0,12,0,0" IsVisible="False">
                             <StackPanel>
-                                <TextBlock Name="TxtProgressState" Text="Downloading OptiScaler..." 
+                                <TextBlock Name="TxtProgressState" Text="Downloading OptiScaler..."
                                            Foreground="{StaticResource BrTextPrimary}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                                 <ProgressBar Name="PrgDownload" Height="6" Minimum="0" Maximum="100" />
                             </StackPanel>
@@ -260,10 +261,9 @@
                             BorderThickness="1"
                             CornerRadius="{StaticResource RadiusLarge}"
                             Padding="14,12">
-                        <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*">
+                        <StackPanel Name="PnlInstallOptions" Spacing="0">
                             <!-- Info panel -->
-                            <Border Grid.Row="0"
-                                    Name="BetaInfoPanel"
+                            <Border Name="BetaInfoPanel"
                                     Background="{StaticResource BrBgElevated}"
                                     BorderBrush="#4A90E2"
                                     BorderThickness="1"
@@ -285,115 +285,153 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- Options -->
-                            <StackPanel Grid.Row="1" Name="PnlInstallOptions" Spacing="10">
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                                    <StackPanel Grid.Column="0" Spacing="10">
-                                        <StackPanel>
-                                            <TextBlock Text="{DynamicResource TxtVersionLbl}"
-                                                       Foreground="{StaticResource BrTextSecondary}"
-                                                       FontSize="{StaticResource FontSizeCaption}"/>
-                                            <ComboBox Name="CmbOptiVersion"
-                                                      Margin="0,4,0,0"
-                                                      Width="220"
-                                                      Classes="BtnSelector"
-                                                      SelectedIndex="0"
-                                                      HorizontalContentAlignment="Left"
-                                                      VerticalContentAlignment="Center" />
-                                        </StackPanel>
+                            <!-- Options + Actions (3 columns × 5 rows) -->
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                  ColumnDefinitions="*,*,*"
+                                  RowSpacing="10"
+                                  ColumnSpacing="12">
 
-                                        <StackPanel>
-                                            <TextBlock Text="{DynamicResource TxtInjectionLbl}"
-                                                       Foreground="{StaticResource BrTextSecondary}"
-                                                       FontSize="{StaticResource FontSizeCaption}"/>
-                                            <ComboBox Name="CmbInjectionMethod"
-                                                      Margin="0,4,0,0"
-                                                      Width="220"
-                                                      Classes="BtnSelector"
-                                                      SelectedIndex="0"
-                                                      VerticalContentAlignment="Center">
-                                                <ComboBoxItem Content="dxgi.dll"     Tag="dxgi.dll"/>
-                                                <ComboBoxItem Content="winmm.dll"    Tag="winmm.dll"/>
-                                                <ComboBoxItem Content="d3d12.dll"    Tag="d3d12.dll"/>
-                                                <ComboBoxItem Content="dbghelp.dll"  Tag="dbghelp.dll"/>
-                                                <ComboBoxItem Content="version.dll"  Tag="version.dll"/>
-                                                <ComboBoxItem Content="wininet.dll"  Tag="wininet.dll"/>
-                                                <ComboBoxItem Content="winhttp.dll"  Tag="winhttp.dll"/>
-                                            </ComboBox>
-                                        </StackPanel>
-
-                                        <StackPanel>
-                                            <TextBlock Text="Profile"
-                                                       Foreground="{StaticResource BrTextSecondary}"
-                                                       FontSize="{StaticResource FontSizeCaption}"/>
-                                            <ComboBox Name="CmbProfile"
-                                                      Margin="0,4,0,0"
-                                                      Width="220"
-                                                      Classes="BtnSelector"
-                                                      HorizontalContentAlignment="Left"
-                                                      VerticalContentAlignment="Center" />
-                                        </StackPanel>
-
-                                        <StackPanel>
-                                            <TextBlock Text="FSR4 INT8"
-                                                       Foreground="{StaticResource BrTextSecondary}"
-                                                       FontSize="{StaticResource FontSizeCaption}"/>
-                                            <ComboBox Name="CmbExtrasVersion"
-                                                      Margin="0,4,0,0"
-                                                      Width="220"
-                                                      Classes="BtnSelector"
-                                                      Padding="8,0,24,0"
-                                                      HorizontalContentAlignment="Left"
-                                                      VerticalContentAlignment="Center" />
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="1" Spacing="12">
-                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                            <ToggleSwitch Name="ChkInstallFakenvapi" VerticalAlignment="Center" OnContent="" OffContent=""/>
-                                            <TextBlock Text="Fakenvapi" Foreground="{StaticResource BrTextPrimary}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                            <ToggleSwitch Name="ChkInstallNukemFG" VerticalAlignment="Center" OnContent="" OffContent=""/>
-                                            <TextBlock Text="NukemFG" Foreground="{StaticResource BrTextPrimary}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-
-                                <!-- Actions -->
-                                <Grid Grid.Row="2"
-                                  Margin="0" VerticalAlignment="Bottom"
-                                  RowDefinitions="Auto,Auto">
-                                <Button Name="BtnUninstall"
-                                    Grid.Row="0"
-                                    Content="{DynamicResource TxtUninstall}"
-                                    Classes="BtnDanger"
-                                    Padding="14,7"
-                                    Margin="0,0,0,12"
-                                    HorizontalAlignment="Right"
-                                    IsVisible="False"
-                                    Click="BtnUninstall_Click"/>
-                                <StackPanel Name="InstallBtnGroup" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button Name="BtnInstallManual"
-                                        Content="{DynamicResource TxtBtnManualInstall}"
-                                        Classes="BtnSuccess"
-                                        Padding="16,8"
-                                        Margin="0,0,10,0"
-                                        Click="BtnInstallManual_Click"/>
-                                    <Button Name="BtnInstall"
-                                        Content="{DynamicResource TxtInstallOpti}"
-                                        Classes="BtnSuccess"
-                                        Padding="16,8"
-                                        Click="BtnInstall_Click"/>
+                                <!-- Row 0, Col 0 : OptiScaler version -->
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="{DynamicResource TxtVersionLbl}"
+                                               Foreground="{StaticResource BrTextSecondary}"
+                                               FontSize="{StaticResource FontSizeCaption}"/>
+                                    <ComboBox Name="CmbOptiVersion"
+                                              Margin="0,4,0,0"
+                                              HorizontalAlignment="Stretch"
+                                              Classes="BtnSelector"
+                                              SelectedIndex="0"
+                                              HorizontalContentAlignment="Left"
+                                              VerticalContentAlignment="Center"/>
                                 </StackPanel>
-                                </Grid>
-                        </Grid>
+
+                                <!-- Row 1, Col 0 : Injection method -->
+                                <StackPanel Grid.Row="1" Grid.Column="0">
+                                    <TextBlock Text="{DynamicResource TxtInjectionLbl}"
+                                               Foreground="{StaticResource BrTextSecondary}"
+                                               FontSize="{StaticResource FontSizeCaption}"/>
+                                    <ComboBox Name="CmbInjectionMethod"
+                                              Margin="0,4,0,0"
+                                              HorizontalAlignment="Stretch"
+                                              Classes="BtnSelector"
+                                              SelectedIndex="0"
+                                              VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="dxgi.dll"     Tag="dxgi.dll"/>
+                                        <ComboBoxItem Content="winmm.dll"    Tag="winmm.dll"/>
+                                        <ComboBoxItem Content="d3d12.dll"    Tag="d3d12.dll"/>
+                                        <ComboBoxItem Content="dbghelp.dll"  Tag="dbghelp.dll"/>
+                                        <ComboBoxItem Content="version.dll"  Tag="version.dll"/>
+                                        <ComboBoxItem Content="wininet.dll"  Tag="wininet.dll"/>
+                                        <ComboBoxItem Content="winhttp.dll"  Tag="winhttp.dll"/>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <!-- Row 2, Col 0 : Profile selector -->
+                                <StackPanel Grid.Row="2" Grid.Column="0">
+                                    <TextBlock Text="Profile"
+                                               Foreground="{StaticResource BrTextSecondary}"
+                                               FontSize="{StaticResource FontSizeCaption}"/>
+                                    <ComboBox Name="CmbProfile"
+                                              Margin="0,4,0,0"
+                                              HorizontalAlignment="Stretch"
+                                              Classes="BtnSelector"
+                                              HorizontalContentAlignment="Left"
+                                              VerticalContentAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Row 0, Col 1 : FSR4 INT8 -->
+                                <StackPanel Grid.Row="0" Grid.Column="1">
+                                    <TextBlock Text="FSR4 INT8"
+                                               Foreground="{StaticResource BrTextSecondary}"
+                                               FontSize="{StaticResource FontSizeCaption}"/>
+                                    <ComboBox Name="CmbExtrasVersion"
+                                              Margin="0,4,0,0"
+                                              HorizontalAlignment="Stretch"
+                                              Classes="BtnSelector"
+                                              Padding="8,0,24,0"
+                                              HorizontalContentAlignment="Left"
+                                              VerticalContentAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Row 1, Col 1 : OptiPatcher -->
+                                <StackPanel Grid.Row="1" Grid.Column="1">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{DynamicResource TxtOptiPatcherLbl}"
+                                                   Foreground="{StaticResource BrTextSecondary}"
+                                                   FontSize="{StaticResource FontSizeCaption}"
+                                                   VerticalAlignment="Center"/>
+                                        <Border Background="{StaticResource BrBgElevated}"
+                                                BorderBrush="{StaticResource BrBorderSubtle}"
+                                                BorderThickness="1" CornerRadius="8"
+                                                Width="16" Height="16"
+                                                ToolTip.ShowDelay="100" Cursor="Help"
+                                                ToolTip.Tip="{DynamicResource TxtOptiPatcherTooltip}">
+                                            <TextBlock Text="?" Foreground="{StaticResource BrTextSecondary}"
+                                                       FontSize="10" FontWeight="Bold"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       Margin="0,-1,0,0"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <ComboBox Name="CmbOptiPatcherVersion"
+                                              Margin="0,4,0,0"
+                                              HorizontalAlignment="Stretch"
+                                              Classes="BtnSelector"
+                                              Padding="8,0,24,0"
+                                              HorizontalContentAlignment="Left"
+                                              VerticalContentAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Row 0, Col 2 : Fakenvapi toggle -->
+                                <StackPanel Grid.Row="0" Grid.Column="2"
+                                            Orientation="Horizontal" Spacing="8"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <ToggleSwitch Name="ChkInstallFakenvapi" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <TextBlock Text="Fakenvapi" Foreground="{StaticResource BrTextPrimary}" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Row 1, Col 2 : NukemFG toggle -->
+                                <StackPanel Grid.Row="1" Grid.Column="2"
+                                            Orientation="Horizontal" Spacing="8"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <ToggleSwitch Name="ChkInstallNukemFG" VerticalAlignment="Center" OnContent="" OffContent=""/>
+                                    <TextBlock Text="NukemFG" Foreground="{StaticResource BrTextPrimary}" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Row 3, Col 2 : Uninstall button -->
+                                <Button Name="BtnUninstall"
+                                        Grid.Row="3" Grid.Column="2"
+                                        Content="{DynamicResource TxtUninstall}"
+                                        Classes="BtnDanger"
+                                        Padding="14,7"
+                                        HorizontalAlignment="Right"
+                                        IsVisible="False"
+                                        Click="BtnUninstall_Click"/>
+
+                                <!-- Row 4, all columns : Install buttons right-aligned -->
+                                <StackPanel Name="InstallBtnGroup"
+                                            Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+                                            Orientation="Horizontal" Spacing="10"
+                                            HorizontalAlignment="Right">
+                                    <Button Name="BtnInstallManual"
+                                            Content="{DynamicResource TxtBtnManualInstall}"
+                                            Classes="BtnSuccess"
+                                            Padding="16,8"
+                                            Click="BtnInstallManual_Click"/>
+                                    <Button Name="BtnInstall"
+                                            Content="{DynamicResource TxtInstallOpti}"
+                                            Classes="BtnSuccess"
+                                            Padding="16,8"
+                                            Click="BtnInstall_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
                     </Border>
                 </Grid>
 
                 <!-- TOAST NOTIFICATION -->
-                <Border Name="BdToast" 
+                <Border Name="BdToast"
                         Grid.ColumnSpan="2"
                         HorizontalAlignment="Right" VerticalAlignment="Bottom"
                         Background="{StaticResource BrBgElevated}"
@@ -454,9 +492,9 @@
                             <!-- Encabezado -->
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <Border Background="{StaticResource BrBgSurface}" Width="36" Height="36" CornerRadius="{StaticResource RadiusMedium}">
-                                    <TextBlock Text="&#xE8B9;" 
-                                               FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI" 
-                                               FontSize="18" 
+                                    <TextBlock Text="&#xE8B9;"
+                                               FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI"
+                                               FontSize="18"
                                                Foreground="{StaticResource BrAccent}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
